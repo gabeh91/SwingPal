@@ -1,0 +1,16 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/ClubHUDView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Club",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 8
+        }
+      }
+    ]
+  },
+  "version": 1
+}

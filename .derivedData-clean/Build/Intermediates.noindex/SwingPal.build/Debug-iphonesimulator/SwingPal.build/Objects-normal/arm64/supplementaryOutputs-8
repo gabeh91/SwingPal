@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/HoleInfoHUDView.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleInfoHUDView.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleInfoHUDView.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleInfoHUDView.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleInfoHUDView.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleInfoHUDView.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/LiveRoundView.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundView.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundView.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundView.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundView.swiftdeps"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/ClubHUDView.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ClubHUDView.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ClubHUDView.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ClubHUDView.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ClubHUDView.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ClubHUDView.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/DistanceHUDView.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/DistanceHUDView.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/DistanceHUDView.swiftconstvalues"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/DistanceHUDView.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/DistanceHUDView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/DistanceHUDView.swiftdeps"

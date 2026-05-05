@@ -1,0 +1,89 @@
+{
+  "" : {
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatch-primary.dia",
+    "emit-module-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatch-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatch-primary-emit-module.dia",
+    "pch" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatch-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatch-primary.swiftdeps"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Sync/RoundCompanionSyncing.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/RoundCompanionSyncing~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/SwingPalWatchApp.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/SwingPalWatchApp~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchClubPickerView.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchClubPickerView~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchHoleFinishView.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchHoleFinishView~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchQuickShotView.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchQuickShotView~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchRoundCompanionStore.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionStore~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchRoundCompanionViewModel.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundCompanionViewModel~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalWatch Watch App/WatchRoundHomeView.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalWatch.build/Objects-normal/x86_64/WatchRoundHomeView~partial.swiftmodule"
+  }
+}

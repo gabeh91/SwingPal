@@ -1,0 +1,8 @@
+[out:json][timeout:90];
+(
+  way[golf](-37.998,145.015,-37.955,145.050);
+  relation[golf](-37.998,145.015,-37.955,145.050);
+  way[leisure=golf_course](-37.998,145.015,-37.955,145.050);
+  relation[leisure=golf_course](-37.998,145.015,-37.955,145.050);
+);
+out geom;

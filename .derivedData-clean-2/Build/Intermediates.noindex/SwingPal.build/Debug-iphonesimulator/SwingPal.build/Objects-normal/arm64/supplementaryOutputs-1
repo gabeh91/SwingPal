@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/SwingPalApp.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SwingPalApp.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SwingPalApp.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SwingPalApp.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SwingPalApp.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SwingPalApp.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/ContentView.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ContentView.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ContentView.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ContentView.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ContentView.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ContentView.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/AppIdentity.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppIdentity.swiftdeps"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppIdentity.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppIdentity.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppIdentity.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppIdentity.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/App/AppTab.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppTab.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppTab.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppTab.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppTab.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/AppTab.dia"

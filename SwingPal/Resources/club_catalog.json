@@ -1,0 +1,3008 @@
+{
+  "brands" : [
+    "Callaway",
+    "Cleveland",
+    "Cobra",
+    "Honma",
+    "LAB Golf",
+    "Miura",
+    "Mizuno",
+    "Odyssey",
+    "PING",
+    "PXG",
+    "Scotty Cameron",
+    "Srixon",
+    "Takomo",
+    "TaylorMade",
+    "Titleist",
+    "Tour Edge",
+    "Wilson"
+  ],
+  "families" : [
+    {
+      "brand" : "Callaway",
+      "category" : "wedge",
+      "name" : "Opus Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Callaway",
+      "category" : "driver",
+      "name" : "Quantum Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Callaway",
+      "category" : "fairwayWood",
+      "name" : "Quantum Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Callaway",
+      "category" : "hybrid",
+      "name" : "Quantum Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Callaway",
+      "category" : "iron",
+      "name" : "Quantum Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Cleveland",
+      "category" : "wedge",
+      "name" : "CBX 4 ZipCore Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Cleveland",
+      "category" : "wedge",
+      "name" : "RTZ Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Cobra",
+      "category" : "driver",
+      "name" : "DS-ADAPT Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Cobra",
+      "category" : "fairwayWood",
+      "name" : "DS-ADAPT Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Cobra",
+      "category" : "hybrid",
+      "name" : "DS-ADAPT Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Cobra",
+      "category" : "iron",
+      "name" : "DS-ADAPT Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Honma",
+      "category" : "driver",
+      "name" : "TW767 Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Honma",
+      "category" : "fairwayWood",
+      "name" : "TW767 Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Honma",
+      "category" : "hybrid",
+      "name" : "TW767 Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Honma",
+      "category" : "iron",
+      "name" : "TW777 PCB MAX Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "LAB Golf",
+      "category" : "putter",
+      "name" : "DF3 Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "LAB Golf",
+      "category" : "putter",
+      "name" : "LINK.2 Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "LAB Golf",
+      "category" : "putter",
+      "name" : "MEZZ.1 Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "LAB Golf",
+      "category" : "putter",
+      "name" : "OZ.1 Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "iron",
+      "name" : "CB-302 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "wedge",
+      "name" : "Forged Wedge Series",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "iron",
+      "name" : "IC-602 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "iron",
+      "name" : "KM-700 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "iron",
+      "name" : "MC-502 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Miura",
+      "category" : "iron",
+      "name" : "TC-202 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Mizuno",
+      "category" : "iron",
+      "name" : "JPX 925 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Mizuno",
+      "category" : "wedge",
+      "name" : "Pro T-1 Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Mizuno",
+      "category" : "driver",
+      "name" : "ST Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Mizuno",
+      "category" : "fairwayWood",
+      "name" : "ST Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Odyssey",
+      "category" : "putter",
+      "name" : "Ai-ONE Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "iron",
+      "name" : "Blueprint Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "driver",
+      "name" : "G440 Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "fairwayWood",
+      "name" : "G440 Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "iron",
+      "name" : "G740 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "putter",
+      "name" : "PLD Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "putter",
+      "name" : "Scottsdale TEC Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "PING",
+      "category" : "utilityIron",
+      "name" : "iDi Utility Irons",
+      "variants" : [
+        {
+          "code" : "1U",
+          "displayName" : "1U"
+        },
+        {
+          "code" : "2U",
+          "displayName" : "2U"
+        },
+        {
+          "code" : "3U",
+          "displayName" : "3U"
+        },
+        {
+          "code" : "4U",
+          "displayName" : "4U"
+        },
+        {
+          "code" : "5U",
+          "displayName" : "5U"
+        },
+        {
+          "code" : "6U",
+          "displayName" : "6U"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "iron",
+      "name" : "0311 GEN8 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "driver",
+      "name" : "Black Ops Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "fairwayWood",
+      "name" : "Black Ops Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "hybrid",
+      "name" : "Black Ops Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "putter",
+      "name" : "Hot Rod ZT Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "PXG",
+      "category" : "wedge",
+      "name" : "Sugar Daddy III Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Scotty Cameron",
+      "category" : "putter",
+      "name" : "Phantom Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "Scotty Cameron",
+      "category" : "putter",
+      "name" : "Studio Style Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "Srixon",
+      "category" : "driver",
+      "name" : "ZXi Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Srixon",
+      "category" : "fairwayWood",
+      "name" : "ZXi Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Srixon",
+      "category" : "hybrid",
+      "name" : "ZXi Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Srixon",
+      "category" : "iron",
+      "name" : "ZXi Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Takomo",
+      "category" : "iron",
+      "name" : "101 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Takomo",
+      "category" : "iron",
+      "name" : "101T Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Takomo",
+      "category" : "iron",
+      "name" : "301 Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "wedge",
+      "name" : "MG5 Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "iron",
+      "name" : "Qi Max Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "driver",
+      "name" : "Qi4D Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "fairwayWood",
+      "name" : "Qi4D Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "hybrid",
+      "name" : "Qi4D Rescue",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "TaylorMade",
+      "category" : "putter",
+      "name" : "Spider ZT Putters",
+      "variants" : [
+        {
+          "code" : "Blade",
+          "displayName" : "Blade"
+        },
+        {
+          "code" : "Mid-Mallet",
+          "displayName" : "Mid-Mallet"
+        },
+        {
+          "code" : "Mallet",
+          "displayName" : "Mallet"
+        },
+        {
+          "code" : "Counterbalanced",
+          "displayName" : "Counterbalanced"
+        }
+      ]
+    },
+    {
+      "brand" : "Titleist",
+      "category" : "driver",
+      "name" : "GT Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Titleist",
+      "category" : "fairwayWood",
+      "name" : "GT Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Titleist",
+      "category" : "hybrid",
+      "name" : "GT Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Titleist",
+      "category" : "iron",
+      "name" : "T-Series Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Titleist",
+      "category" : "wedge",
+      "name" : "Vokey SM11 Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "iron",
+      "name" : "725 Series Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "driver",
+      "name" : "Exotics Max Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "fairwayWood",
+      "name" : "Exotics Max Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "hybrid",
+      "name" : "Exotics Max Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "iron",
+      "name" : "Exotics Max Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Tour Edge",
+      "category" : "wedge",
+      "name" : "Hot Launch Max Wedges",
+      "variants" : [
+        {
+          "code" : "46°",
+          "displayName" : "46°"
+        },
+        {
+          "code" : "48°",
+          "displayName" : "48°"
+        },
+        {
+          "code" : "50°",
+          "displayName" : "50°"
+        },
+        {
+          "code" : "52°",
+          "displayName" : "52°"
+        },
+        {
+          "code" : "54°",
+          "displayName" : "54°"
+        },
+        {
+          "code" : "56°",
+          "displayName" : "56°"
+        },
+        {
+          "code" : "58°",
+          "displayName" : "58°"
+        },
+        {
+          "code" : "60°",
+          "displayName" : "60°"
+        },
+        {
+          "code" : "62°",
+          "displayName" : "62°"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "fairwayWood",
+      "name" : "DYNAPWR Fairway Woods",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "1W"
+        },
+        {
+          "code" : "2W",
+          "displayName" : "2W"
+        },
+        {
+          "code" : "3W",
+          "displayName" : "3W"
+        },
+        {
+          "code" : "4W",
+          "displayName" : "4W"
+        },
+        {
+          "code" : "5W",
+          "displayName" : "5W"
+        },
+        {
+          "code" : "7W",
+          "displayName" : "7W"
+        },
+        {
+          "code" : "9W",
+          "displayName" : "9W"
+        },
+        {
+          "code" : "11W",
+          "displayName" : "11W"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "iron",
+      "name" : "DYNAPWR Forged Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "hybrid",
+      "name" : "DYNAPWR Hybrids",
+      "variants" : [
+        {
+          "code" : "1H",
+          "displayName" : "1H"
+        },
+        {
+          "code" : "2H",
+          "displayName" : "2H"
+        },
+        {
+          "code" : "3H",
+          "displayName" : "3H"
+        },
+        {
+          "code" : "4H",
+          "displayName" : "4H"
+        },
+        {
+          "code" : "5H",
+          "displayName" : "5H"
+        },
+        {
+          "code" : "6H",
+          "displayName" : "6H"
+        },
+        {
+          "code" : "7H",
+          "displayName" : "7H"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "driver",
+      "name" : "DYNAPWR Max+ Drivers",
+      "variants" : [
+        {
+          "code" : "1W",
+          "displayName" : "Driver"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "iron",
+      "name" : "Staff Model CB Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    },
+    {
+      "brand" : "Wilson",
+      "category" : "iron",
+      "name" : "Staff Model XB Irons",
+      "variants" : [
+        {
+          "code" : "1I",
+          "displayName" : "1I"
+        },
+        {
+          "code" : "2I",
+          "displayName" : "2I"
+        },
+        {
+          "code" : "3I",
+          "displayName" : "3I"
+        },
+        {
+          "code" : "4I",
+          "displayName" : "4I"
+        },
+        {
+          "code" : "5I",
+          "displayName" : "5I"
+        },
+        {
+          "code" : "6I",
+          "displayName" : "6I"
+        },
+        {
+          "code" : "7I",
+          "displayName" : "7I"
+        },
+        {
+          "code" : "8I",
+          "displayName" : "8I"
+        },
+        {
+          "code" : "9I",
+          "displayName" : "9I"
+        },
+        {
+          "code" : "PW",
+          "displayName" : "PW"
+        },
+        {
+          "code" : "AW",
+          "displayName" : "AW"
+        },
+        {
+          "code" : "GW",
+          "displayName" : "GW"
+        },
+        {
+          "code" : "SW",
+          "displayName" : "SW"
+        },
+        {
+          "code" : "LW",
+          "displayName" : "LW"
+        }
+      ]
+    }
+  ]
+}

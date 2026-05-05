@@ -1,0 +1,18 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Premium/PremiumFeature.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PremiumFeature.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PremiumFeature.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PremiumFeature.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PremiumFeature.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PremiumFeature.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Premium/GatedActionResolver.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/GatedActionResolver.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/GatedActionResolver.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/GatedActionResolver.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/GatedActionResolver.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/GatedActionResolver.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Premium/EntitlementState.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/EntitlementState.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/EntitlementState.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/EntitlementState.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/EntitlementState.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/EntitlementState.o"

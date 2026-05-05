@@ -1,0 +1,18 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/DesignSystem/DesignTokens/ShellTokens.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShellTokens.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShellTokens.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShellTokens.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShellTokens.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShellTokens.dia"
+"/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/DerivedSources/GeneratedAssetSymbols.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GeneratedAssetSymbols.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GeneratedAssetSymbols.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Premium/GatedActionResolver.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GatedActionResolver.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GatedActionResolver.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GatedActionResolver.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GatedActionResolver.swiftconstvalues"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/GatedActionResolver.dia"

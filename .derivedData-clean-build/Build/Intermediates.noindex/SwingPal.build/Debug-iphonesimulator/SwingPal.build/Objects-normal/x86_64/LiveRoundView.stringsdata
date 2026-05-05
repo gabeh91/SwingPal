@@ -1,0 +1,48 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/LiveRoundView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Live Round",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Aerial Hole View Placeholder",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Log Shot",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "Change Club",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 50
+        }
+      },
+      {
+        "comment": "",
+        "key": "Finish Hole",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 55
+        }
+      }
+    ]
+  },
+  "version": 1
+}

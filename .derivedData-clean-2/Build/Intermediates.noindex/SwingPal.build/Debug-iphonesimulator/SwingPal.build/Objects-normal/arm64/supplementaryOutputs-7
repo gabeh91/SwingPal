@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/LiveRoundState.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundState.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundState.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundState.o"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundState.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/LiveRoundState.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/HoleSession.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleSession.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleSession.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleSession.swiftdeps"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleSession.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HoleSession.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/ShotEvent.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShotEvent.swiftdeps"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShotEvent.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShotEvent.o"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShotEvent.dia"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/ShotEvent.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/PlayerScoreState.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/PlayerScoreState.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/PlayerScoreState.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/PlayerScoreState.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/PlayerScoreState.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/PlayerScoreState.d"

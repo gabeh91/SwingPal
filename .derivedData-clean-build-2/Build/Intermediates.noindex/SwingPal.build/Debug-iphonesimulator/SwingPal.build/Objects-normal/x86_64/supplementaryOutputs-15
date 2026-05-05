@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/ClubHUDView.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ClubHUDView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ClubHUDView.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ClubHUDView.dia"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ClubHUDView.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ClubHUDView.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/DistanceHUDView.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/DistanceHUDView.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/DistanceHUDView.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/DistanceHUDView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/DistanceHUDView.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/DistanceHUDView.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/HoleInfoHUDView.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/HoleInfoHUDView.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/HoleInfoHUDView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/HoleInfoHUDView.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/HoleInfoHUDView.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/HoleInfoHUDView.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/LiveRoundView.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/LiveRoundView.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/LiveRoundView.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/LiveRoundView.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/LiveRoundView.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/LiveRoundView.swiftdeps"

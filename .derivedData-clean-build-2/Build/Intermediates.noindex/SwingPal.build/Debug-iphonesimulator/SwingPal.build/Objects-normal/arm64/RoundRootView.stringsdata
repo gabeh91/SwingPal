@@ -1,0 +1,16 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/RoundRootView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Back",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 70
+        }
+      }
+    ]
+  },
+  "version": 1
+}

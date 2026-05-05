@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/RoundSetupState.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundSetupState.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundSetupState.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundSetupState.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundSetupState.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundSetupState.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/CourseDetail.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseDetail.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseDetail.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseDetail.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseDetail.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseDetail.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/RoundPlayerDraft.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundPlayerDraft.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundPlayerDraft.swiftconstvalues"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundPlayerDraft.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundPlayerDraft.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/RoundPlayerDraft.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/CourseSummary.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseSummary.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseSummary.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseSummary.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseSummary.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/CourseSummary.o"

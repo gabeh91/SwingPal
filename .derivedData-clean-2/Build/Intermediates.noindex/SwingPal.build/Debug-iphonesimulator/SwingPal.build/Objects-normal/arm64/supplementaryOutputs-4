@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Social/SocialPost.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPost.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPost.dia"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPost.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPost.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPost.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Social/SocialPostCard.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPostCard.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPostCard.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPostCard.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPostCard.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialPostCard.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Social/SocialFeedBuilder.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialFeedBuilder.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialFeedBuilder.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialFeedBuilder.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialFeedBuilder.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialFeedBuilder.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Social/SocialView.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialView.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialView.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialView.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialView.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-2/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/SocialView.swiftdeps"

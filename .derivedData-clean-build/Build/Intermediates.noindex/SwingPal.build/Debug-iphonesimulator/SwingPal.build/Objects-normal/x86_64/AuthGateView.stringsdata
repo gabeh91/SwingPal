@@ -1,0 +1,40 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Auth/AuthGateView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Not now",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "Continue with Apple",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "Continue with Google",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "Email Magic Link",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 21
+        }
+      }
+    ]
+  },
+  "version": 1
+}

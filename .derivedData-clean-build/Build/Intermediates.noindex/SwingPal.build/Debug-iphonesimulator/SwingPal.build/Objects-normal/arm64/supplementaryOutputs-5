@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Home/HomeViewModel.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeViewModel.dia"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeViewModel.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeViewModel.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeViewModel.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeViewModel.o"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Home/HomeModule.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeModule.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeModule.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeModule.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeModule.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeModule.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Home/HomeInsight.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeInsight.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeInsight.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeInsight.swiftconstvalues"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeInsight.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeInsight.swiftdeps"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Home/HomeHeroCard.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeHeroCard.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeHeroCard.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeHeroCard.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeHeroCard.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/arm64/HomeHeroCard.swiftconstvalues"

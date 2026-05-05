@@ -1,0 +1,16 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Home/HomeHeroCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Your Round",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 11
+        }
+      }
+    ]
+  },
+  "version": 1
+}

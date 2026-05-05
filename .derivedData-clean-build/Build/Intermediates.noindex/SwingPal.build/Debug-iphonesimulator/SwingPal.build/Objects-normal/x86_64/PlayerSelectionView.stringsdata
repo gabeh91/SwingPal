@@ -1,0 +1,48 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/PlayerSelectionView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Player Selection",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "Players",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 10
+        }
+      },
+      {
+        "comment": "",
+        "key": "Guest",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add Guest Player",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 28
+        }
+      },
+      {
+        "comment": "",
+        "key": "Start Round",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 32
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,18 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Profile/BagClubRecommendation.swift":
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagClubRecommendation.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagClubRecommendation.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagClubRecommendation.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagClubRecommendation.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagClubRecommendation.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Profile/ProfileView.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ProfileView.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ProfileView.o"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ProfileView.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ProfileView.swiftconstvalues"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/ProfileView.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Profile/BagView.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagView.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagView.swiftdeps"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagView.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagView.d"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/BagView.swiftconstvalues"

@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/AddGuestPlayerSheet.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/AddGuestPlayerSheet.swiftdeps"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/AddGuestPlayerSheet.swiftconstvalues"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/AddGuestPlayerSheet.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/AddGuestPlayerSheet.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/AddGuestPlayerSheet.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/CourseListView.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseListView.dia"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseListView.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseListView.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseListView.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseListView.swiftdeps"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/CourseDetailView.swift":
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetailView.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetailView.o"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetailView.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetailView.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetailView.dia"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/PlayerSelectionView.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PlayerSelectionView.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PlayerSelectionView.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PlayerSelectionView.swiftconstvalues"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PlayerSelectionView.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/PlayerSelectionView.d"

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/HUD/HoleInfoHUDView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Hole %lld • Par %lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 10
+        }
+      },
+      {
+        "comment": "",
+        "key": "Strokes: %lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 13
+        }
+      }
+    ]
+  },
+  "version": 1
+}

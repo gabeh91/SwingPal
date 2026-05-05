@@ -1,0 +1,24 @@
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/CourseDetail.swift":
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetail.d"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetail.swiftdeps"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetail.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetail.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseDetail.o"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/CourseSummary.swift":
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseSummary.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseSummary.d"
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseSummary.dia"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseSummary.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/CourseSummary.swiftconstvalues"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/Models/RoundPlayerDraft.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundPlayerDraft.dia"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundPlayerDraft.swiftconstvalues"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundPlayerDraft.o"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundPlayerDraft.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundPlayerDraft.d"
+"/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Round/RoundSetupState.swift":
+  diagnostics: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundSetupState.dia"
+  swift-dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundSetupState.swiftdeps"
+  dependencies: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundSetupState.d"
+  object: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundSetupState.o"
+  const-values: "/Users/gabeh/Desktop/SwingPal/.derivedData-clean-build/Build/Intermediates.noindex/SwingPal.build/Debug-iphonesimulator/SwingPal.build/Objects-normal/x86_64/RoundSetupState.swiftconstvalues"

@@ -1,0 +1,10 @@
+[out:json][timeout:90];
+(
+  // Anything tagged as a golf feature inside the Medway bbox.
+  way["golf"](-37.785,144.860,-37.770,144.880);
+  relation["golf"](-37.785,144.860,-37.770,144.880);
+  // Site/leisure tags so we can detect the course boundary/name.
+  way["leisure"="golf_course"](-37.785,144.860,-37.770,144.880);
+  relation["leisure"="golf_course"](-37.785,144.860,-37.770,144.880);
+);
+out geom;

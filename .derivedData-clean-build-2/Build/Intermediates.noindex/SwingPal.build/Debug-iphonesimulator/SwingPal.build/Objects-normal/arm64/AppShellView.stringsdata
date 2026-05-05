@@ -1,0 +1,16 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/App/AppShellView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Round",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 149
+        }
+      }
+    ]
+  },
+  "version": 1
+}

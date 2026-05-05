@@ -1,0 +1,16 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Social/SocialView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Social",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 17
+        }
+      }
+    ]
+  },
+  "version": 1
+}

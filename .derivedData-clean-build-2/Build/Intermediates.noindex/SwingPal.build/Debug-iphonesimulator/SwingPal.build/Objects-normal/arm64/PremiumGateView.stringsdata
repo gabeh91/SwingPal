@@ -1,0 +1,40 @@
+{
+  "source": "/Users/gabeh/Desktop/SwingPal/SwingPal/Features/Premium/PremiumGateView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Unlock Premium Intelligence",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 18
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play smarter with deeper assistance and a live Apple Watch companion.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlock Premium",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Not now",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 37
+        }
+      }
+    ]
+  },
+  "version": 1
+}

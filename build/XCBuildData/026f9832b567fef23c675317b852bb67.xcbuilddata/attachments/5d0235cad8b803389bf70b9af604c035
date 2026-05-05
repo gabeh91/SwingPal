@@ -1,0 +1,148 @@
+{
+  "" : {
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests-master.dia",
+    "emit-module-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests-master-emit-module.dia",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests-master.swiftdeps"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/AppStateTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/AppStateTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/BagClubRecommendationTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/BagClubRecommendationTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/CourseCorrectionCenterTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseCorrectionCenterTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/CourseProviderTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseProviderTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/CourseRepositoryTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/CourseRepositoryTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/GatedActionResolverTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/GatedActionResolverTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/HomeViewModelTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/HomeViewModelTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/LiveRoundStateTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/LiveRoundStateTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/ProfileViewModelTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ProfileViewModelTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/RoundSetupStateTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/RoundSetupStateTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/ShellIntegrationTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/ShellIntegrationTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/SocialFeedBuilderTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialFeedBuilderTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/SocialViewModelTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SocialViewModelTests~partial.swiftmodule"
+  },
+  "/Users/gabeh/Desktop/SwingPal/SwingPalTests/SwingPalTests.swift" : {
+    "const-values" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.swiftconstvalues",
+    "dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.d",
+    "diagnostics" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.dia",
+    "index-unit-output-path" : "/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.o",
+    "llvm-bc" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.bc",
+    "object" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.o",
+    "swift-dependencies" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests.swiftdeps",
+    "swiftmodule" : "/Users/gabeh/Desktop/SwingPal/build/SwingPal.build/Debug-iphonesimulator/SwingPalTests.build/Objects-normal/arm64/SwingPalTests~partial.swiftmodule"
+  }
+}
