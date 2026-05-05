@@ -1,4 +1,3 @@
-DerivedData/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
@@ -6,6 +5,10 @@ DerivedData/
 *.moved-aside
 *.xcscmblueprint
 .DS_Store
+DerivedData/
+.derivedData-clean*
+build/
+*.xcresult
 
 # Supabase CLI
 supabase/.temp/
