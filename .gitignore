@@ -9,3 +9,5 @@ DerivedData/
 
 # Supabase CLI
 supabase/.temp/
+
+tmp/video_frames/
