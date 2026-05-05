@@ -7,7 +7,7 @@
 .DS_Store
 DerivedData/
 .derivedData-clean*
-build/
+build/*
 *.xcresult
 
 # Supabase CLI
