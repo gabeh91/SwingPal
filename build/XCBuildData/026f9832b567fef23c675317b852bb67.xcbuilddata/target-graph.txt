@@ -1,4 +1,0 @@
-Target dependency graph (2 targets)
-Target 'SwingPalTests' in project 'SwingPal'
-➜ Explicit dependency on target 'SwingPal' in project 'SwingPal'
-Target 'SwingPal' in project 'SwingPal' (no dependencies)
