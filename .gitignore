@@ -9,6 +9,7 @@ DerivedData/
 .derivedData-clean*
 build/*
 *.xcresult
+.worktrees/
 
 # Supabase CLI
 supabase/.temp/
