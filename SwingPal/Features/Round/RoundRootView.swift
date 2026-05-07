@@ -177,6 +177,7 @@ enum RoundEntryRouteResolver {
 
 struct RoundRootView: View {
     @ObservedObject var appState: AppState
+    let onAuthGateRequired: (GateRequirement) -> Void
     @StateObject private var setupState = RoundSetupState(
         repository: CompositeCourseRepository(),
         importCoordinator: CourseImportCoordinator(
@@ -187,6 +188,11 @@ struct RoundRootView: View {
     @State private var isShowingReview = false
     @State private var step: RoundFlowStep = .courses
     @State private var movement: RoundFlowMovement = .forward
+
+    init(appState: AppState, onAuthGateRequired: @escaping (GateRequirement) -> Void = { _ in }) {
+        self.appState = appState
+        self.onAuthGateRequired = onAuthGateRequired
+    }
 
     var body: some View {
         NavigationStack {
@@ -243,6 +249,15 @@ struct RoundRootView: View {
                 movement = .backward
                 step = .courses
                 appState.selectedTab = .home
+            },
+            authState: appState.authState,
+            onAuthGateRequired: onAuthGateRequired,
+            myUserId: UUID(uuidString: appState.currentUser?.id ?? ""),
+            onSearchPlayers: { query in
+                try await appState.searchProfiles(query: query)
+            },
+            onFetchPlayerProfileById: { userId in
+                try await appState.fetchProfile(userId: userId)
             },
             onDiscoveredCourseSelected: { discovered in
                 setupState.startImport(discovered)
@@ -421,7 +436,7 @@ struct RoundRootView: View {
             Text(
                 step.contextLine(
                     courseName: setupState.roundSetupSummaryTitle,
-                    detail: setupState.roundSetupSummaryDetail
+                    detail: roundSetupSummaryDetail
                 )
             )
             .font(.caption.weight(.medium))
@@ -512,7 +527,7 @@ struct RoundRootView: View {
                     flowChip(
                         step.contextLine(
                             courseName: setupState.roundSetupSummaryTitle,
-                            detail: setupState.roundSetupSummaryDetail
+                            detail: roundSetupSummaryDetail
                         )
                     )
                     flowChip(step == .live ? "Round is active" : "Setup in motion")
@@ -568,6 +583,29 @@ struct RoundRootView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(ShellTokens.ColorRole.surfaceOverlay, in: Capsule())
+    }
+
+    private var roundSetupSummaryDetail: String {
+        guard setupState.selectedCourse != nil else {
+            return "Pick a course, lock the tees, then add players."
+        }
+
+        let teeLabel = setupState.selectedTeeName.map { "\($0) tees" } ?? "Choose tees"
+        let yardageLabel: String
+        if let yards = setupState.selectedTeeYards {
+            switch appState.distanceUnit {
+            case .yards:
+                yardageLabel = "\(yards)yd"
+            case .meters:
+                let meters = Int((Double(yards) * 0.9144).rounded())
+                yardageLabel = "\(meters)m"
+            }
+        } else {
+            yardageLabel = "Tee distance pending"
+        }
+
+        let golferCount = setupState.players.count == 1 ? "1 golfer ready" : "\(setupState.players.count) golfers ready"
+        return "\(teeLabel) • \(yardageLabel) • \(golferCount)"
     }
 
     private func navigate(to nextStep: RoundFlowStep) {

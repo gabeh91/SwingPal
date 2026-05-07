@@ -23,7 +23,8 @@ final class StatsViewModelTests: XCTestCase {
             summary: "Approach play held the card together, but one loose swing still cost a shot.",
             whatWentWell: ["Solid iron control", "Good pace putting", "Finished cleanly"],
             needsWork: ["Penalty avoidance", "Start lines", "Commitment under pressure"],
-            generatedAt: Date(timeIntervalSince1970: 2_010)
+            generatedAt: Date(timeIntervalSince1970: 2_010),
+            updatedAt: nil
         )
 
         let model = StatsViewModel(

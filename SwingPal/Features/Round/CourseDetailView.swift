@@ -385,7 +385,7 @@ struct CourseDetailView: View {
                     Text(tee.name)
                         .font(.headline)
                         .foregroundStyle(ShellTokens.ColorRole.textPrimary)
-                    Text("\(tee.yards) yds")
+                    Text(teeDistanceLabel(for: tee))
                         .font(.subheadline)
                         .foregroundStyle(ShellTokens.ColorRole.textSecondary)
                 }
@@ -410,6 +410,16 @@ struct CourseDetailView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    private func teeDistanceLabel(for tee: SwingPalCourse.Tee) -> String {
+        switch distanceUnit {
+        case .yards:
+            return "\(tee.yards)yd"
+        case .meters:
+            let meters = Int((Double(tee.yards) * 0.9144).rounded())
+            return "\(meters)m"
+        }
     }
 
     private func expectationRow(_ text: String) -> some View {

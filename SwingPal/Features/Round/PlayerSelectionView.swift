@@ -2,8 +2,15 @@ import SwiftUI
 
 struct PlayerSelectionView: View {
     @ObservedObject var state: RoundSetupState
+    let distanceUnit: DistanceUnit
     let onStartRound: () -> Void
     @State private var isShowingGuestSheet = false
+
+    init(state: RoundSetupState, distanceUnit: DistanceUnit = .meters, onStartRound: @escaping () -> Void) {
+        self.state = state
+        self.distanceUnit = distanceUnit
+        self.onStartRound = onStartRound
+    }
 
     var body: some View {
         ScrollView {
@@ -86,7 +93,7 @@ struct PlayerSelectionView: View {
             HStack(spacing: ShellTokens.Spacing.x8) {
                 summaryChip(state.selectedTeeName ?? "Choose tees")
                 if let selectedTeeYards = state.selectedTeeYards {
-                    summaryChip("\(selectedTeeYards) yds")
+                    summaryChip(teeDistanceLabel(forYards: selectedTeeYards))
                 }
                 summaryChip("Guests supported")
             }
@@ -138,6 +145,16 @@ struct PlayerSelectionView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(ShellTokens.ColorRole.surfaceHUD, in: Capsule())
+    }
+
+    private func teeDistanceLabel(forYards yards: Int) -> String {
+        switch distanceUnit {
+        case .yards:
+            return "\(yards)yd"
+        case .meters:
+            let meters = Int((Double(yards) * 0.9144).rounded())
+            return "\(meters)m"
+        }
     }
 }
 

@@ -1,0 +1,1739 @@
+{
+  "seeds": [
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT2 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT3 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT4 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT1 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT2 Fairway Wood"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT3 Fairway Wood"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT1 Fairway Wood"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT1 3Tour"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT280 Mini"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT2 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT3 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT1 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T100 Irons"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T100 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T150 Irons"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T150 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250 Irons"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250 Launch Spec"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T350 Irons"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T350 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "620 MB"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "620 CB"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "New Customizable"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Tour Chrome"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Nickel"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Jet Black"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Raw"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "SM11 Oil Can - Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Santa Fe"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 2 Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2 Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2.5 Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback 2 Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback OC"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 1.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Catalina"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5.2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7.2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 9R"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 9.2R"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 11R OC"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5 OC"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Kalea Gold Women"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi35 Driver"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi35 LS"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi35 Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi35 Max Lite"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D Driver"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D LME"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D LS"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D LS Shadowfall"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D Max Lite"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D Max Shadowfall"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "Qi4D Shadowfall"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "R7 Quad Mini"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "SIM2 Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "driver",
+      "name": "csrf_token"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Kalea Gold Women"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi10 Fairway Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi10 Max Women"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi35 Fairway Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi35 5 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi35 Max Lite"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi35 Tour"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi35 Tour 5 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Fairway Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D 5 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D 7 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D 9 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Max Lite"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Shadowfall"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Tour"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Tour 5 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "Qi4D Tour 7 Wood"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "R7 Quad Mini"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "SIM2 Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "fairwayWood",
+      "name": "csrf_token"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "Kalea Gold Women"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219770 Irons"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219770/P\u22197CB Combo Sets"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219790 Irons"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219790 Shadowfall"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u22197CB Irons"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u22197MB Irons"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u22197TW Irons"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219DHY Utility"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "P\u2219UDI Utility"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "Qi HL"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "Qi Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "Qi Max Combo Set"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "Qi Max HL"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "RORS\u2219PROTO"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "SIM2 Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "iron",
+      "name": "csrf_token"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "Hi-Toe 4"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MG5 Wedges"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MG5 Charcoal"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MG5 Collegiate"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MG5 Tiger Woods Grind"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "Milled Grind Chrome"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MyHi-Toe 4"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "MyMG5 Wedges"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "P\u2219770 Approach"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "P\u22197CB Approach"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "Qi Max"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "wedge",
+      "name": "csrf_token"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Kalea Gold Women"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Ardmore L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Ardmore Single Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Bandon L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Bandon Single Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Del Monte L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Juno L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "SYSTM2 Soto L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Ghost White"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Ghost White Double Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Red"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Red Double Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour Counter Balance"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour Double Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour S Counter Balance"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour S Long"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour X"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour X Double Bend"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider Tour X L-Neck"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider ZT"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider ZT Black 3 Line"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider ZT Counterbalance"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "Spider ZT Long"
+    },
+    {
+      "brand": "TaylorMade",
+      "category": "putter",
+      "name": "csrf_token"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Callaway Golf"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Clubs Driver"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Driver"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Mini Driver Night Edition"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Night Edition"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Sandstorm"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte Triple Diamond"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Paradym"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Paradym Ai Smoke MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Max D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Mini"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Triple Diamond"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Quantum Triple Diamond Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "REVA RISE"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Rogue ST '24 MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "USA 250 Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "USA 250 Quantum Triple Diamond"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "USA 250 Quantum Triple Diamond Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Big Bertha REVA"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Elyte Night Edition"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Paradym"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Paradym Ai Smoke MAX Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Paradym X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Quantum Max D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "driver",
+      "name": "Women's Quantum Mini"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Apex '24 Utility Woods"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Apex Utility Woods"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Big Bertha"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Callaway Golf"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Clubs Fairway Wood"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Elyte Fairway Wood"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Elyte Titanium"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Elyte Triple Diamond"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Great Big Bertha"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "MAVRIK"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Paradym"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Paradym Ai Smoke MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Quantum Max D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Quantum Ti"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Quantum Triple Diamond"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "REVA RISE"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Rogue ST '24 MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Rogue ST MAX D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Big Bertha REVA"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's MAVRIK"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Paradym Ai Smoke MAX D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Paradym Star"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Quantum Max D"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "fairwayWood",
+      "name": "Women's Rogue ST '24 MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Apex '24 Utility"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Apex '24 Utility Woods"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Apex Ti Super"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Apex Utility"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Apex Utility Woods"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Big Bertha"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Callaway Golf"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Clubs Hybrid"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Elyte Hybrid"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Great Big Bertha"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "MAVRIK"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Paradym Ai Smoke"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Paradym Ai Smoke HL"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Paradym Super"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Quantum Max OS"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "REVA RISE"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Rogue ST '24 MAX"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Rogue ST MAX OS"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Big Bertha REVA"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Elyte"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Great Big Bertha"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's MAVRIK MAX W"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Quantum Max OS"
+    },
+    {
+      "brand": "Callaway",
+      "category": "hybrid",
+      "name": "Women's Rogue ST MAX OS Lite"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ai150"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ai200"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ai300"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ai300 Black Shadow"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex CB"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex TCB \u201824"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ti Fusion"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ti Fusion 250"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Ti Fusion Plated"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Apex Utility"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Callaway Golf"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Clubs Irons"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Elyte Irons"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Elyte HL"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Elyte X"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Paradym Ai Smoke"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Paradym Ai Smoke HL"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Paradym Ai Smoke MAX Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Quantum Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Quantum Max Hybrid/Iron Combo Sets"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Quantum Max OS"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Quantum Max OS Hybrid/Iron Combo Sets"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "REVA RISE"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Rogue ST MAX OS Lite Irons/Hybrids Set"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Women's Elyte Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Women's Paradym Ai Smoke MAX Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Women's Quantum Max Fast"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Women's Quantum Max Fast Hybrid/Iron Combo Sets"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "Women's Quantum Max OS"
+    },
+    {
+      "brand": "Callaway",
+      "category": "iron",
+      "name": "X Forged Max"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "CB 12"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Callaway CB"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Callaway Customs Opus SP"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Callaway Golf"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Clubs Wedges"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Jaws Raw Black Plasma"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Jaws Raw Face Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Jaws Raw Full Face Groove"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Jaws Raw Full Toe Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Black Shadow"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Brushed Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Platinum Blue"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Platinum Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Platinum Craftsman Collection Wedge - Black"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus Platinum Craftsman Collection Wedge - Copper"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus SP Black Shadow"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus SP Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Opus SP+ Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "USA 250 Opus SP"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Women's CB 12"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Women's Opus Brushed Chrome"
+    },
+    {
+      "brand": "Callaway",
+      "category": "wedge",
+      "name": "Women's Opus SP Chrome"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "2-Ball Eleven Tour Lined S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL #1"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL #7 DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL #7 S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL #7 \u00bd Ball S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Jailbird 1/2 Ball Cruiser"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Jailbird Mini"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Jailbird Mini \u00bd Ball"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Square 2 Square #7"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Square 2 Square Jailbird"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL Square 2 Square MAX \u00bd Ball"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL USA 250 #7 S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL USA 250 Freebird Cruiser"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-DUAL USA 250 Freebird Mini DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-ONE Jailbird CRUISER"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Ai-ONE Rossie DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "DFX #1 CH"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "DFX #10 S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "DFX #1W CH"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "DFX V-Line Fang DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Damascus Milled Seven CH"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Damascus Milled Seven DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Microhinge Double Wide DB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Microhinge Seven S"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Odyssey Chipper"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Square 2 Square TRI-HOT Cruiser Seven SB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Square 2 Square TRI-HOT Jailbird SB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Square 2 Square TRI-HOT Rossie"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Square 2 Square TRI-HOT Rossie SB"
+    },
+    {
+      "brand": "Odyssey",
+      "category": "putter",
+      "name": "Square 2 Square TRI-HOT Seven SB"
+    },
+    {
+      "brand": "Mizuno",
+      "category": "iron",
+      "name": "JPX925 Series"
+    },
+    {
+      "brand": "Tour Edge",
+      "category": "iron",
+      "name": "Dawn Irons"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "DF 2.1 CUSTOM"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "DF 2.1 STOCK"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "DF 2.1 Tour Headcover - Black"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Garsen Quad Tour 17\" Grip"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "L.A.B. Golf"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "LINK.1 CUSTOM"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "LINK.1 STOCK"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Link.1 Strap Headcover"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "MEZZ.1 CUSTOM"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "MEZZ.1 MAX STOCK"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "MEZZ.1 STOCK"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Mezz Black Nylon Headcover"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Mezz Embroidered Headcover"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press I 3\u00b0 XL Grip"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press II 1.5\u00b0 Textured Grip - Right"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press II 3\u00b0 Smooth Grip"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press II 3\u00b0 Textured Grip - Right"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press Pistol 2\u00b0 Black Grip"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "Press Pistol 2\u00b0 White Grip"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "White DF 2.1 Tour Headcover"
+    },
+    {
+      "brand": "LAB Golf",
+      "category": "putter",
+      "name": "all-products"
+    }
+  ]
+}

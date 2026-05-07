@@ -90,7 +90,8 @@ final class HomeViewModelTests: XCTestCase {
             summary: "Approach play held the round together late.",
             whatWentWell: ["Recovered well after misses."],
             needsWork: ["Distance control faded between 110m and 150m."],
-            generatedAt: Date(timeIntervalSince1970: 2_100)
+            generatedAt: Date(timeIntervalSince1970: 2_100),
+            updatedAt: nil
         )
 
         let model = HomeViewModel(
@@ -109,7 +110,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(model.insights.first?.title, "What Went Well")
         XCTAssertEqual(model.insights.first?.detail, "Recovered well after misses.")
         XCTAssertEqual(model.mastheadEditionLabel, "Field Notes 01")
-        XCTAssertEqual(model.spotlightPresentation, .bulletin)
+        XCTAssertEqual(model.spotlightPresentation, EditorialStagePresentation.bulletin)
         XCTAssertEqual(model.spotlightAssetName, "PremiumCoachingStage")
     }
 
@@ -159,7 +160,8 @@ final class HomeViewModelTests: XCTestCase {
             summary: "Approach play held the round together late.",
             whatWentWell: ["Recovered well after misses.", "Short putts stayed tidy."],
             needsWork: ["Distance control faded between 110m and 150m.", "Penalty avoidance can still improve."],
-            generatedAt: Date(timeIntervalSince1970: 2_100)
+            generatedAt: Date(timeIntervalSince1970: 2_100),
+            updatedAt: nil
         )
 
         let detail = HomeViewModel.roundDetailModel(for: latestRound, analysis: analysis)
@@ -170,12 +172,12 @@ final class HomeViewModelTests: XCTestCase {
             detail.statusDeck.hasPrefix("Completed round • 1 golfer • Updated"),
             "Unexpected status deck: \(detail.statusDeck)"
         )
-        XCTAssertEqual(detail.heroMetrics.map(\.title), ["Strokes", "Putts", "Penalties"])
-        XCTAssertEqual(detail.heroMetrics.map(\.value), ["76", "31", "1"])
-        XCTAssertEqual(detail.supportMetrics.map(\.title), ["Progress", "Players", "Completed"])
+        XCTAssertEqual(detail.heroMetrics.map { $0.title }, ["Strokes", "Putts", "Penalties"])
+        XCTAssertEqual(detail.heroMetrics.map { $0.value }, ["76", "31", "1"])
+        XCTAssertEqual(detail.supportMetrics.map { $0.title }, ["Progress", "Players", "Completed"])
         XCTAssertEqual(detail.analysisProviderLabel, "On-device AI")
         XCTAssertEqual(detail.analysisSummary, "Approach play held the round together late.")
-        XCTAssertEqual(detail.analysisSections.map(\.title), ["What Went Well", "Needs Attention"])
+        XCTAssertEqual(detail.analysisSections.map { $0.title }, ["What Went Well", "Needs Attention"])
         XCTAssertEqual(detail.analysisSections.first?.items, ["Recovered well after misses.", "Short putts stayed tidy."])
         XCTAssertEqual(detail.analysisSections.last?.items, ["Distance control faded between 110m and 150m.", "Penalty avoidance can still improve."])
         XCTAssertEqual(detail.strengths, ["Recovered well after misses.", "Short putts stayed tidy."])

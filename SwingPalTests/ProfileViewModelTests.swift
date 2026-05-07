@@ -20,6 +20,7 @@ final class ProfileViewModelTests: XCTestCase {
         XCTAssertEqual(model.membershipTitle, "Free Membership")
         XCTAssertEqual(model.membershipSubtitle, "Sign in to save your golf identity and unlock premium intelligence when you're ready.")
         XCTAssertEqual(model.identityPrimaryActionTitle, "Sign In to Save")
+        XCTAssertEqual(model.identityPrimaryActionIntent, .requestSignIn)
         XCTAssertEqual(model.identitySecondaryActionTitle, "Watch benefits")
         XCTAssertEqual(model.setupTitle, "Bag and setup")
         XCTAssertEqual(model.setupSubtitle, "Keep your bag, appearance, and GPS behavior ready before the next round.")
@@ -55,6 +56,7 @@ final class ProfileViewModelTests: XCTestCase {
         XCTAssertEqual(model.membershipTitle, "Premium Membership")
         XCTAssertEqual(model.membershipSubtitle, "Your premium tools are active, including watch control and deeper round intelligence.")
         XCTAssertEqual(model.identityPrimaryActionTitle, "Saved to Cloud")
+        XCTAssertEqual(model.identityPrimaryActionIntent, .statusOnly)
         XCTAssertEqual(model.identitySecondaryActionTitle, "Open Watch Companion")
         XCTAssertEqual(model.setupTitle, "Bag and setup")
         XCTAssertEqual(model.bagSummary, "4 clubs dialed in")
@@ -128,7 +130,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Your round stayed stable through the saved holes.",
             whatWentWell: ["Short-game logging stayed sharp", "Penalty damage stayed manageable"],
             needsWork: ["Keep the ball in play off the tee", "Convert more saved holes into confirmed holes"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
 
         let model = ProfileViewModel.previousRoundAnalysisModel(for: analysis)
@@ -147,7 +150,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Your round stayed stable through the saved holes.",
             whatWentWell: ["Short-game logging stayed sharp", "", "Penalty damage stayed manageable", " "],
             needsWork: ["", "Keep the ball in play off the tee", " ", "Convert more saved holes into confirmed holes"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
 
         let model = ProfileViewModel.previousRoundAnalysisModel(for: analysis)
@@ -167,7 +171,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Ready",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
         XCTAssertEqual(ProfileViewModel.previousRoundAnalysisButtonTitle(for: .ready(ready)), "Analysis Ready")
     }
@@ -183,7 +188,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Ready",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
         XCTAssertTrue(ProfileViewModel.previousRoundAnalysisButtonIsDisabled(for: .ready(ready)))
     }
@@ -199,7 +205,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Ready",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
         XCTAssertTrue(ProfileViewModel.previousRoundAnalysisShouldBePresented(for: .ready(ready)))
     }
@@ -215,7 +222,8 @@ final class ProfileViewModelTests: XCTestCase {
             summary: "Ready",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
         XCTAssertFalse(ProfileViewModel.previousRoundAnalysisShowsLoadingGlyph(for: .ready(ready)))
     }

@@ -9,15 +9,8 @@ final class SupabaseAuthService: AuthService {
     private let subject = CurrentValueSubject<AuthSessionUser?, Never>(nil)
     private var authChangesTask: Task<Void, Never>?
 
-    init(config: SupabaseConfig) {
-        let options = SupabaseClientOptions(
-            auth: SupabaseClientOptions.AuthOptions(redirectToURL: config.redirectURL)
-        )
-        self.client = SupabaseClient(
-            supabaseURL: config.url,
-            supabaseKey: config.anonKey,
-            options: options
-        )
+    init(client: SupabaseClient) {
+        self.client = client
 
         authChangesTask = Task { [weak self] in
             guard let self else { return }

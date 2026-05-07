@@ -1,0 +1,279 @@
+{
+  "seeds": [
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT2 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT3 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT4 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "driver",
+      "name": "GT1 Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT2 Fairway"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT3 Fairway"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT1 Fairway"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT1 3Tour"
+    },
+    {
+      "brand": "Titleist",
+      "category": "fairwayWood",
+      "name": "GT280 Mini Driver"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT2 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT3 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "hybrid",
+      "name": "GT1 Hybrid"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T100"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T100 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T150"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T150 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T250 Launch Spec"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T350"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "T350 Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "620 MB"
+    },
+    {
+      "brand": "Titleist",
+      "category": "iron",
+      "name": "620 CB"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "New Customizable"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Tour Chrome"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Nickel"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Jet Black"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "Vokey SM11 - Raw"
+    },
+    {
+      "brand": "Titleist",
+      "category": "wedge",
+      "name": "SM11 Oil Can - Oil Can"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Santa Fe"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 2 Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2 Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Newport 2.5 Plus"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback 2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Squareback 2 Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback OC"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback Long Design"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Fastback 1.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Studio Style Catalina"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5.2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7.2"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 7.5"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 9R"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 9.2R"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 11R OC"
+    },
+    {
+      "brand": "Titleist",
+      "category": "putter",
+      "name": "Phantom 5 OC"
+    }
+  ]
+}

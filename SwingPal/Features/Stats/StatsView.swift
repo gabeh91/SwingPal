@@ -155,7 +155,7 @@ struct StatsView: View {
                     .foregroundStyle(palette.tertiaryText)
 
                 Text(model.heroCourseName)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 30, weight: .bold))
                     .foregroundStyle(palette.primaryText)
 
                 Text(model.heroSummary)
@@ -293,7 +293,7 @@ struct StatsView: View {
                         HStack(alignment: .center, spacing: ShellTokens.Spacing.x14) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(cardModel.scoreValue)
-                                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                                    .font(.system(size: 34, weight: .bold))
                                     .foregroundStyle(palette.primaryText)
                                 Text(cardModel.scoreCaption.uppercased())
                                     .font(ShellTokens.Typography.microEyebrow)
@@ -418,7 +418,7 @@ struct StatsView: View {
                 .foregroundStyle(palette.tertiaryText)
 
             Text(fact.value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(palette.primaryText)
 
             Text(fact.detail)
@@ -446,7 +446,7 @@ struct StatsView: View {
             }
 
             Text(highlight.value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(palette.primaryText)
 
             Text(highlight.detail)
@@ -472,7 +472,7 @@ struct StatsView: View {
                 .foregroundStyle(isPrimary ? palette.secondaryText : palette.tertiaryText)
 
             Text(fact.value)
-                .font(.system(size: isPrimary ? 24 : 21, weight: .bold, design: .rounded))
+                .font(.system(size: isPrimary ? 24 : 21, weight: .bold))
                 .foregroundStyle(isPrimary ? palette.accent : palette.primaryText)
 
             Text(fact.detail)

@@ -1321,7 +1321,7 @@ final class LiveRoundState: ObservableObject {
                 qualifiers.append(Self.shotHistoryDistanceLabel(for: shot.distanceResult))
             }
             if let meters = detail.missDistanceMeters, meters > 0 {
-                qualifiers.append("\(meters)m")
+                qualifiers.append(distanceUnit.shortLabel(forMeters: meters))
             }
             if qualifiers.isEmpty {
                 return "Missed"
@@ -1330,7 +1330,7 @@ final class LiveRoundState: ObservableObject {
 
         case .shot:
             var parts: [String] = [
-                "\(max(0, shot.distanceToTargetMeters))m",
+                distanceUnit.shortLabel(forMeters: max(0, shot.distanceToTargetMeters)),
                 Self.shotHistoryDirectionLabel(for: shot.direction),
                 Self.shotHistoryDistanceLabel(for: shot.distanceResult)
             ]
@@ -2085,7 +2085,10 @@ final class LiveRoundState: ObservableObject {
 
     var leadingInstrumentMetrics: [InstrumentMetric] {
         [
-            .init(title: "Plays Like", value: "\(playsLikeDistanceMeters)m"),
+            .init(
+                title: "Plays Like",
+                value: "\(distanceUnit.scalarValue(fromMeters: playsLikeDistanceMeters))\(distanceUnit.shortSuffix)"
+            ),
             .init(title: "Club", value: selectedClubName)
         ]
     }
@@ -2102,7 +2105,7 @@ final class LiveRoundState: ObservableObject {
     }
 
     var holeTransitionSubtitle: String {
-        "Par \(hole.par) • \(openingNumberMeters)m opening number"
+        "Par \(hole.par) • \(distanceUnit.shortLabel(forMeters: openingNumberMeters)) opening number"
     }
 
     var holeTransitionDetail: String {
@@ -2401,8 +2404,10 @@ final class LiveRoundState: ObservableObject {
 
     private var signedPlaysLikeDeltaText: String {
         let delta = playsLikeDeltaSignedMeters
-        if delta > 0 { return "+\(delta) m plays" }
-        return "\(delta) m plays"
+        let scalar = distanceUnit.scalarValue(fromMeters: abs(delta))
+        let suffix = distanceUnit.shortSuffix
+        if delta > 0 { return "+\(scalar)\(suffix) plays" }
+        return "-\(scalar)\(suffix) plays"
     }
 
     /// One-line copy used by the Conditions sheet's wind hero card to
@@ -2946,7 +2951,8 @@ final class LiveRoundState: ObservableObject {
 
     var playerLocationStatusText: String {
         if let playerLocation, locationStatus == .ready {
-            return "GPS ±\(playerLocation.horizontalAccuracyMeters)m • heading \(Int(playerLocation.headingDegrees.rounded()))°"
+            let accuracy = distanceUnit.scalarValue(fromMeters: playerLocation.horizontalAccuracyMeters)
+            return "GPS ±\(accuracy)\(distanceUnit.shortSuffix) • heading \(Int(playerLocation.headingDegrees.rounded()))°"
         }
         switch locationStatus {
         case .locating, .requestingPermission:
@@ -3078,7 +3084,8 @@ final class LiveRoundState: ObservableObject {
         switch locationStatus {
         case .ready:
             if let playerLocation {
-                return "GPS ±\(playerLocation.horizontalAccuracyMeters)m"
+                let accuracy = distanceUnit.scalarValue(fromMeters: playerLocation.horizontalAccuracyMeters)
+                return "GPS ±\(accuracy)\(distanceUnit.shortSuffix)"
             }
             return "GPS ready"
         case .locating, .requestingPermission:

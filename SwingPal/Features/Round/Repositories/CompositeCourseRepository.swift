@@ -14,18 +14,22 @@ import Foundation
 struct CompositeCourseRepository: CourseRepository {
     private let bundled: any CourseRepository
     private let importedStore: ImportedCourseStore
+    private let communityCourses: () -> [SwingPalCourse]
 
     init(
         bundled: any CourseRepository = SeededCourseRepository(),
-        importedStore: ImportedCourseStore = ImportedCourseStore()
+        importedStore: ImportedCourseStore = ImportedCourseStore(),
+        communityCourses: @escaping () -> [SwingPalCourse] = { CommunityCourseCache.shared.courses }
     ) {
         self.bundled = bundled
         self.importedStore = importedStore
+        self.communityCourses = communityCourses
     }
 
     func nearbyCourses() -> [SwingPalCourse] {
         let bundledCourses = bundled.nearbyCourses()
         let importedCourses = importedStore.loadAll()
+        let remoteCommunity = communityCourses()
 
         let bundledKeys = Set(bundledCourses.map(courseDedupeKey))
 
@@ -38,7 +42,15 @@ struct CompositeCourseRepository: CourseRepository {
             importedDeduped.append(course)
         }
 
-        return (bundledCourses + importedDeduped)
+        let supersededKeys = bundledKeys.union(seenImportedKeys)
+        var seenCommunityKeys: Set<String> = []
+        let communityDeduped = remoteCommunity.filter { course in
+            let key = courseDedupeKey(course)
+            guard !supersededKeys.contains(key) else { return false }
+            return seenCommunityKeys.insert(key).inserted
+        }
+
+        return (bundledCourses + importedDeduped + communityDeduped)
             .sorted { $0.distanceKilometers < $1.distanceKilometers }
     }
 

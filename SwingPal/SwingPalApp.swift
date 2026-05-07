@@ -1,10 +1,10 @@
 import SwiftUI
+import Supabase
 
 @main
 struct SwingPalApp: App {
     @State private var isShowingSplash = true
     @StateObject private var appState: AppState
-    @StateObject private var authViewModel: AuthViewModel
     private let authService: AuthService
 
     init() {
@@ -12,10 +12,6 @@ struct SwingPalApp: App {
         let state = AppState()
         state.attachAuthService(service)
         _appState = StateObject(wrappedValue: state)
-        _authViewModel = StateObject(wrappedValue: AuthViewModel(
-            authService: service,
-            appleCoordinatorFactory: { AppleSignInCoordinator() }
-        ))
         authService = service
     }
 
@@ -40,6 +36,10 @@ struct SwingPalApp: App {
             .preferredColorScheme(appState.appearanceMode.preferredColorScheme)
             .animation(.spring(response: 0.52, dampingFraction: 0.84), value: isShowingSplash)
             .onOpenURL { url in
+                if let userId = FollowDeepLink.userId(from: url) {
+                    appState.presentFollowInvite(userId: userId, displayName: nil)
+                    return
+                }
                 Task { await authService.handleAuthCallback(url: url) }
             }
             .task {
@@ -50,12 +50,9 @@ struct SwingPalApp: App {
 
     @ViewBuilder
     private var rootContent: some View {
-        switch appState.authState {
-        case .authenticated:
-            AppShellView(appState: appState)
-        case .guest:
-            AuthFlowView(viewModel: authViewModel)
-                .transition(.opacity)
+        switch SwingPalRootPresentation.resolve(authState: appState.authState) {
+        case .appShell:
+            AppShellView(appState: appState, authService: authService)
         }
     }
 
@@ -76,10 +73,27 @@ struct SwingPalApp: App {
 enum SwingPalAuthServiceFactory {
     @MainActor
     static func make() -> AuthService {
-        guard let config = SupabaseConfig.loadFromEnvironment() else {
-            return MockAuthService()
+        switch AppAuthServiceMode.resolve(hasSupabaseConfig: SupabaseConfig.loadFromEnvironment() != nil) {
+        case .missingConfiguration:
+            SupabaseShared.setClient(nil)
+            return MissingConfigurationAuthService()
+        case .supabase:
+            break
         }
-        return SupabaseAuthService(config: config)
+        guard let config = SupabaseConfig.loadFromEnvironment() else {
+            SupabaseShared.setClient(nil)
+            return MissingConfigurationAuthService()
+        }
+        let options = SupabaseClientOptions(
+            auth: SupabaseClientOptions.AuthOptions(redirectToURL: config.redirectURL)
+        )
+        let client = SupabaseClient(
+            supabaseURL: config.url,
+            supabaseKey: config.anonKey,
+            options: options
+        )
+        SupabaseShared.setClient(client)
+        return SupabaseAuthService(client: client)
     }
 }
 

@@ -578,7 +578,7 @@ struct HomeView: View {
                 .foregroundStyle(palette.tertiaryText)
 
             Text(stat.value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(palette.primaryText)
                 .monospacedDigit()
 
@@ -915,7 +915,7 @@ struct HomeRoundAnalysisDetailView: View {
                 .foregroundStyle(palette.tertiaryText)
 
             Text(metric.value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(palette.primaryText)
                 .monospacedDigit()
 
@@ -1041,7 +1041,8 @@ struct HomeRoundAnalysisDetailView: View {
             summary: ProfileViewModel.legacySummary(for: summary),
             whatWentWell: ProfileViewModel.legacyStrengths(for: summary),
             needsWork: ProfileViewModel.legacyImprovements(for: summary),
-            generatedAt: Date()
+            generatedAt: Date(),
+            updatedAt: nil
         )
     }
 }

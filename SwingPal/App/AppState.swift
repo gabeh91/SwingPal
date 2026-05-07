@@ -235,6 +235,11 @@ enum RoundEntryRoute: Equatable {
     case courseDetail(UUID)
 }
 
+struct FollowInvitePresentation: Identifiable, Equatable {
+    let id: UUID
+    var displayName: String?
+}
+
 protocol ActiveRoundStoring {
     func loadActiveRound() -> ActiveRoundSnapshot?
     func saveActiveRound(_ snapshot: ActiveRoundSnapshot?)
@@ -387,6 +392,10 @@ final class AppState: ObservableObject {
     @Published var appearanceMode: AppAppearanceMode
     @Published var clubAutoRecommendationEnabled: Bool
     @Published var distanceUnit: DistanceUnit
+    @Published var followInvite: FollowInvitePresentation?
+    @Published private(set) var socialFeedPosts: [SocialPost] = []
+    @Published private(set) var socialFeedIsLoading = false
+    @Published private(set) var cloudUserProfile: PublicProfile?
 
     private let store: ActiveRoundStoring
     private let roundHistoryStore: RoundHistoryStoring
@@ -400,6 +409,10 @@ final class AppState: ObservableObject {
     private let weatherLoaderFactory: () -> RoundWeatherLoading
     private let locationProviderFactory: () -> RoundLocationProviding
     private let now: () -> Date
+    private let userDataSync: UserDataSyncService
+    private let socialGraph = SocialGraphService()
+    private let socialFeedService = SocialFeedService()
+    private let userProfileService: UserProfileService
     private(set) var authService: AuthService?
     private var authSubscription: AnyCancellable?
 
@@ -433,6 +446,12 @@ final class AppState: ObservableObject {
         self.weatherLoaderFactory = weatherLoaderFactory
         self.locationProviderFactory = locationProviderFactory
         self.now = now
+        self.userDataSync = UserDataSyncService(
+            bagStore: bagStore,
+            roundHistoryStore: roundHistoryStore,
+            handicapStore: handicapStore
+        )
+        self.userProfileService = UserProfileService()
         self.bag = bagStore.loadBag()
         self.handicapSnapshot = handicapStore.loadHandicapSnapshot()
         self.gpsMode = gpsModeStore.loadGPSMode()
@@ -541,8 +560,10 @@ final class AppState: ObservableObject {
             return
         }
 
+        let removedID = activeRoundID
         previousRounds.removeAll(where: { $0.id == activeRoundID })
         persistRoundHistory()
+        Task { await userDataSync.deleteRound(id: removedID, sessionUser: currentUser) }
         clearActiveRound()
     }
 
@@ -584,6 +605,14 @@ final class AppState: ObservableObject {
         authState = .authenticated
     }
 
+    func refreshCloudBackedStores() async {
+        await userDataSync.syncFromCloud(sessionUser: currentUser)
+        bag = bagStore.loadBag()
+        handicapSnapshot = handicapStore.loadHandicapSnapshot()
+        previousRounds = roundHistoryStore.loadRoundHistory()
+            .sorted(by: { $0.updatedAt > $1.updatedAt })
+    }
+
     /// Wire `AppState` to a concrete `AuthService` (typically constructed
     /// at app launch). Subscribes to its session publisher so that
     /// `authState` + `currentUser` track the real session, and triggers a
@@ -596,6 +625,18 @@ final class AppState: ObservableObject {
                 guard let self else { return }
                 self.currentUser = user
                 self.authState = (user == nil) ? .guest : .authenticated
+                if user != nil {
+                    Task { [weak self] in
+                        await CommunityCourseStorageService.refreshFromRemoteIfPossible()
+                        await self?.refreshCloudBackedStores()
+                        await self?.refreshUserProfile()
+                        await self?.refreshSocialFeed()
+                    }
+                } else {
+                    CommunityCourseCache.shared.clear()
+                    socialFeedPosts = []
+                    cloudUserProfile = nil
+                }
             }
         Task { [weak self] in
             await service.bootstrap()
@@ -603,10 +644,18 @@ final class AppState: ObservableObject {
             let user = service.currentSessionUser
             self.currentUser = user
             self.authState = (user == nil) ? .guest : .authenticated
+            if user != nil {
+                await self.refreshCloudBackedStores()
+                await self.refreshUserProfile()
+                await self.refreshSocialFeed()
+            }
         }
     }
 
     func signOut() async {
+        followInvite = nil
+        socialFeedPosts = []
+        cloudUserProfile = nil
         guard let authService else {
             authState = .guest
             currentUser = nil
@@ -622,10 +671,74 @@ final class AppState: ObservableObject {
         }
     }
 
+    func presentFollowInvite(userId: UUID, displayName: String? = nil) {
+        followInvite = FollowInvitePresentation(id: userId, displayName: displayName)
+    }
+
+    func dismissFollowInvite() {
+        followInvite = nil
+    }
+
+    func performFollowInvite() async throws {
+        guard let target = followInvite?.id else {
+            throw SocialGraphError.missingInvite
+        }
+        try await socialGraph.follow(followeeId: target)
+        dismissFollowInvite()
+        await refreshSocialFeed()
+    }
+
+    func refreshUserProfile() async {
+        guard currentUser != nil, SupabaseShared.client() != nil else {
+            cloudUserProfile = nil
+            return
+        }
+        do {
+            cloudUserProfile = try await userProfileService.fetchMyProfile()
+        } catch {
+            cloudUserProfile = nil
+        }
+    }
+
+    func savePublicProfile(_ update: UserPublicProfileUpdate) async throws {
+        cloudUserProfile = try await userProfileService.updateMyProfile(update)
+    }
+
+    func refreshSocialFeed() async {
+        guard let uidString = currentUser?.id, let uid = UUID(uuidString: uidString) else {
+            socialFeedPosts = []
+            return
+        }
+        guard SupabaseShared.client() != nil else {
+            socialFeedPosts = []
+            return
+        }
+        socialFeedIsLoading = true
+        defer { socialFeedIsLoading = false }
+        do {
+            socialFeedPosts = try await socialFeedService.loadFeedPosts(currentUserId: uid)
+        } catch {
+            socialFeedPosts = []
+        }
+    }
+
+    func searchProfiles(query: String) async throws -> [PublicProfile] {
+        try await socialGraph.searchProfiles(query: query)
+    }
+
+    func fetchProfile(userId: UUID) async throws -> PublicProfile? {
+        try await socialGraph.fetchProfile(userId: userId)
+    }
+
+    func loadFollowingIds() async throws -> Set<UUID> {
+        try await socialGraph.followingIds()
+    }
+
     func addClubs(_ clubs: [Club]) {
         guard !clubs.isEmpty else { return }
         bag = Bag(clubs: bag.clubs + clubs)
         bagStore.saveBag(bag)
+        Task { await userDataSync.pushBag(sessionUser: currentUser) }
         refreshActiveRoundClubContext()
     }
 
@@ -638,6 +751,7 @@ final class AppState: ObservableObject {
         clubs[existingIndex] = updatedClub
         bag = Bag(clubs: clubs)
         bagStore.saveBag(bag)
+        Task { await userDataSync.pushBag(sessionUser: currentUser) }
         refreshActiveRoundClubContext()
     }
 
@@ -646,12 +760,14 @@ final class AppState: ObservableObject {
         guard filteredClubs.count != bag.clubs.count else { return }
         bag = Bag(clubs: filteredClubs)
         bagStore.saveBag(bag)
+        Task { await userDataSync.pushBag(sessionUser: currentUser) }
         refreshActiveRoundClubContext()
     }
 
     func setManualHandicapIndex(_ index: Double?) {
         handicapSnapshot.manualIndex = index
         handicapStore.saveHandicapSnapshot(handicapSnapshot)
+        Task { await userDataSync.pushHandicap(sessionUser: currentUser) }
     }
 
     var handicapIndexEstimate: Double? {
@@ -838,6 +954,18 @@ final class AppState: ObservableObject {
 
         previousRounds.sort(by: { $0.updatedAt > $1.updatedAt })
         persistRoundHistory()
+        Task { await userDataSync.pushRound(summary, sessionUser: currentUser) }
+        if summary.status == .finished {
+            Task { await refreshSocialFeed() }
+        }
+    }
+
+    private func reloadFromPersistentStores() {
+        bag = bagStore.loadBag()
+        handicapSnapshot = handicapStore.loadHandicapSnapshot()
+        previousRounds = roundHistoryStore.loadRoundHistory()
+            .sorted(by: { $0.updatedAt > $1.updatedAt })
+        refreshActiveRoundClubContext()
     }
 
     private func persistRoundHistory() {

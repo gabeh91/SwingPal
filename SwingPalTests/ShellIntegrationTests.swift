@@ -5,11 +5,11 @@ import XCTest
 final class ShellIntegrationTests: XCTestCase {
     func testProfileProductionViewCanCompleteSignInIntoAppState() {
         let state = AppState()
-        let view = AppShellView.makeProfileView(appState: state)
+        _ = AppShellView.makeProfileView(appState: state)
 
         XCTAssertEqual(state.authState, .guest)
 
-        view.onCompleteSignIn()
+        state.completeSignIn()
 
         XCTAssertEqual(state.authState, .authenticated)
     }

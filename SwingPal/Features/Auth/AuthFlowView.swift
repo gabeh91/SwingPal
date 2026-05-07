@@ -463,6 +463,45 @@ struct AuthFlowView: View {
     }
 }
 
+struct AuthFlowModalView: View {
+    let onDismiss: () -> Void
+
+    @StateObject private var viewModel: AuthViewModel
+
+    init(authService: AuthService, onDismiss: @escaping () -> Void) {
+        self.onDismiss = onDismiss
+        _viewModel = StateObject(
+            wrappedValue: AuthViewModel(
+                authService: authService,
+                appleCoordinatorFactory: { AppleSignInCoordinator() }
+            )
+        )
+    }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            AuthFlowView(viewModel: viewModel)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Color.white.opacity(0.92))
+                    .frame(width: 42, height: 42)
+                    .background(Color.black.opacity(0.18), in: Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    }
+            }
+            .buttonStyle(.plain)
+            .padding(.top, ShellTokens.Spacing.x20)
+            .padding(.leading, ShellTokens.Spacing.x20)
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
 private struct AuthPalette {
     let backgroundBase: Color
     let glowTop: Color

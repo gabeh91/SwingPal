@@ -1,4 +1,9 @@
 struct ProfileViewModel {
+    enum IdentityPrimaryActionIntent: Equatable {
+        case requestSignIn
+        case statusOnly
+    }
+
     struct PreviousRoundSheetModel: Equatable {
         let title: String
         let statusTitle: String
@@ -32,6 +37,7 @@ struct ProfileViewModel {
     let membershipSubtitle: String
     let bagSummary: String
     let identityPrimaryActionTitle: String
+    let identityPrimaryActionIntent: IdentityPrimaryActionIntent
     let identitySecondaryActionTitle: String
     let setupTitle: String
     let setupSubtitle: String
@@ -79,6 +85,7 @@ struct ProfileViewModel {
             membershipTitle = "Free Membership"
             membershipSubtitle = "Sign in to save your golf identity and unlock premium intelligence when you're ready."
             identityPrimaryActionTitle = "Sign In to Save"
+            identityPrimaryActionIntent = .requestSignIn
             identitySecondaryActionTitle = "Watch benefits"
         case .authenticated:
             identityTitle = "Your golf identity is live"
@@ -88,6 +95,7 @@ struct ProfileViewModel {
                 ? "Your premium tools are active, including watch control and deeper round intelligence."
                 : "Your free membership is active and ready to upgrade when you want deeper coaching."
             identityPrimaryActionTitle = "Saved to Cloud"
+            identityPrimaryActionIntent = .statusOnly
             identitySecondaryActionTitle = "Open Watch Companion"
         }
 

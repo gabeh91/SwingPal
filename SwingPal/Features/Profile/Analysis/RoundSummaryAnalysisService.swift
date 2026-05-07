@@ -13,7 +13,8 @@ struct DeterministicRoundSummaryAnalysisGenerator: RoundSummaryAnalysisGeneratin
             summary: ProfileViewModel.legacySummary(for: summary),
             whatWentWell: ProfileViewModel.legacyStrengths(for: summary),
             needsWork: ProfileViewModel.legacyImprovements(for: summary),
-            generatedAt: Date()
+            generatedAt: Date(),
+            updatedAt: nil
         )
     }
 }
@@ -61,5 +62,15 @@ final class RoundSummaryAnalysisService {
         var analyses = store.load().filter { $0.roundID != analysis.roundID }
         analyses.insert(analysis, at: 0)
         store.save(analyses)
+
+        // Best-effort cloud sync (no-op if Supabase/auth is unavailable).
+        Task {
+            guard SupabaseShared.client() != nil else { return }
+            do {
+                try await RoundSummaryAnalysisCloudStore().upsertMyAnalysis(analysis)
+            } catch {
+                // Keep local analysis even if push fails.
+            }
+        }
     }
 }

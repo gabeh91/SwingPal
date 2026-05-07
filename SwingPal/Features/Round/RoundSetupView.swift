@@ -76,22 +76,44 @@ private struct RoundSetupHeroModel {
         if let course = state.selectedCourse {
             title = course.name
             subtitle = "Lock the tee, confirm the group, and start with the course context already loaded."
-            stageSummary = state.roundSetupSummaryDetail
+            stageSummary = Self.makeStageSummary(state: state, distanceUnit: distanceUnit)
             highlights = [
                 "\(distanceUnit.travelLabel(forKilometers: course.distanceKilometers)) away",
                 "\(course.holeCount) holes",
                 "Par \(course.par)",
             ]
         } else {
-            title = "Build the round in one pass"
-            subtitle = "Choose a nearby course, lock the tees, then confirm who is playing without hopping between setup screens."
+            title = "Build your round"
+            subtitle = "Choose a nearby course, lock the tees, then confirm who is playing."
             stageSummary = "Course first • Tee second • Players last"
             highlights = [
-                "Nearby courses",
-                "Tee-ready yardages",
-                "Guest players supported",
+                "Nearby courses"
             ]
         }
+    }
+
+    @MainActor
+    private static func makeStageSummary(state: RoundSetupState, distanceUnit: DistanceUnit) -> String {
+        guard state.selectedCourse != nil else {
+            return "Pick a course, lock the tees, then add players."
+        }
+
+        let teeLabel = state.selectedTeeName.map { "\($0) tees" } ?? "Choose tees"
+        let yardageLabel: String
+        if let yards = state.selectedTeeYards {
+            switch distanceUnit {
+            case .yards:
+                yardageLabel = "\(yards)yd"
+            case .meters:
+                let meters = Int((Double(yards) * 0.9144).rounded())
+                yardageLabel = "\(meters)m"
+            }
+        } else {
+            yardageLabel = "Tee distance pending"
+        }
+
+        let golferCount = state.players.count == 1 ? "1 golfer ready" : "\(state.players.count) golfers ready"
+        return "\(teeLabel) • \(yardageLabel) • \(golferCount)"
     }
 }
 
@@ -147,6 +169,11 @@ struct RoundSetupView: View {
     let requiresLocationPermissionPrimer: Bool
     let onStartRound: () -> Void
     let onExitSetup: () -> Void
+    let authState: AuthState
+    let onAuthGateRequired: (GateRequirement) -> Void
+    let myUserId: UUID?
+    let onSearchPlayers: (String) async throws -> [PublicProfile]
+    let onFetchPlayerProfileById: (UUID) async throws -> PublicProfile?
     /// Phase 2+ injects the import flow here. In Phase 1 the host wires this
     /// to a placeholder that just records that the user wants to import.
     let onDiscoveredCourseSelected: (DiscoveredCourse) -> Void
@@ -157,6 +184,11 @@ struct RoundSetupView: View {
         requiresLocationPermissionPrimer: Bool = false,
         onStartRound: @escaping () -> Void,
         onExitSetup: @escaping () -> Void,
+        authState: AuthState = .guest,
+        onAuthGateRequired: @escaping (GateRequirement) -> Void = { _ in },
+        myUserId: UUID? = nil,
+        onSearchPlayers: @escaping (String) async throws -> [PublicProfile] = { _ in [] },
+        onFetchPlayerProfileById: @escaping (UUID) async throws -> PublicProfile? = { _ in nil },
         onDiscoveredCourseSelected: @escaping (DiscoveredCourse) -> Void = { _ in }
     ) {
         self.state = state
@@ -164,12 +196,18 @@ struct RoundSetupView: View {
         self.requiresLocationPermissionPrimer = requiresLocationPermissionPrimer
         self.onStartRound = onStartRound
         self.onExitSetup = onExitSetup
+        self.authState = authState
+        self.onAuthGateRequired = onAuthGateRequired
+        self.myUserId = myUserId
+        self.onSearchPlayers = onSearchPlayers
+        self.onFetchPlayerProfileById = onFetchPlayerProfileById
         self.onDiscoveredCourseSelected = onDiscoveredCourseSelected
     }
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var isShowingGuestSheet = false
+    @State private var isShowingPlayerSearch = false
     @State private var isShowingExitConfirmation = false
     @State private var isShowingCourseDiscovery = false
     @State private var isHeroHighlightListExpanded = false
@@ -257,6 +295,20 @@ struct RoundSetupView: View {
                 onDismiss: { isShowingGuestSheet = false }
             )
         }
+        .sheet(isPresented: $isShowingPlayerSearch) {
+            AddPlayerSearchSheet(
+                onSearch: onSearchPlayers,
+                myUserId: myUserId,
+                onFetchNearbyProfile: onFetchPlayerProfileById,
+                onSelect: { profile in
+                    let name = profile.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let username = profile.username?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    state.addGuest(named: (name?.isEmpty == false ? name! : (username?.isEmpty == false ? username! : "Player")))
+                    isShowingPlayerSearch = false
+                },
+                onDismiss: { isShowingPlayerSearch = false }
+            )
+        }
         .sheet(isPresented: $isShowingCourseDiscovery) {
             courseDiscoverySheet
         }
@@ -302,6 +354,7 @@ struct RoundSetupView: View {
             if requiresLocationPermissionPrimer {
                 locationPrimerTrigger = .nearbyDiscovery
             } else {
+                await state.refreshStoredCourses()
                 await state.loadNearbyCoursesIfNeeded()
             }
         }
@@ -826,6 +879,32 @@ struct RoundSetupView: View {
                         .background(palette.surfaceTinted, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
                     }
                     .buttonStyle(.plain)
+
+                    Button {
+                        if authState == .authenticated {
+                            isShowingPlayerSearch = true
+                        } else {
+                            onAuthGateRequired(.signIn)
+                        }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                            Text("Add Player")
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.bold))
+                        }
+                        .padding(.horizontal, ShellTokens.Spacing.x16)
+                        .padding(.vertical, ShellTokens.Spacing.x14)
+                        .foregroundStyle(palette.pine700)
+                        .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
+                                .stroke(palette.strokeDefault, lineWidth: 1)
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(ShellTokens.Spacing.x16)
                 .background(
@@ -865,7 +944,7 @@ struct RoundSetupView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Start Round")
                             .font(.headline.weight(.semibold))
-                        Text(state.canStartRound ? state.roundSetupSummaryDetail : "Choose a course and tee to unlock the round.")
+                        Text(state.canStartRound ? heroModel.stageSummary : "Choose a course and tee to unlock the round.")
                             .font(.caption.weight(.medium))
                             .foregroundStyle(
                                 state.canStartRound
@@ -1029,14 +1108,9 @@ struct RoundSetupView: View {
                         .foregroundStyle(isSelected ? palette.pine700 : palette.textTertiary)
                 }
 
-                Text("\(tee.yards) yds")
+                Text(teeDistanceLabel(for: tee))
                     .font(.title3.weight(.bold))
                     .foregroundStyle(palette.textPrimary)
-
-                Text("Carries into the live round as the default course context.")
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(ShellTokens.Spacing.x16)
             .frame(maxWidth: .infinity, minHeight: 140, alignment: .topLeading)
@@ -1058,6 +1132,16 @@ struct RoundSetupView: View {
             .shadow(color: isSelected ? palette.shadowSoft.opacity(0.8) : .clear, radius: 10, y: 6)
         }
         .buttonStyle(.plain)
+    }
+
+    private func teeDistanceLabel(for tee: SwingPalCourse.Tee) -> String {
+        switch distanceUnit {
+        case .yards:
+            return "\(tee.yards)yd"
+        case .meters:
+            let meters = Int((Double(tee.yards) * 0.9144).rounded())
+            return "\(meters)m"
+        }
     }
 
     private func playerRow(_ player: RoundPlayerDraft) -> some View {
@@ -1253,6 +1337,7 @@ struct RoundSetupView: View {
                             switch trigger {
                             case .nearbyDiscovery:
                                 Task {
+                                    await state.refreshStoredCourses()
                                     await state.loadNearbyCoursesIfNeeded()
                                 }
                             case .startRound:

@@ -33,6 +33,7 @@ struct RoundSummaryAnalysis: Equatable, Codable, Identifiable {
     let whatWentWell: [String]
     let needsWork: [String]
     let generatedAt: Date
+    let updatedAt: Date?
 
     var id: String { "\(roundID.uuidString)|\(cacheKey)" }
 }

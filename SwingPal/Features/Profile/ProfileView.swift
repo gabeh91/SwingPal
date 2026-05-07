@@ -157,7 +157,7 @@ private struct ProfileBagManagementView: View {
 
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text("\(bag.clubs.count)")
-                            .font(.system(size: 42, weight: .bold, design: .rounded))
+                            .font(.system(size: 42, weight: .bold))
                             .foregroundStyle(palette.primaryText)
                         Text("clubs ready")
                             .font(.headline.weight(.semibold))
@@ -1095,7 +1095,7 @@ struct ProfileView: View {
     let onGPSModeChanged: (AppGPSMode) -> Void
     let onAppearanceModeChanged: (AppAppearanceMode) -> Void
     let onDistanceUnitChanged: (DistanceUnit) -> Void
-    let onCompleteSignIn: () -> Void
+    let onSignInTapped: () -> Void
     let onSignOut: () -> Void
     let onAddClubs: ([Club]) -> Void
     let onUpdateClub: (Club) -> Void
@@ -1105,14 +1105,17 @@ struct ProfileView: View {
     let handicapEstimate: Double?
     let onSetManualHandicapIndex: (Double?) -> Void
     let currentUserDisplayName: String?
+    let cloudProfile: PublicProfile?
+    let onRefreshProfile: (() async -> Void)?
+    let onSavePublicProfile: ((UserPublicProfileUpdate) async throws -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var isIdentityPillListExpanded = false
-    @State private var isSignInPresented = false
     @State private var isBagPresented = false
     @State private var isHandicapPresented = false
     @State private var handicapText: String = ""
+    @State private var isPublicProfileEditorPresented = false
 
     private static let bagClubsPreviewLimit = 5
 
@@ -1139,7 +1142,7 @@ struct ProfileView: View {
         onGPSModeChanged: @escaping (AppGPSMode) -> Void,
         onAppearanceModeChanged: @escaping (AppAppearanceMode) -> Void,
         onDistanceUnitChanged: @escaping (DistanceUnit) -> Void,
-        onCompleteSignIn: @escaping () -> Void,
+        onSignInTapped: @escaping () -> Void,
         onSignOut: @escaping () -> Void = {},
         onAddClubs: @escaping ([Club]) -> Void,
         onUpdateClub: @escaping (Club) -> Void,
@@ -1148,7 +1151,10 @@ struct ProfileView: View {
         handicapSnapshot: HandicapIndexSnapshot,
         handicapEstimate: Double?,
         onSetManualHandicapIndex: @escaping (Double?) -> Void,
-        currentUserDisplayName: String? = nil
+        currentUserDisplayName: String? = nil,
+        cloudProfile: PublicProfile? = nil,
+        onRefreshProfile: (() async -> Void)? = nil,
+        onSavePublicProfile: ((UserPublicProfileUpdate) async throws -> Void)? = nil
     ) {
         self.authState = authState
         self.entitlements = entitlements
@@ -1160,7 +1166,7 @@ struct ProfileView: View {
         self.onGPSModeChanged = onGPSModeChanged
         self.onAppearanceModeChanged = onAppearanceModeChanged
         self.onDistanceUnitChanged = onDistanceUnitChanged
-        self.onCompleteSignIn = onCompleteSignIn
+        self.onSignInTapped = onSignInTapped
         self.onSignOut = onSignOut
         self.onAddClubs = onAddClubs
         self.onUpdateClub = onUpdateClub
@@ -1170,6 +1176,9 @@ struct ProfileView: View {
         self.handicapEstimate = handicapEstimate
         self.onSetManualHandicapIndex = onSetManualHandicapIndex
         self.currentUserDisplayName = currentUserDisplayName
+        self.cloudProfile = cloudProfile
+        self.onRefreshProfile = onRefreshProfile
+        self.onSavePublicProfile = onSavePublicProfile
     }
 
     var body: some View {
@@ -1189,7 +1198,7 @@ struct ProfileView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
                     masthead
-                    identityMembershipCard(model: model)
+                    identityMembershipCard(model: model, profileBio: trimmedPublicBio)
                     handicapSection
                     bagAndSetupSection(model: model, recommendation: recommendation)
                     premiumCard(model: model)
@@ -1201,6 +1210,11 @@ struct ProfileView: View {
                 .padding(.horizontal, ShellTokens.Spacing.x20)
                 .padding(.top, ShellTokens.Spacing.x20)
                 .padding(.bottom, ShellTokens.Spacing.x32 + AppChromeMetrics.bottomContentInset)
+            }
+            .refreshable {
+                if let onRefreshProfile {
+                    await onRefreshProfile()
+                }
             }
             .background(background)
             .toolbar(.hidden, for: .navigationBar)
@@ -1214,23 +1228,25 @@ struct ProfileView: View {
                     onDeleteClub: onDeleteClub
                 )
             }
-            .sheet(isPresented: $isSignInPresented) {
-                AuthGateView(
-                    title: "Sign in to save",
-                    detail: "Save rounds, sync your bag and settings, and keep your golf identity ready across devices.",
-                    onAuthenticated: {
-                        onCompleteSignIn()
-                        isSignInPresented = false
-                    },
-                    onDismiss: {
-                        isSignInPresented = false
-                    }
-                )
-            }
             .sheet(isPresented: $isHandicapPresented) {
                 handicapSheet
             }
+            .sheet(isPresented: $isPublicProfileEditorPresented) {
+                if let save = onSavePublicProfile {
+                    PublicProfileEditorSheet(
+                        snapshot: cloudProfile,
+                        fallbackDisplayName: currentUserDisplayName,
+                        onSave: save,
+                        onDismiss: { isPublicProfileEditorPresented = false }
+                    )
+                }
+            }
         }
+    }
+
+    private var trimmedPublicBio: String? {
+        let raw = cloudProfile?.bio?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return raw.isEmpty ? nil : raw
     }
 
     private var handicapSection: some View {
@@ -1270,7 +1286,7 @@ struct ProfileView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(handicapPrimaryValue)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(palette.primaryText)
                     Text(handicapSecondaryValue)
                         .font(.subheadline)
@@ -1411,18 +1427,18 @@ struct ProfileView: View {
         }
     }
 
-    private func identityMembershipCard(model: ProfileViewModel) -> some View {
+    private func identityMembershipCard(model: ProfileViewModel, profileBio: String?) -> some View {
         cardContainer(tint: palette.cardStrongTint, padding: 24) {
             VStack(alignment: .leading, spacing: ShellTokens.Spacing.x18) {
                 if usesCompactProfileCardLayout {
                     VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
                         profileIdentityBadge
-                        profileIdentityTextStack(model: model)
+                        profileIdentityTextStack(model: model, profileBio: profileBio)
                     }
                 } else {
                     HStack(alignment: .top, spacing: ShellTokens.Spacing.x16) {
                         profileIdentityBadge
-                        profileIdentityTextStack(model: model)
+                        profileIdentityTextStack(model: model, profileBio: profileBio)
                     }
                 }
 
@@ -1457,7 +1473,7 @@ struct ProfileView: View {
                 if authState == .guest {
                     if usesCompactProfileCardLayout {
                         VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                            Button(action: { isSignInPresented = true }) {
+                            Button(action: onSignInTapped) {
                                 HStack(spacing: 10) {
                                     Text(model.identityPrimaryActionTitle)
                                         .font(.headline.weight(.semibold))
@@ -1487,7 +1503,7 @@ struct ProfileView: View {
                         }
                     } else {
                         HStack(spacing: ShellTokens.Spacing.x12) {
-                            Button(action: { isSignInPresented = true }) {
+                            Button(action: onSignInTapped) {
                                 HStack(spacing: 10) {
                                     Text(model.identityPrimaryActionTitle)
                                         .font(.headline.weight(.semibold))
@@ -1564,13 +1580,38 @@ struct ProfileView: View {
                 )
                 .frame(width: 84, height: 84)
 
-            Image(systemName: authState == .guest ? "person.crop.circle.badge.plus" : "person.crop.circle.badge.checkmark")
-                .font(.system(size: 38, weight: .semibold))
-                .foregroundStyle(palette.accent)
+            if authState != .guest,
+               let raw = cloudProfile?.avatarURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !raw.isEmpty,
+               let url = URL(string: raw) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure:
+                        profileIdentityFallbackGlyph
+                    default:
+                        ProgressView()
+                            .tint(palette.accent)
+                    }
+                }
+                .frame(width: 84, height: 84)
+                .clipShape(Circle())
+            } else {
+                profileIdentityFallbackGlyph
+            }
         }
     }
 
-    private func profileIdentityTextStack(model: ProfileViewModel) -> some View {
+    private var profileIdentityFallbackGlyph: some View {
+        Image(systemName: authState == .guest ? "person.crop.circle.badge.plus" : "person.crop.circle.badge.checkmark")
+            .font(.system(size: 38, weight: .semibold))
+            .foregroundStyle(palette.accent)
+    }
+
+    private func profileIdentityTextStack(model: ProfileViewModel, profileBio: String?) -> some View {
         let pillPresentation = compactHeroPillPresentation([model.statusTitle, model.membershipTitle])
 
         return VStack(alignment: .leading, spacing: 8) {
@@ -1605,6 +1646,13 @@ struct ProfileView: View {
                 .font(ShellTokens.Typography.body)
                 .foregroundStyle(palette.secondaryText)
                 .frame(maxWidth: ShellTokens.Layout.narrativeWidth, alignment: .leading)
+
+            if let profileBio {
+                Text(profileBio)
+                    .font(ShellTokens.Typography.body)
+                    .foregroundStyle(palette.secondaryText)
+                    .frame(maxWidth: ShellTokens.Layout.narrativeWidth, alignment: .leading)
+            }
         }
     }
 
@@ -1920,6 +1968,24 @@ struct ProfileView: View {
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(palette.secondaryText)
                     }
+                    if let trimmedPublicBio {
+                        Text(trimmedPublicBio)
+                            .font(.subheadline)
+                            .foregroundStyle(palette.tertiaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                if onSavePublicProfile != nil {
+                    Button {
+                        isPublicProfileEditorPresented = true
+                    } label: {
+                        Text("Edit public profile")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(palette.accent)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Button {
@@ -2136,5 +2202,108 @@ struct ProfileView: View {
                 Capsule()
                     .stroke(isSelected ? Color.white.opacity(0.08) : palette.border, lineWidth: 1)
             }
+    }
+}
+
+// MARK: - Public profile editor
+
+private struct PublicProfileEditorSheet: View {
+    @State private var displayName: String
+    @State private var username: String
+    @State private var avatarURL: String
+    @State private var bio: String
+    @State private var showHandicapToFollowers: Bool
+    @State private var isSaving = false
+    @State private var saveError: String?
+
+    let onSave: (UserPublicProfileUpdate) async throws -> Void
+    let onDismiss: () -> Void
+
+    init(
+        snapshot: PublicProfile?,
+        fallbackDisplayName: String?,
+        onSave: @escaping (UserPublicProfileUpdate) async throws -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
+        _displayName = State(initialValue: snapshot?.displayName ?? fallbackDisplayName ?? "")
+        _username = State(initialValue: snapshot?.username ?? "")
+        _avatarURL = State(initialValue: snapshot?.avatarURL ?? "")
+        _bio = State(initialValue: snapshot?.bio ?? "")
+        _showHandicapToFollowers = State(initialValue: snapshot?.showHandicapToFollowers ?? false)
+        self.onSave = onSave
+        self.onDismiss = onDismiss
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Name") {
+                    TextField("Display name", text: $displayName)
+                    TextField("Username (optional)", text: $username)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+                Section("Photo") {
+                    TextField("Avatar URL (optional)", text: $avatarURL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+                Section("About") {
+                    TextField("Bio", text: $bio, axis: .vertical)
+                        .lineLimit(3...6)
+                }
+                Section {
+                    Toggle("Share handicap with followers", isOn: $showHandicapToFollowers)
+                } footer: {
+                    Text("When enabled, people who follow you can see the handicap index you sync to SwingPal.")
+                }
+                if let saveError {
+                    Section {
+                        Text(saveError)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Public profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onDismiss)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        Task { await save() }
+                    }
+                    .disabled(isSaving || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+
+    private func save() async {
+        let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            saveError = "Display name is required."
+            return
+        }
+        isSaving = true
+        saveError = nil
+        defer { isSaving = false }
+        let trimmedUser = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedAvatar = avatarURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedBioText = bio.trimmingCharacters(in: .whitespacesAndNewlines)
+        let update = UserPublicProfileUpdate(
+            display_name: trimmedName,
+            username: trimmedUser.isEmpty ? nil : trimmedUser,
+            avatar_url: trimmedAvatar.isEmpty ? nil : trimmedAvatar,
+            bio: trimmedBioText.isEmpty ? nil : trimmedBioText,
+            show_handicap_to_followers: showHandicapToFollowers
+        )
+        do {
+            try await onSave(update)
+            onDismiss()
+        } catch {
+            saveError = error.localizedDescription
+        }
     }
 }

@@ -230,10 +230,13 @@ struct AppShellView: View {
     /// auth gate; previews and `ContentView` keep using the default
     /// `AppState()` by passing `nil`.
     @StateObject private var appState: AppState
+    private let injectedAuthService: AuthService?
+    @Environment(\.colorScheme) private var colorScheme
     @State private var authGate: GateRequirement = .none
 
-    init(appState: AppState? = nil) {
+    init(appState: AppState? = nil, authService: AuthService? = nil) {
         _appState = StateObject(wrappedValue: appState ?? AppState())
+        injectedAuthService = authService
     }
     @State private var isWatchCompanionPresented = false
     @State private var isRoundResumePromptPresented = false
@@ -259,30 +262,7 @@ struct AppShellView: View {
                     )
 
                 case .social:
-                    SocialView(
-                        posts: [
-                            SocialFeedBuilder.makeRoundSummary(
-                                playerName: "Gabe",
-                                courseName: "Royal Melbourne",
-                                ownership: .currentUser,
-                                scoreSummary: "+6"
-                            ),
-                            SocialFeedBuilder.makeMilestone(
-                                playerName: "Alex",
-                                courseName: "Kingston Heath",
-                                ownership: .friend,
-                                milestone: "Broke 80",
-                                scoreSummary: "+2"
-                            ),
-                            SocialFeedBuilder.makeMatchResult(
-                                playerName: "Mia",
-                                courseName: "The National",
-                                ownership: .friend,
-                                result: "Won 3&2",
-                                scoreSummary: "3&2"
-                            )
-                        ]
-                    )
+                    SocialView(appState: appState)
 
                 case .stats:
                     StatsView(
@@ -293,7 +273,12 @@ struct AppShellView: View {
                     )
 
                 case .round:
-                    RoundRootView(appState: appState)
+                    RoundRootView(
+                        appState: appState,
+                        onAuthGateRequired: { requirement in
+                            authGate = requirement
+                        }
+                    )
 
                 case .profile:
                     Self.makeProfileView(
@@ -319,6 +304,11 @@ struct AppShellView: View {
         .background(ShellTokens.ColorRole.bgApp.ignoresSafeArea())
         .preferredColorScheme(appState.appearanceMode.preferredColorScheme)
         .animation(.spring(response: 0.34, dampingFraction: 0.88), value: showsTabBar)
+        .onChange(of: appState.authState) { _, authState in
+            if authState == .authenticated, authGate == .signIn {
+                authGate = .none
+            }
+        }
         .sheet(isPresented: Binding(
             get: { authGate == .signIn },
             set: { isPresented in
@@ -327,15 +317,16 @@ struct AppShellView: View {
                 }
             }
         )) {
-            AuthGateView(
-                title: "Sign in to continue",
-                detail: "Sign in to save, sync, and restore your rounds across devices.",
-                onAuthenticated: {
-                    appState.completeSignIn()
-                    authGate = .none
-                },
-                onDismiss: { authGate = .none }
-            )
+            switch AuthModalPresentation.resolve(for: .signIn) {
+            case .authFlow:
+                AuthFlowModalView(
+                    authService: resolvedAuthService,
+                    onDismiss: { authGate = .none }
+                )
+                .preferredColorScheme(appState.appearanceMode.preferredColorScheme)
+            case .premiumGate:
+                EmptyView()
+            }
         }
         .sheet(isPresented: Binding(
             get: { authGate == .premium },
@@ -386,6 +377,28 @@ struct AppShellView: View {
             )
             .preferredColorScheme(appState.appearanceMode.preferredColorScheme)
             .presentationSizing(.page)
+        }
+        .sheet(item: $appState.followInvite) { invite in
+            FollowInviteSheet(
+                invite: invite,
+                appState: appState,
+                palette: SocialPalette.forColorScheme(colorScheme)
+            )
+            .presentationDetents([.medium])
+        }
+    }
+
+    private var resolvedAuthService: AuthService {
+        switch AuthFlowServiceSource.resolve(
+            hasInjectedService: injectedAuthService != nil,
+            hasAppStateService: appState.authService != nil
+        ) {
+        case .injected:
+            return injectedAuthService!
+        case .appState:
+            return appState.authService!
+        case .fallbackMock:
+            return MockAuthService()
         }
     }
 
@@ -456,8 +469,8 @@ struct AppShellView: View {
             onDistanceUnitChanged: { unit in
                 appState.setDistanceUnit(unit)
             },
-            onCompleteSignIn: {
-                appState.completeSignIn()
+            onSignInTapped: {
+                onAuthGateRequired(.signIn)
             },
             onSignOut: {
                 Task { await appState.signOut() }
@@ -482,11 +495,20 @@ struct AppShellView: View {
             handicapSnapshot: appState.handicapSnapshot,
             handicapEstimate: appState.handicapIndexEstimate,
             onSetManualHandicapIndex: { appState.setManualHandicapIndex($0) },
-            currentUserDisplayName: Self.accountDisplayLabel(for: appState)
+            currentUserDisplayName: Self.accountDisplayLabel(for: appState),
+            cloudProfile: appState.cloudUserProfile,
+            onRefreshProfile: { await appState.refreshUserProfile() },
+            onSavePublicProfile: { update in
+                try await appState.savePublicProfile(update)
+            }
         )
     }
 
     private static func accountDisplayLabel(for appState: AppState) -> String? {
+        if let name = appState.cloudUserProfile?.displayName?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !name.isEmpty {
+            return name
+        }
         if let name = appState.currentUser?.displayName, !name.isEmpty {
             return name
         }

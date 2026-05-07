@@ -24,7 +24,8 @@ final class RoundSummaryAnalysisServiceTests: XCTestCase {
             summary: "Cached summary",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
 
         let store = StubRoundSummaryAnalysisStore(analyses: [cached])
@@ -62,7 +63,8 @@ final class RoundSummaryAnalysisServiceTests: XCTestCase {
                 summary: "Fallback summary",
                 whatWentWell: ["One", "Two"],
                 needsWork: ["Three", "Four"],
-                generatedAt: .distantPast
+                generatedAt: .distantPast,
+                updatedAt: nil
             )
         ))
 
@@ -70,7 +72,7 @@ final class RoundSummaryAnalysisServiceTests: XCTestCase {
 
         let result = try await service.analysis(for: summary)
 
-        XCTAssertEqual(result.provider, .deterministic)
+        XCTAssertEqual(result.provider, RoundSummaryAnalysis.Provider.deterministic)
         XCTAssertEqual(failing.callCount, 1)
         XCTAssertEqual(fallback.callCount, 1)
         XCTAssertEqual(store.saved.last?.summary, "Fallback summary")
@@ -98,7 +100,8 @@ final class RoundSummaryAnalysisServiceTests: XCTestCase {
             summary: "Old",
             whatWentWell: ["One", "Two"],
             needsWork: ["Three", "Four"],
-            generatedAt: .distantPast
+            generatedAt: .distantPast,
+            updatedAt: nil
         )
 
         let store = StubRoundSummaryAnalysisStore(analyses: [stale])
@@ -110,7 +113,8 @@ final class RoundSummaryAnalysisServiceTests: XCTestCase {
                 summary: "Fresh",
                 whatWentWell: ["One", "Two"],
                 needsWork: ["Three", "Four"],
-                generatedAt: .distantPast
+                generatedAt: .distantPast,
+                updatedAt: nil
             )
         ))
 

@@ -1120,10 +1120,10 @@ struct FreshLiveRoundScreen: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 Text("Hole \(state.displayedHoleNumber) · \(strokeCount) strokes")
-                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(palette.accentForeground)
                 Text("Tap to finish hole")
-                    .font(.system(.caption, design: .rounded).weight(.medium))
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(palette.accentForeground.opacity(0.85))
             }
 
@@ -1183,7 +1183,7 @@ struct FreshLiveRoundScreen: View {
             ScrollView {
                 VStack(spacing: ShellTokens.Spacing.x12) {
                     Text("Pick the relief option that matches what happened. We'll log a +1 penalty stroke; your next shot is the replay.")
-                        .font(.system(.subheadline, design: .rounded))
+                        .font(.subheadline)
                         .foregroundStyle(palette.secondaryTextColor)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, ShellTokens.Spacing.x4)
@@ -1225,10 +1225,10 @@ struct FreshLiveRoundScreen: View {
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(palette.accent)
                 Text(type.label)
-                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(palette.primaryTextColor)
                 Text(type.subtitle)
-                    .font(.system(.caption, design: .rounded).weight(.medium))
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(palette.secondaryTextColor)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
@@ -1392,6 +1392,7 @@ struct FreshLiveRoundScreen: View {
 
     private func heroDistanceCard(layout: FreshLiveRoundTopPanelLayout) -> some View {
         let isPutt = state.topBarPhase == .greenSide
+        let distanceValue = state.distanceUnit.scalarValue(fromMeters: state.topBarHeroDistanceMeters)
 
         return VStack(spacing: 2) {
             Text(isPutt ? "PUTT" : "PIN")
@@ -1400,11 +1401,11 @@ struct FreshLiveRoundScreen: View {
                 .foregroundStyle(palette.secondaryTextColor)
 
             HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text("\(state.topBarHeroDistanceMeters)")
-                    .font(.system(size: layout.heroValueFontSize, weight: .heavy, design: .rounded))
+                Text("\(distanceValue)")
+                    .font(.system(size: layout.heroValueFontSize, weight: .heavy))
                     .monospacedDigit()
                     .foregroundStyle(palette.primaryTextColor)
-                Text("m")
+                Text(state.distanceUnit.shortSuffix)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(palette.secondaryTextColor)
             }
@@ -1434,7 +1435,7 @@ struct FreshLiveRoundScreen: View {
         // course — the shift between "152" and "138" has more visual
         // impact than a static label flick.
         .contentTransition(.numericText())
-        .animation(.easeOut(duration: 0.25), value: state.topBarHeroDistanceMeters)
+        .animation(.easeOut(duration: 0.25), value: distanceValue)
     }
 
     private func satelliteDistanceChip(
@@ -1449,7 +1450,7 @@ struct FreshLiveRoundScreen: View {
                 .foregroundStyle(palette.secondaryTextColor)
             HStack(alignment: .firstTextBaseline, spacing: 1) {
                 Text(value)
-                    .font(.system(size: layout.distanceValueFontSize, weight: .bold, design: .rounded))
+                    .font(.system(size: layout.distanceValueFontSize, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(palette.primaryTextColor)
                 if let unit {
@@ -2583,7 +2584,7 @@ struct FreshLiveRoundScreen: View {
 
     private func distancePill(value: Int) -> some View {
         Text("\(value)")
-            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .font(.system(size: 13, weight: .bold))
             .monospacedDigit()
             .foregroundStyle(.black)
             .padding(.horizontal, 10)
@@ -2649,7 +2650,7 @@ struct FreshLiveRoundScreen: View {
                         )
 
                     Text(zone.label)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.system(size: 12, weight: .semibold))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                 }
@@ -3247,7 +3248,7 @@ private struct FreshLiveRoundClubWheelEntryView: View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 3) {
                 Text(entry.clubName)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(primaryTextColor)
                     .minimumScaleFactor(0.75)
                     .lineLimit(1)
@@ -3318,7 +3319,7 @@ private struct FreshLiveRoundClubWheelEntryView: View {
                 Image(systemName: gapIconName(for: gap))
                     .font(.system(size: 9, weight: .bold))
                 Text(formattedGap(gap))
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold))
                     .monospacedDigit()
             }
             .foregroundStyle(gapTextColor(for: gap))
@@ -3327,7 +3328,7 @@ private struct FreshLiveRoundClubWheelEntryView: View {
             // No "gap to target" framing because in manual mode the player
             // is making their own judgement about distance.
             Text(distanceUnit.shortLabel(forMeters: entry.displayCarryMeters))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(secondaryTextColor)
         }
@@ -3335,7 +3336,7 @@ private struct FreshLiveRoundClubWheelEntryView: View {
 
     private var recommendedBadge: some View {
         Text("REC")
-            .font(.system(size: 9, weight: .heavy, design: .rounded))
+            .font(.system(size: 9, weight: .heavy))
             .tracking(0.7)
             .foregroundStyle(palette.accentForeground)
             .padding(.horizontal, 6)
@@ -3418,13 +3419,13 @@ private struct FreshLiveRoundClubWheelCenterView: View {
     @ViewBuilder
     private var liveContent: some View {
         Text("PIN")
-            .font(.system(size: 10, weight: .heavy, design: .rounded))
+            .font(.system(size: 10, weight: .heavy))
             .tracking(0.8)
             .foregroundStyle(palette.secondaryTextColor)
 
         HStack(alignment: .lastTextBaseline, spacing: 2) {
             Text("\(distanceUnit.scalarValue(fromMeters: targetDistanceMeters))")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.system(size: 32, weight: .bold))
                 .monospacedDigit()
                 .foregroundStyle(palette.primaryTextColor)
             Text(distanceUnit.shortSuffix)
@@ -3470,7 +3471,7 @@ private struct FreshLiveRoundClubWheelCenterView: View {
     private func recommendationChip(clubName: String) -> some View {
         HStack(spacing: 4) {
             Text("REC")
-                .font(.system(size: 9, weight: .heavy, design: .rounded))
+                .font(.system(size: 9, weight: .heavy))
                 .tracking(0.6)
                 .foregroundStyle(palette.accentForeground)
                 .padding(.horizontal, 4)
@@ -4094,7 +4095,7 @@ private struct FreshLiveRoundConditionsSheet: View {
                     if hasWeather {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Text(windHeroSpeedValue)
-                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                                .font(.system(size: 36, weight: .bold))
                                 .foregroundStyle(palette.primaryTextColor)
                                 .monospacedDigit()
                             Text("km/h")
@@ -4301,10 +4302,12 @@ private struct FreshLiveRoundConditionsSheet: View {
     }
 
     private func playsLikeDeltaText(meters: Int, suffix: String = "") -> String {
+        let scalar = state.distanceUnit.scalarValue(fromMeters: abs(meters))
+        let unitSuffix = state.distanceUnit.shortSuffix
         if meters > 0 {
-            return "+\(meters) m to plays-like\(suffix)"
+            return "+\(scalar)\(unitSuffix) to plays-like\(suffix)"
         } else if meters < 0 {
-            return "\(meters) m to plays-like\(suffix)"
+            return "-\(scalar)\(unitSuffix) to plays-like\(suffix)"
         } else {
             return "No effect on plays-like\(suffix)"
         }
@@ -4712,10 +4715,10 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                     surfaceIconBadge(for: surface)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(state.pendingShotLieBannerTitle)
-                            .font(.system(.subheadline, design: .rounded).weight(.bold))
+                            .font(.subheadline.weight(.bold))
                             .foregroundStyle(palette.primaryTextColor)
                         Text(state.pendingShotLieBannerSubtitle)
-                            .font(.system(.caption, design: .rounded))
+                            .font(.caption)
                             .foregroundStyle(palette.secondaryTextColor)
                             .lineLimit(1)
                     }
@@ -4758,7 +4761,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                         Image(systemName: surfaceIconName(for: surface))
                             .font(.subheadline.weight(.semibold))
                         Text(surfaceLabel(for: surface))
-                            .font(.system(.caption2, design: .rounded).weight(.semibold))
+                            .font(.caption2.weight(.semibold))
                     }
                     .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
                     .frame(maxWidth: .infinity, minHeight: 56)
@@ -4802,19 +4805,19 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         HStack(alignment: .firstTextBaseline, spacing: ShellTokens.Spacing.x10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(state.pendingShotClubName)
-                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(palette.primaryTextColor)
                 Text("\(state.pendingShotOriginLabel.lowercased(with: .current)) → \(state.pendingShotTargetLabel.lowercased(with: .current))")
-                    .font(.system(.caption, design: .rounded).weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(palette.secondaryTextColor)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(state.pendingShotDistanceLabel)
-                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(palette.accent)
                 Text("to pin")
-                    .font(.system(.caption2, design: .rounded).weight(.semibold))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(palette.tertiaryTextColor)
             }
         }
@@ -4889,7 +4892,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                     .font(.title2.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
                 Text(title)
-                    .font(.system(.headline, design: .rounded).weight(.bold))
+                    .font(.headline.weight(.bold))
             }
             .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
             .frame(maxWidth: .infinity, minHeight: 88)
@@ -5207,7 +5210,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                 Image(systemName: isSelected ? "flag.2.crossed.fill" : "flag.2.crossed")
                     .font(.subheadline.weight(.semibold))
                 Text("Hit a provisional ball")
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                 Spacer(minLength: 0)
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.subheadline.weight(.semibold))
@@ -5241,7 +5244,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                     Image(systemName: "slider.horizontal.3")
                         .font(.subheadline.weight(.semibold))
                     Text(state.isShowingShotLoggerAddDetail ? "Hide detail" : "Add detail")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.down")
                         .font(.caption.weight(.bold))
@@ -5339,7 +5342,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     private var noteField: some View {
         VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
             Text("Note")
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(palette.primaryTextColor)
 
             TextField(
@@ -5362,7 +5365,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
             state.confirmPendingShot()
         } label: {
             Text(state.pendingShotConfirmCTAText)
-                .font(.system(.title3, design: .rounded).weight(.bold))
+                .font(.title3.weight(.bold))
                 .frame(maxWidth: .infinity, minHeight: 56)
         }
         .buttonStyle(.borderedProminent)
@@ -5375,11 +5378,11 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     private func sectionHeading(title: String, subtitle: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(.headline, design: .rounded).weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(palette.primaryTextColor)
             if let subtitle {
                 Text(subtitle)
-                    .font(.system(.caption, design: .rounded))
+                    .font(.caption)
                     .foregroundStyle(palette.secondaryTextColor)
             }
         }

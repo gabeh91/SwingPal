@@ -31,11 +31,11 @@ final class RoundSetupState: ObservableObject {
     @Published private(set) var pendingImportDiscovery: DiscoveredCourse?
 
     private let repository: CourseRepository
+    private let importedStore: ImportedCourseStore
     private let discovery: any OSMCourseDiscovering
     private let deviceLocation: any DeviceLocationProviding
     private let countryCodeGeocoder: any CountryCodeGeocoding
     private let importCoordinator: CourseImportCoordinator
-    private let importedStore: ImportedCourseStore
     private let nearbyRadiusKilometres: Double
 
     private var pendingSearchTask: Task<Void, Never>?
@@ -59,6 +59,25 @@ final class RoundSetupState: ObservableObject {
         self.importedStore = importedStore
         self.nearbyRadiusKilometres = nearbyRadiusKilometres
         courses = repository.nearbyCourses()
+    }
+
+    func refreshStoredCourses() async {
+        guard SupabaseShared.client() != nil else {
+            // Signed out / not configured: fall back to local repository list.
+            courses = repository.nearbyCourses()
+            return
+        }
+
+        do {
+            let remoteCommunity = try await CommunityCourseStorageService.fetchFromRemote()
+            let merged = CompositeCourseRepository(
+                importedStore: importedStore,
+                communityCourses: { remoteCommunity }
+            ).nearbyCourses()
+            courses = merged
+        } catch {
+            // Keep whatever we had; setup UI should remain usable offline.
+        }
     }
 
     var sortedCourses: [SwingPalCourse] {
@@ -88,7 +107,7 @@ final class RoundSetupState: ObservableObject {
         }
 
         let teeLabel = selectedTeeName.map { "\($0) tees" } ?? "Choose tees"
-        let yardageLabel = selectedTeeYards.map { "\($0) yds" } ?? "Yardage pending"
+        let yardageLabel = selectedTeeYards.map { "\($0)" } ?? "Tee distance pending"
         let golferCount = players.count == 1 ? "1 golfer ready" : "\(players.count) golfers ready"
 
         return "\(teeLabel) • \(yardageLabel) • \(golferCount)"
@@ -286,6 +305,9 @@ final class RoundSetupState: ObservableObject {
         guard let course = lastImportedCourse else { return }
         if let discovered = pendingImportDiscovery, let validation = lastImportValidation {
             importedStore.save(course: course, discovered: discovered, validation: validation)
+        }
+        Task {
+            await CommunityCourseStorageService.uploadCourse(course)
         }
         if !courses.contains(where: { $0.id == course.id }) {
             courses.append(course)

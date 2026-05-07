@@ -10,6 +10,12 @@ enum ImportCategory: String, Codable {
     case putter
 }
 
+/// A minimal interchange format so we can do a "one-time scrape" externally
+/// and feed the results into this tool without editing Swift by hand.
+struct SeedDocument: Codable {
+    let seeds: [BrandSeed]
+}
+
 struct ImportVariant: Codable {
     let code: String
     let displayName: String
@@ -27,7 +33,7 @@ struct ImportDocument: Codable {
     let families: [ImportFamily]
 }
 
-struct BrandSeed {
+struct BrandSeed: Codable {
     let brand: String
     let name: String
     let category: ImportCategory
@@ -38,12 +44,38 @@ struct ClubCatalogImportTool {
 
     static func run() throws {
         let outputURL = try outputURLFromArguments()
+        let seedOverrideURL = seedOverrideURLFromArguments()
+        let shouldEmitSeeds = CommandLine.arguments.contains("--emit-seeds")
+
         let document = try buildDocument()
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(document)
         try data.write(to: outputURL, options: .atomic)
         FileHandle.standardOutput.write(Data("wrote \(document.families.count) families to \(outputURL.path)\n".utf8))
+
+        if shouldEmitSeeds {
+            let seeds = try loadSeeds(overrideURL: seedOverrideURL)
+            let mergedFamilies = (seeds.map { seed in
+                ImportFamily(
+                    brand: seed.brand,
+                    name: seed.name,
+                    category: seed.category,
+                    variants: variants(for: seed.category)
+                )
+            } + scrapeSupportedBrandFamilies())
+            let deduped = Dictionary(grouping: mergedFamilies, by: familyKey)
+                .values
+                .compactMap { $0.first }
+                .sorted {
+                    if $0.brand == $1.brand { return $0.name < $1.name }
+                    return $0.brand < $1.brand
+                }
+            FileHandle.standardOutput.write(Data("\n// Swift seeds (copy into manualSeeds)\n".utf8))
+            for family in deduped {
+                FileHandle.standardOutput.write(Data("        .init(brand: \"\(family.brand)\", name: \"\(family.name)\", category: .\(family.category.rawValue)),\n".utf8))
+            }
+        }
     }
 
     private static func outputURLFromArguments() throws -> URL {
@@ -54,9 +86,17 @@ struct ClubCatalogImportTool {
         return URL(fileURLWithPath: arguments[outputIndex + 1])
     }
 
+    private static func seedOverrideURLFromArguments() -> URL? {
+        let arguments = CommandLine.arguments
+        guard let index = arguments.firstIndex(of: "--seed-file"), arguments.indices.contains(index + 1) else {
+            return nil
+        }
+        return URL(fileURLWithPath: arguments[index + 1])
+    }
+
     private static func buildDocument() throws -> ImportDocument {
-        var families = manualFamilies()
-        families.append(contentsOf: scrapePingFamilies())
+        var families = try manualFamilies()
+        families.append(contentsOf: scrapeSupportedBrandFamilies())
 
         let dedupedFamilies = Dictionary(grouping: families, by: familyKey)
             .values
@@ -76,8 +116,9 @@ struct ClubCatalogImportTool {
         "\(family.brand)|\(family.name)|\(family.category.rawValue)"
     }
 
-    private static func manualFamilies() -> [ImportFamily] {
-        manualSeeds.map { seed in
+    private static func manualFamilies() throws -> [ImportFamily] {
+        let seeds = try loadSeeds(overrideURL: seedOverrideURLFromArguments())
+        return seeds.map { seed in
             ImportFamily(
                 brand: seed.brand,
                 name: seed.name,
@@ -85,6 +126,33 @@ struct ClubCatalogImportTool {
                 variants: variants(for: seed.category)
             )
         }
+    }
+
+    private static func loadSeeds(overrideURL: URL?) throws -> [BrandSeed] {
+        guard let overrideURL else {
+            return manualSeeds
+        }
+        let data = try Data(contentsOf: overrideURL)
+        let doc = try JSONDecoder().decode(SeedDocument.self, from: data)
+        return doc.seeds
+    }
+
+    /// Scrapes families for brands where we have a reliable, automated source.
+    ///
+    /// Today this is **PING-only** (their site exposes a stable search page).
+    /// Other brands are still "supported" in-app via `manualSeeds`, and can be
+    /// upgraded to automated scraping later by adding a new scraper here.
+    private static func scrapeSupportedBrandFamilies() -> [ImportFamily] {
+        BrandScraper.supported.flatMap { $0.scrapeFamilies() }
+    }
+
+    private struct BrandScraper {
+        let brand: String
+        let scrapeFamilies: () -> [ImportFamily]
+
+        static let supported: [BrandScraper] = [
+            .init(brand: "PING", scrapeFamilies: scrapePingFamilies)
+        ]
     }
 
     private static func scrapePingFamilies() -> [ImportFamily] {

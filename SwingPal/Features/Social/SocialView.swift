@@ -60,12 +60,20 @@ struct SocialPalette {
 }
 
 struct SocialView: View {
-    let posts: [SocialPost]
+    @ObservedObject var appState: AppState
+    @StateObject private var nearbyCoordinator = NearbyDiscoveryCoordinator()
+    @StateObject private var nfcScanner = NFCFollowScanner()
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedPost: SocialPost?
     @State private var isHeroPillListExpanded = false
+    @State private var isPeopleSearchPresented = false
+    @State private var isNearbyPresented = false
+
+    private var posts: [SocialPost] {
+        appState.socialFeedPosts
+    }
 
     private var palette: SocialPalette {
         SocialPalette.forColorScheme(colorScheme)
@@ -97,6 +105,12 @@ struct SocialView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
                     masthead(model: model)
+                    if appState.socialFeedIsLoading && posts.isEmpty {
+                        ProgressView()
+                            .tint(palette.accent)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, ShellTokens.Spacing.x8)
+                    }
                     heroCard(model: model)
                     circlePulseSection(model: model)
 
@@ -112,6 +126,12 @@ struct SocialView: View {
                 .padding(.top, ShellTokens.Spacing.x20)
                 .padding(.bottom, ShellTokens.Spacing.x32 + AppChromeMetrics.bottomContentInset)
             }
+            .refreshable {
+                await appState.refreshSocialFeed()
+            }
+            .task(id: appState.currentUser?.id) {
+                await appState.refreshSocialFeed()
+            }
             .background(background)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedPost) { post in
@@ -121,6 +141,17 @@ struct SocialView: View {
                 case .scorecard:
                     SocialScorecardDetailView(post: post, palette: palette)
                 }
+            }
+            .sheet(isPresented: $isPeopleSearchPresented) {
+                PeopleSearchSheet(appState: appState, palette: palette)
+            }
+            .sheet(isPresented: $isNearbyPresented) {
+                NearbyConnectSheet(
+                    appState: appState,
+                    nearbyCoordinator: nearbyCoordinator,
+                    nfcScanner: nfcScanner,
+                    palette: palette
+                )
             }
         }
     }
@@ -176,9 +207,45 @@ struct SocialView: View {
                     }
             }
 
-            Text("Social")
-                .font(ShellTokens.Typography.mastheadTitle)
-                .foregroundStyle(palette.primaryText)
+            HStack(alignment: .center) {
+                Text("Social")
+                    .font(ShellTokens.Typography.mastheadTitle)
+                    .foregroundStyle(palette.primaryText)
+
+                Spacer()
+
+                HStack(spacing: ShellTokens.Spacing.x10) {
+                    Button {
+                        isPeopleSearchPresented = true
+                    } label: {
+                        Image(systemName: "person.badge.plus")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(palette.accent)
+                            .frame(width: 40, height: 40)
+                            .background(palette.quietFill, in: Circle())
+                            .overlay {
+                                Circle().stroke(palette.border, lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Search golfers")
+
+                    Button {
+                        isNearbyPresented = true
+                    } label: {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(palette.accent)
+                            .frame(width: 40, height: 40)
+                            .background(palette.quietFill, in: Circle())
+                            .overlay {
+                                Circle().stroke(palette.border, lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Nearby golfers")
+                }
+            }
 
             Text("Catch up on friend rounds at a glance.")
                 .font(ShellTokens.Typography.lead)
@@ -536,7 +603,7 @@ struct SocialView: View {
                 .foregroundStyle(palette.tertiaryText)
 
             Text(stat.value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(palette.primaryText)
                 .monospacedDigit()
 

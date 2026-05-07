@@ -46,7 +46,8 @@ struct FoundationModelsRoundSummaryAnalyzer: RoundSummaryAnalysisGenerating {
             summary: response.summary,
             whatWentWell: Array(response.whatWentWell.prefix(3)),
             needsWork: Array(response.needsWork.prefix(3)),
-            generatedAt: Date()
+            generatedAt: Date(),
+            updatedAt: nil
         )
     }
 

@@ -98,3 +98,54 @@ final class MockAuthService: AuthService {
         email.split(separator: "@").first.map(String.init) ?? email
     }
 }
+
+/// App-runtime fallback used when auth configuration is missing. Unlike
+/// `MockAuthService`, this must never silently authenticate a user.
+@MainActor
+final class MissingConfigurationAuthService: AuthService {
+    private let subject = CurrentValueSubject<AuthSessionUser?, Never>(nil)
+
+    var sessionUserPublisher: AnyPublisher<AuthSessionUser?, Never> {
+        subject.eraseToAnyPublisher()
+    }
+
+    var currentSessionUser: AuthSessionUser? { nil }
+
+    func bootstrap() async {}
+
+    func signUp(email: String, password: String, displayName: String?) async throws {
+        _ = (email, password, displayName)
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func signIn(email: String, password: String) async throws {
+        _ = (email, password)
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func sendMagicLink(email: String) async throws {
+        _ = email
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func sendPasswordReset(email: String) async throws {
+        _ = email
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func signInWithIDToken(provider: AuthOAuthProvider, idToken: String, nonce: String?) async throws {
+        _ = (provider, idToken, nonce)
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func signInWithHostedOAuth(provider: AuthOAuthProvider) async throws {
+        _ = provider
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func signOut() async throws {}
+
+    func handleAuthCallback(url: URL) async {
+        _ = url
+    }
+}

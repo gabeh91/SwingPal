@@ -115,8 +115,14 @@ The auth callback URL used by the OAuth/magic-link flows is
 
 ## 6. Storage bucket conventions
 
-- **Path**: `courses/<course-id>.json` (we use the OSM-derived id /
-  bundled slug, no nested folders).
+- **Path**: `courses/<course-id>.json` (object key is `<uuid>.json` inside the
+  `courses` bucket; `course-id` is `SwingPalCourse.id`).
 - **MIME type**: `application/json`.
-- **Cache-Control**: `public, max-age=86400` (set when uploading).
+- **Cache-Control**: uploads use `86400` seconds via the Swift client’s
+  `FileOptions` (aligned with CDN caching).
 - Anonymous web visitors get `403`; signed-in app users get `200`.
+
+The iOS app loads all `*.json` objects from this bucket after sign-in (see
+`CommunityCourseStorageService`) and merges them into the course picker via
+`CompositeCourseRepository`. Successful imports can be uploaded with
+`CommunityCourseStorageService.uploadCourse`.

@@ -50,7 +50,8 @@ final class RoundSummaryAnalysisStoreTests: XCTestCase {
             summary: "Steady scoring so far.",
             whatWentWell: ["Kept penalties down", "Tracked putts cleanly"],
             needsWork: ["Finish more holes", "Tighten iron control"],
-            generatedAt: Date(timeIntervalSince1970: 123)
+            generatedAt: Date(timeIntervalSince1970: 123),
+            updatedAt: nil
         )
 
         store.save([cached])
