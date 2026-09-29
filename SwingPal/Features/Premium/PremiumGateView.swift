@@ -1,57 +1,44 @@
 import SwiftUI
 
+/// Purchases remain unavailable until a real StoreKit offer and verified
+/// entitlement flow are configured. Dismissing this sheet never grants access.
 struct PremiumGateView: View {
-    let onUpgrade: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let onDismiss: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-            HStack(alignment: .top, spacing: ShellTokens.Spacing.x12) {
-                ZStack {
-                    Circle()
-                        .fill(ShellTokens.ColorRole.sun400.opacity(0.20))
-                        .frame(width: 36, height: 36)
-                    Image(systemName: "sparkles")
-                        .foregroundStyle(ShellTokens.ColorRole.sun400)
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Image(systemName: "seal")
+                        .font(.system(size: 40, weight: .light))
+                        .accessibilityHidden(true)
+                    Text("Premium isn’t available yet")
+                        .font(Book.Typeface.display)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Purchases and restores aren’t offered in this version of SwingPal. Nothing about your access has changed.")
+                        .foregroundStyle(Book.pencil)
+                        .fixedSize(horizontal: false, vertical: true)
+                    BookHairline()
+                    Text("Rounds, courses, the yardage book and scoring are all available now.")
+                        .foregroundStyle(Book.pencil)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Unlock Premium Intelligence")
-                        .font(.title3.bold())
-                        .foregroundStyle(ShellTokens.ColorRole.textPrimary)
-                    Text("Play smarter with deeper assistance and a live Apple Watch companion.")
-                        .foregroundStyle(ShellTokens.ColorRole.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(22)
+            }
+            .background(Book.paper.ignoresSafeArea())
+            .foregroundStyle(Book.ink)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done", action: onDismiss)
+                        .frame(minHeight: 44)
                 }
-            }
-
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                bullet("Apple Watch live round companion")
-                bullet("Richer caddie-style guidance")
-                bullet("Advanced post-round analytics")
-            }
-
-            VStack(spacing: ShellTokens.Spacing.x8) {
-                Button("Unlock Premium", action: onUpgrade)
-                    .buttonStyle(.borderedProminent)
-                    .tint(ShellTokens.ColorRole.pine700)
-                    .frame(maxWidth: .infinity)
-                Button("Not now", action: onDismiss)
-                    .buttonStyle(.bordered)
-                    .frame(maxWidth: .infinity)
             }
         }
-        .padding(ShellTokens.Spacing.x20)
-        .background(ShellTokens.ColorRole.surfacePremium)
-        .presentationDetents([.medium])
-    }
-
-    private func bullet(_ text: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.footnote)
-                .foregroundStyle(ShellTokens.ColorRole.pine500)
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(ShellTokens.ColorRole.textSecondary)
-        }
+        .tint(Book.stamp)
+        .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.medium, .large])
+        .presentationBackground(Book.paper)
     }
 }

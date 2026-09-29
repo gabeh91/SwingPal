@@ -48,7 +48,7 @@ enum CommunityCourseStorageService {
     static func refreshFromRemoteIfPossible() async {
         do {
             let decoded = try await fetchFromRemote()
-            CommunityCourseCache.shared.replace(with: decoded.sorted { $0.distanceKilometers < $1.distanceKilometers })
+            CommunityCourseCache.shared.replace(with: decoded.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending })
             Self.logger.debug("Community courses loaded: \(decoded.count)")
         } catch {
             Self.logger.warning("Community course refresh failed: \(String(describing: error))")

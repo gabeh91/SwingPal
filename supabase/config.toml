@@ -4,6 +4,10 @@
 # working directory name when running `supabase init`.
 project_id = "SwingPal"
 
+[functions.refresh-club-catalog]
+# The handler verifies a dedicated high-entropy secret stored in Vault and Edge secrets.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

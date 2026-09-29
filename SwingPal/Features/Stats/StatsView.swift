@@ -1,568 +1,309 @@
 import SwiftUI
 
-private struct StatsPalette {
-    let backgroundBase: Color
-    let backgroundGlow: Color
-    let cardTint: Color
-    let heroTint: Color
-    let border: Color
-    let primaryText: Color
-    let secondaryText: Color
-    let tertiaryText: Color
-    let accent: Color
-    let quietFill: Color
-    let quietStrongFill: Color
-    let positiveFill: Color
-    let cautionFill: Color
-    let positiveAccent: Color
-    let cautionAccent: Color
-    let shadow: Color
-
-    static func forColorScheme(_ colorScheme: ColorScheme) -> StatsPalette {
-        switch colorScheme {
-        case .dark:
-            return .init(
-                backgroundBase: Color(red: 0.05, green: 0.08, blue: 0.09),
-                backgroundGlow: Color(red: 0.12, green: 0.27, blue: 0.22).opacity(0.56),
-                cardTint: Color.white.opacity(0.08),
-                heroTint: Color(red: 0.16, green: 0.20, blue: 0.24).opacity(0.76),
-                border: Color.white.opacity(0.20),
-                primaryText: Color.white.opacity(0.96),
-                secondaryText: Color.white.opacity(0.82),
-                tertiaryText: Color.white.opacity(0.62),
-                accent: ShellTokens.ColorRole.pine500,
-                quietFill: Color.white.opacity(0.07),
-                quietStrongFill: Color.white.opacity(0.12),
-                positiveFill: Color(red: 0.12, green: 0.28, blue: 0.20).opacity(0.72),
-                cautionFill: Color(red: 0.31, green: 0.18, blue: 0.13).opacity(0.74),
-                positiveAccent: Color(red: 0.56, green: 0.88, blue: 0.70),
-                cautionAccent: Color(red: 0.98, green: 0.78, blue: 0.52),
-                shadow: Color.black.opacity(0.34)
-            )
-        default:
-            return .init(
-                backgroundBase: Color(red: 0.95, green: 0.96, blue: 0.94),
-                backgroundGlow: Color(red: 0.84, green: 0.90, blue: 0.86).opacity(0.74),
-                cardTint: Color.white.opacity(0.48),
-                heroTint: Color(red: 0.90, green: 0.93, blue: 0.95).opacity(0.88),
-                border: Color.white.opacity(0.42),
-                primaryText: ShellTokens.ColorRole.textPrimary,
-                secondaryText: ShellTokens.ColorRole.textSecondary,
-                tertiaryText: ShellTokens.ColorRole.textTertiary,
-                accent: ShellTokens.ColorRole.pine700,
-                quietFill: Color.white.opacity(0.44),
-                quietStrongFill: Color.white.opacity(0.72),
-                positiveFill: Color(red: 0.87, green: 0.94, blue: 0.89).opacity(0.96),
-                cautionFill: Color(red: 0.97, green: 0.90, blue: 0.82).opacity(0.96),
-                positiveAccent: ShellTokens.ColorRole.pine700,
-                cautionAccent: Color(red: 0.61, green: 0.37, blue: 0.10),
-                shadow: Color.black.opacity(0.10)
-            )
-        }
-    }
-}
-
+/// The margin of the book, where a golfer pencils totals and tracks the
+/// trend: a stroke line over comparable cards, one stated signal, then the
+/// recorded figures by topic. Every number names its sample.
 struct StatsView: View {
     let model: StatsViewModel
-
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-
-    private var palette: StatsPalette {
-        StatsPalette.forColorScheme(colorScheme)
-    }
-
-    private var usesCompactLayout: Bool {
-        horizontalSizeClass == .compact
-    }
-
-    private let sectionColumns = [
-        GridItem(.flexible(), spacing: ShellTokens.Spacing.x12)
-    ]
-    private let factColumns = [
-        GridItem(.flexible(), spacing: ShellTokens.Spacing.x10),
-        GridItem(.flexible(), spacing: ShellTokens.Spacing.x10),
-        GridItem(.flexible(), spacing: ShellTokens.Spacing.x10)
-    ]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var selectedSection = "Scoring"
+    @State private var selectedRound: RoundHistorySummary?
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
-                    masthead
-                    overviewRail
-                    heroCard
-                    trendCard
-                    skillSections
-                    recentRoundsSection
+                VStack(alignment: .leading, spacing: 34) {
+                    header
+                    if model.strokeLine.isEmpty {
+                        emptyState
+                    } else {
+                        strokeLine
+                        signal
+                    }
+                    if !model.recentRounds.isEmpty {
+                        recordedFigures
+                        history
+                    }
                 }
-                .padding(.horizontal, ShellTokens.Spacing.x20)
-                .padding(.top, ShellTokens.Spacing.x20)
-                .padding(.bottom, ShellTokens.Spacing.x32 + AppChromeMetrics.bottomContentInset)
+                .frame(maxWidth: 640, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 6)
+                .padding(.bottom, 32)
+                .frame(maxWidth: .infinity)
             }
-            .background(background)
+            .scrollIndicators(.hidden)
+            .background(Book.paper.ignoresSafeArea())
+            .foregroundStyle(Book.ink)
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(item: $selectedRound) { HomeRoundAnalysisDetailView(summary: $0) }
+        }
+        .tint(Book.stamp)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("SwingPal")
+                .font(.system(.headline, weight: .heavy).width(.expanded))
+            Text("Your numbers")
+                .font(Book.Typeface.display)
+                .accessibilityAddTraits(.isHeader)
+            Text(sampleLine)
+                .font(.subheadline)
+                .foregroundStyle(Book.pencil)
         }
     }
 
-    private var background: some View {
-        ZStack {
-            palette.backgroundBase
-
-            LinearGradient(
-                colors: [
-                    palette.backgroundGlow,
-                    palette.backgroundBase,
-                    palette.backgroundBase
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(palette.accent.opacity(colorScheme == .dark ? 0.12 : 0.10))
-                .frame(width: 280, height: 280)
-                .blur(radius: 42)
-                .offset(x: 160, y: -160)
+    private var sampleLine: String {
+        guard let latest = model.strokeLine.last else {
+            return "Figures appear after your first completed card."
         }
-        .ignoresSafeArea()
+        let count = model.strokeLine.count
+        return "From \(count) completed \(latest.totalHoleCount)-hole card\(count == 1 ? "" : "s"). Course difficulty is not adjusted."
     }
 
-    private var masthead: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            Text("STATS")
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.accent)
+    // MARK: Stroke line
 
-            Text("Round insights, then the numbers.")
-                .font(ShellTokens.Typography.mastheadTitle)
-                .foregroundStyle(palette.primaryText)
-
-            Text("Start with the latest takeaways, then drill into stats by skill area.")
-                .font(ShellTokens.Typography.lead)
-                .foregroundStyle(palette.secondaryText)
-                .frame(maxWidth: ShellTokens.Layout.narrativeWidth, alignment: .leading)
-        }
-    }
-
-    private var heroCard: some View {
-        card(tint: palette.heroTint, padding: 24) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                Text(model.heroTitle.uppercased())
-                    .font(ShellTokens.Typography.microEyebrow)
-                    .tracking(1.2)
-                    .foregroundStyle(palette.tertiaryText)
-
-                Text(model.heroCourseName)
-                    .font(.system(size: 30, weight: .bold))
-                    .foregroundStyle(palette.primaryText)
-
-                Text(model.heroSummary)
-                    .font(ShellTokens.Typography.body)
-                    .foregroundStyle(palette.secondaryText)
-                    .frame(maxWidth: ShellTokens.Layout.narrativeWidth, alignment: .leading)
-
-                LazyVGrid(columns: factColumns, spacing: ShellTokens.Spacing.x10) {
-                    ForEach(model.heroSnapshotFacts, id: \.title) { fact in
-                        snapshotTile(fact)
-                    }
+    private var strokeLine: some View {
+        let rounds = model.strokeLine
+        let latest = rounds.last!
+        let best = rounds.map(\.totalStrokes).min() ?? latest.totalStrokes
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("\(latest.totalStrokes)")
+                        .font(.system(size: 72, weight: .bold).width(.condensed))
+                        .monospacedDigit()
+                    BookNote("Latest · \(latest.courseName)")
+                        .lineLimit(1)
                 }
-
-                if !model.heroStrengths.isEmpty || !model.heroImprovements.isEmpty {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                        if !model.heroStrengths.isEmpty {
-                            analysisList(title: "What Went Well", items: model.heroStrengths)
-                        }
-                        if !model.heroImprovements.isEmpty {
-                            analysisList(title: "Needs Work", items: model.heroImprovements)
-                        }
-                    }
+                Spacer(minLength: 12)
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(best)")
+                        .font(.system(size: 34, weight: .bold).width(.condensed))
+                        .monospacedDigit()
+                        .foregroundStyle(Book.flag)
+                    BookNote("Best")
                 }
+            }
+            .accessibilityElement(children: .combine)
+
+            if rounds.count > 1 {
+                StrokeLineChart(rounds: rounds)
+                    .frame(height: 150)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Strokes over the last \(rounds.count) cards")
+                    .accessibilityValue(rounds.map { "\($0.totalStrokes)" }.joined(separator: ", "))
             }
         }
     }
 
-    private var overviewRail: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            Text("OVERVIEW")
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.tertiaryText)
+    private var signal: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Rectangle()
+                .fill(toneColor)
+                .frame(width: 3)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(model.trendSignalTitle).font(.headline)
+                Text(model.trendSignalDetail).font(.subheadline).foregroundStyle(Book.pencil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Text(model.trendSignalValue)
+                .font(Book.Typeface.heading)
+                .monospacedDigit()
+                .multilineTextAlignment(.trailing)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+    }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: ShellTokens.Spacing.x10) {
-                    ForEach(model.overviewHighlights, id: \.title) { highlight in
-                        overviewTile(highlight)
-                    }
+    private var toneColor: Color {
+        switch model.trendSignalTone {
+        case .positive: return Book.stamp
+        case .caution: return Book.warning
+        case .neutral: return Book.rule
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            GraphPaper()
+                .frame(height: 150)
+                .overlay {
+                    Text("Your stroke line starts with your first signed card.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(Book.pencil)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 10)
+                        .background(Book.paper)
                 }
-                .padding(.vertical, 2)
+            Text("Scores, putts and penalties from completed rounds are totalled here. Drafts stay in your history without counting.")
+                .font(.subheadline)
+                .foregroundStyle(Book.pencil)
+        }
+    }
+
+    // MARK: Figures
+
+    private var recordedFigures: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            BookSectionRule(title: "Recorded")
+            if dynamicTypeSize.isAccessibilitySize {
+                ForEach(model.sections, id: \.title) { sectionDetails($0) }
+            } else {
+                BookTabs(titles: model.sections.map(\.title), selection: $selectedSection)
+                if let section = model.sections.first(where: { $0.title == selectedSection }) ?? model.sections.first {
+                    sectionDetails(section)
+                        .id(section.title)
+                        .transition(.opacity)
+                }
+            }
+        }
+        .animation(.snappy(duration: 0.2), value: selectedSection)
+    }
+
+    private func sectionDetails(_ section: StatsSkillSection) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(section.summary)
+                .font(.subheadline)
+                .foregroundStyle(Book.pencil)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 8)
+            ForEach(section.facts, id: \.title) { fact in
+                HStack(alignment: .center, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(fact.title).font(.body)
+                        Text(fact.detail).font(.caption).foregroundStyle(Book.pencil)
+                    }
+                    Spacer(minLength: 12)
+                    Text(fact.value)
+                        .font(.system(size: 30, weight: .bold).width(.condensed))
+                        .monospacedDigit()
+                        .foregroundStyle(fact.value == "--" ? Book.pencil : Book.ink)
+                }
+                .padding(.vertical, 12)
+                .accessibilityElement(children: .combine)
+                BookHairline()
             }
         }
     }
 
-    private var trendCard: some View {
-        card(tint: palette.cardTint, padding: 20) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                HStack(alignment: .top, spacing: ShellTokens.Spacing.x12) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                        Text("TREND SIGNAL")
-                            .font(ShellTokens.Typography.microEyebrow)
-                            .tracking(1.2)
-                            .foregroundStyle(palette.tertiaryText)
-
-                        Text(model.trendSignalTitle)
-                            .font(ShellTokens.Typography.cardTitle)
-                            .foregroundStyle(palette.primaryText)
-
-                        Text(model.trendSignalDetail)
-                            .font(ShellTokens.Typography.body)
-                            .foregroundStyle(palette.secondaryText)
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 10) {
-                        Image(systemName: trendSymbolName)
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(trendAccentColor)
-                            .frame(width: 40, height: 40)
-                            .background(trendFillColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-                        Text(model.trendSignalValue)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(trendAccentColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 9)
-                            .background(trendFillColor, in: Capsule())
-                    }
-                }
+    private var history: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BookSectionRule(title: "Cards", trailing: "\(model.recentRounds.count)").padding(.bottom, 6)
+            ForEach(model.recentRounds) { round in
+                Button { selectedRound = round } label: { ScorecardStub(round: round) }
+                    .buttonStyle(BookRowButtonStyle())
+                BookHairline()
             }
         }
     }
+}
 
-    private var skillSections: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            Text("SKILL AREAS")
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.tertiaryText)
+/// Book-edge tabs: labels on a rule, the selected one underlined in ink.
+struct BookTabs: View {
+    let titles: [String]
+    @Binding var selection: String
+    @Namespace private var underline
 
-            LazyVGrid(columns: sectionColumns, spacing: ShellTokens.Spacing.x12) {
-                ForEach(model.sections, id: \.title) { section in
-                    skillCard(section)
-                }
-            }
-        }
-    }
-
-    private var recentRoundsSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            Text(model.recentRoundsTitle.uppercased())
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.tertiaryText)
-
-            ForEach(model.recentRoundCards) { cardModel in
-                card(tint: palette.cardTint, padding: 18) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x14) {
-                        HStack(alignment: .top, spacing: ShellTokens.Spacing.x12) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(cardModel.courseName)
-                                    .font(.headline.weight(.semibold))
-                                    .foregroundStyle(palette.primaryText)
-
-                                Text(cardModel.statusTitle)
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(cardModel.statusTitle == "Finished Round" ? palette.positiveAccent : palette.cautionAccent)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 7)
-                                    .background(
-                                        cardModel.statusTitle == "Finished Round" ? palette.positiveFill : palette.cautionFill,
-                                        in: Capsule()
-                                    )
-                            }
-
-                            Spacer()
-
-                            Text(cardModel.updatedAt.formatted(.relative(presentation: .named)))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(palette.secondaryText)
-                        }
-
-                        HStack(alignment: .center, spacing: ShellTokens.Spacing.x14) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(cardModel.scoreValue)
-                                    .font(.system(size: 34, weight: .bold))
-                                    .foregroundStyle(palette.primaryText)
-                                Text(cardModel.scoreCaption.uppercased())
-                                    .font(ShellTokens.Typography.microEyebrow)
-                                    .tracking(1.1)
-                                    .foregroundStyle(palette.tertiaryText)
-                            }
-                            .frame(width: 92, alignment: .leading)
-                            .padding(.horizontal, ShellTokens.Spacing.x12)
-                            .padding(.vertical, ShellTokens.Spacing.x14)
-                            .background(palette.quietStrongFill, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-
-                            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                                HStack {
-                                    Text("Round Progress")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(palette.secondaryText)
-
-                                    Spacer()
-
-                                    Text(cardModel.progressLabel)
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(palette.primaryText)
-                                }
-
-                                GeometryReader { proxy in
-                                    let width = max(proxy.size.width * cardModel.progressValue, 14)
-
-                                    ZStack(alignment: .leading) {
-                                        Capsule()
-                                            .fill(palette.quietFill)
-
-                                        Capsule()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [palette.accent.opacity(0.78), palette.accent],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                            .frame(width: width)
-                                    }
-                                }
-                                .frame(height: 10)
-
-                                if usesCompactLayout {
-                                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                                        ForEach(cardModel.metadataPills, id: \.self) { pill in
-                                            recentRoundPill(pill)
-                                        }
-                                    }
-                                } else {
-                                    HStack(spacing: ShellTokens.Spacing.x8) {
-                                        ForEach(cardModel.metadataPills, id: \.self) { pill in
-                                            recentRoundPill(pill)
-                                        }
-                                    }
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 20) {
+                ForEach(titles, id: \.self) { title in
+                    let selected = title == selection
+                    Button { selection = title } label: {
+                        VStack(spacing: 6) {
+                            Text(title)
+                                .font(.subheadline.weight(selected ? .bold : .medium))
+                                .foregroundStyle(selected ? Book.ink : Book.pencil)
+                            ZStack {
+                                Rectangle().fill(.clear).frame(height: 2)
+                                if selected {
+                                    Rectangle().fill(Book.ink).frame(height: 2)
+                                        .matchedGeometryEffect(id: "underline", in: underline)
                                 }
                             }
                         }
+                        .frame(minHeight: 44)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
         }
+        .scrollIndicators(.hidden)
+        .overlay(alignment: .bottom) { BookHairline().offset(y: -8) }
+        .sensoryFeedback(.selection, trigger: selection)
     }
+}
 
-    private func analysisList(title: String, items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-            Text(title.uppercased())
-                .font(ShellTokens.Typography.microEyebrow)
-                .tracking(1.1)
-                .foregroundStyle(palette.tertiaryText)
+/// Strokes per card, oldest to newest, pencilled on ruled paper. The latest
+/// card is ringed; the best is marked in flag ink.
+struct StrokeLineChart: View {
+    let rounds: [RoundHistorySummary]
 
-            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                HStack(alignment: .top, spacing: 8) {
-                    Circle()
-                        .fill(palette.accent)
-                        .frame(width: 6, height: 6)
-                        .padding(.top, 6)
-                    Text(item)
-                        .font(ShellTokens.Typography.body)
-                        .foregroundStyle(palette.secondaryText)
+    var body: some View {
+        Canvas { context, size in
+            let values = rounds.map { Double($0.totalStrokes) }
+            guard let lo = values.min(), let hi = values.max() else { return }
+            let pad = max((hi - lo) * 0.25, 2)
+            let minV = lo - pad, maxV = hi + pad
+            let left: CGFloat = 30, right: CGFloat = 14, top: CGFloat = 10, bottom: CGFloat = 18
+            let w = size.width - left - right, h = size.height - top - bottom
+            func y(_ v: Double) -> CGFloat { top + h * CGFloat(1 - (v - minV) / (maxV - minV)) }
+            func x(_ i: Int) -> CGFloat { left + (values.count == 1 ? w / 2 : w * CGFloat(i) / CGFloat(values.count - 1)) }
+
+            // Rules at whole strokes, labelled sparsely.
+            let step = max(1.0, ((maxV - minV) / 4).rounded())
+            var v = (minV / step).rounded(.up) * step
+            while v <= maxV {
+                var rule = Path()
+                rule.move(to: CGPoint(x: left, y: y(v)))
+                rule.addLine(to: CGPoint(x: size.width - right, y: y(v)))
+                context.stroke(rule, with: .color(Book.rule), lineWidth: 1)
+                context.draw(Text("\(Int(v))").font(.system(size: 10, weight: .semibold).width(.condensed)).foregroundColor(Book.pencil),
+                             at: CGPoint(x: left - 6, y: y(v)), anchor: .trailing)
+                v += step
+            }
+
+            var line = Path()
+            for (i, value) in values.enumerated() {
+                let p = CGPoint(x: x(i), y: y(value))
+                if i == 0 { line.move(to: p) } else { line.addLine(to: p) }
+            }
+            context.stroke(line, with: .color(Book.ink.opacity(0.7)), style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
+
+            let best = values.min()
+            for (i, value) in values.enumerated() {
+                let p = CGPoint(x: x(i), y: y(value))
+                let isBest = value == best
+                context.fill(Path(ellipseIn: CGRect(x: p.x - 3.5, y: p.y - 3.5, width: 7, height: 7)),
+                             with: .color(isBest ? Book.flag : Book.ink))
+                if i == values.count - 1 {
+                    context.stroke(Path(ellipseIn: CGRect(x: p.x - 8, y: p.y - 8, width: 16, height: 16)),
+                                   with: .color(Book.ink), lineWidth: 1.2)
                 }
             }
-        }
-    }
-
-    private func skillCard(_ section: StatsSkillSection) -> some View {
-        card(tint: palette.cardTint, padding: 20) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                HStack(alignment: .center, spacing: ShellTokens.Spacing.x12) {
-                    Text(section.title)
-                        .font(ShellTokens.Typography.sectionTitle)
-                        .foregroundStyle(palette.primaryText)
-
-                    Spacer()
-
-                    Image(systemName: iconName(for: section.title))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.accent)
-                        .frame(width: 34, height: 34)
-                        .background(palette.quietFill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-
-                Text(section.summary)
-                    .font(ShellTokens.Typography.body)
-                    .foregroundStyle(palette.secondaryText)
-
-                LazyVGrid(columns: factColumns, spacing: ShellTokens.Spacing.x10) {
-                    ForEach(Array(section.facts.enumerated()), id: \.element.title) { index, fact in
-                        factTile(fact, isPrimary: index == 0)
-                    }
-                }
+            if let first = rounds.first, let last = rounds.last {
+                context.draw(Text(first.updatedAt.formatted(.dateTime.day().month(.abbreviated))).font(.system(size: 10, weight: .medium)).foregroundColor(Book.pencil),
+                             at: CGPoint(x: left, y: size.height - 4), anchor: .leading)
+                context.draw(Text(last.updatedAt.formatted(.dateTime.day().month(.abbreviated))).font(.system(size: 10, weight: .medium)).foregroundColor(Book.pencil),
+                             at: CGPoint(x: size.width - right, y: size.height - 4), anchor: .trailing)
             }
         }
     }
+}
 
-    private func snapshotTile(_ fact: StatsFact) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(fact.title.uppercased())
-                .font(ShellTokens.Typography.microEyebrow)
-                .tracking(1.1)
-                .foregroundStyle(palette.tertiaryText)
-
-            Text(fact.value)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(palette.primaryText)
-
-            Text(fact.detail)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(palette.secondaryText)
-                .lineLimit(2)
+/// Blank ruled paper for a stroke line not yet drawn.
+struct GraphPaper: View {
+    var body: some View {
+        Canvas { context, size in
+            var grid = Path()
+            var y: CGFloat = 0
+            while y <= size.height { grid.move(to: CGPoint(x: 0, y: y)); grid.addLine(to: CGPoint(x: size.width, y: y)); y += 22 }
+            context.stroke(grid, with: .color(Book.rule), lineWidth: 1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, ShellTokens.Spacing.x12)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .background(palette.quietFill, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private func overviewTile(_ highlight: StatsOverviewHighlight) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 8) {
-                Image(systemName: iconName(for: highlight.title))
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(palette.accent)
-
-                Text(highlight.title.uppercased())
-                    .font(ShellTokens.Typography.microEyebrow)
-                    .tracking(1.1)
-                    .foregroundStyle(palette.tertiaryText)
-            }
-
-            Text(highlight.value)
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(palette.primaryText)
-
-            Text(highlight.detail)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(palette.secondaryText)
-                .lineLimit(2)
-        }
-        .frame(width: 148, alignment: .leading)
-        .padding(.horizontal, ShellTokens.Spacing.x14)
-        .padding(.vertical, ShellTokens.Spacing.x14)
-        .background(palette.quietFill, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(palette.border.opacity(0.7), lineWidth: 1)
-        }
-    }
-
-    private func factTile(_ fact: StatsFact, isPrimary: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(fact.title.uppercased())
-                .font(ShellTokens.Typography.microEyebrow)
-                .tracking(1.1)
-                .foregroundStyle(isPrimary ? palette.secondaryText : palette.tertiaryText)
-
-            Text(fact.value)
-                .font(.system(size: isPrimary ? 24 : 21, weight: .bold))
-                .foregroundStyle(isPrimary ? palette.accent : palette.primaryText)
-
-            Text(fact.detail)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(palette.secondaryText)
-                .lineLimit(3)
-        }
-        .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
-        .padding(.horizontal, ShellTokens.Spacing.x12)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .background(isPrimary ? palette.quietStrongFill : palette.quietFill, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(isPrimary ? palette.border.opacity(0.85) : palette.border.opacity(0.55), lineWidth: 1)
-        }
-    }
-
-    private func recentRoundPill(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(palette.secondaryText)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(palette.quietFill, in: Capsule())
-    }
-
-    private var trendFillColor: Color {
-        switch model.trendSignalTone {
-        case .positive:
-            return palette.positiveFill
-        case .caution:
-            return palette.cautionFill
-        case .neutral:
-            return palette.quietFill
-        }
-    }
-
-    private var trendAccentColor: Color {
-        switch model.trendSignalTone {
-        case .positive:
-            return palette.positiveAccent
-        case .caution:
-            return palette.cautionAccent
-        case .neutral:
-            return palette.accent
-        }
-    }
-
-    private var trendSymbolName: String {
-        switch model.trendSignalTone {
-        case .positive:
-            return "arrow.down.right"
-        case .caution:
-            return "arrow.up.right"
-        case .neutral:
-            return "equal"
-        }
-    }
-
-    private func iconName(for title: String) -> String {
-        switch title {
-        case "Driving":
-            return "figure.golf"
-        case "Approach":
-            return "scope"
-        case "Short Game":
-            return "sparkles"
-        case "Putting":
-            return "circle.lefthalf.filled"
-        default:
-            return "chart.bar"
-        }
-    }
-
-    private func card<Content: View>(tint: Color, padding: CGFloat, @ViewBuilder content: () -> Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 28, style: .continuous)
-
-        return VStack(alignment: .leading, spacing: 0) {
-            content()
-        }
-        .padding(padding)
-        .background {
-            ZStack {
-                shape.fill(.ultraThinMaterial)
-                shape.fill(tint)
-            }
-        }
-        .overlay {
-            shape.stroke(palette.border, lineWidth: 1)
-        }
-        .shadow(color: palette.shadow, radius: 18, y: 10)
+        .accessibilityHidden(true)
     }
 }

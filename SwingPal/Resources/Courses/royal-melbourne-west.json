@@ -1,7 +1,7 @@
 {
   "id": "440138ed-57c1-5c9d-977e-aef138572faa",
   "name": "Royal Melbourne",
-  "distanceKilometers": 3.2,
+  "distanceKilometers": null,
   "coordinate": {
     "latitude": -37.970347744510875,
     "longitude": 145.0286573027355

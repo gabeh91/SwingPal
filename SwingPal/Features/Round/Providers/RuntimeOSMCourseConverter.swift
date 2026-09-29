@@ -33,18 +33,35 @@ enum RuntimeOSMCourseConverter {
         case invalidRawData
         case noHolesDetected
         case insufficientHoles(found: Int)
+        /// Hole numbers say the course has `expected` holes but some aren't mapped.
+        case incompleteCourse(expected: Int, missing: [Int])
 
         var errorDescription: String? {
             switch self {
             case .invalidRawData:
                 return "OpenStreetMap returned an unreadable response."
             case .noHolesDetected:
-                return "OpenStreetMap doesn't have any tagged holes for this course yet."
+                return "OpenStreetMap doesn't have this course's holes mapped yet, so there's nothing to build distances from."
             case .insufficientHoles(let found):
-                return "Only \(found) holes detected; we need at least \(minHolesForCourse)."
+                return "OpenStreetMap only has \(found) of this course's holes mapped; we need at least \(minHolesForCourse)."
+            case .incompleteCourse(let expected, let missing):
+                let list = missing.map(String.init).joined(separator: ", ")
+                return "OpenStreetMap has \(expected - missing.count) of this course's \(expected) holes mapped (missing \(missing.count == 1 ? "hole" : "holes") \(list))."
             }
         }
     }
+
+    /// Radius of a green drawn where OpenStreetMap has none (a typical green is ~25 m across).
+    static let estimatedGreenRadiusMeters: Double = 12
+    static let estimatedLabelSuffix = "(estimated)"
+    /// Label prefix of each half of a double green, followed by the other hole's number and ")".
+    static let sharedGreenLabelPrefix = "Green (shared with hole "
+    /// A flag this close to a mapped green (or inside it) is on that green.
+    static let flagOnGreenToleranceMeters: Double = 3
+    /// Two flags on one green must be at least this far apart to split it.
+    static let minimumFlagSeparationMeters: Double = 4
+    /// A golf=pin node within this distance of a hole line's green end is that hole's flag.
+    static let pinSnapMeters: Double = 30
 
     static func convert(
         rawOSM data: Data,
@@ -60,6 +77,10 @@ enum RuntimeOSMCourseConverter {
         // Collect holes + features.
         let holeWays = payload.elements.compactMap(HoleWay.init(element:))
         let featureWays = payload.elements.compactMap(FeatureWay.init(element:))
+        let pins: [SwingPalCourse.Coordinate] = payload.elements.compactMap { element in
+            guard element.tags?["golf"] == "pin", let lat = element.lat, let lon = element.lon else { return nil }
+            return .init(latitude: lat, longitude: lon)
+        }
 
         guard !holeWays.isEmpty else {
             throw ConversionError.noHolesDetected
@@ -75,9 +96,18 @@ enum RuntimeOSMCourseConverter {
         guard orderedHoles.count >= minHolesForCourse else {
             throw ConversionError.insufficientHoles(found: orderedHoles.count)
         }
+        if let gap = missingHoleNumbers(in: orderedHoles) {
+            throw ConversionError.incompleteCourse(expected: gap.expected, missing: gap.missing)
+        }
 
         let slug = stableSlug(for: discovered)
-        let assignments = assignFeatures(featureWays, to: orderedHoles)
+        var assignments = assignFeatures(featureWays, to: orderedHoles)
+        shareDoubleGreens(
+            holes: orderedHoles,
+            assignments: &assignments,
+            greens: featureWays.filter { $0.kind == .green },
+            pins: pins
+        )
 
         var holesPayload: [SwingPalCourse.Hole] = []
         for (index, hole) in orderedHoles.enumerated() {
@@ -87,6 +117,7 @@ enum RuntimeOSMCourseConverter {
                 forHoleNumber: holeNumber,
                 hole: hole,
                 records: records,
+                pins: pins,
                 slug: slug
             )
             let par = parseHolePar(from: hole.tags) ?? 4
@@ -111,7 +142,7 @@ enum RuntimeOSMCourseConverter {
         return SwingPalCourse(
             id: deterministicUUID(slug: slug, label: "course"),
             name: discovered.name,
-            distanceKilometers: discovered.distanceKilometers ?? 0,
+            distanceKilometers: discovered.distanceKilometers,
             coordinate: courseCentroid,
             holeCount: holesPayload.count,
             par: totalPar,
@@ -146,6 +177,8 @@ enum RuntimeOSMCourseConverter {
         let tags: [String: String]?
         let geometry: [GeometryPoint]?
         let center: GeometryPoint?
+        let lat: Double?
+        let lon: Double?
     }
 
     private struct GeometryPoint: Decodable {
@@ -171,6 +204,32 @@ enum RuntimeOSMCourseConverter {
         let id: Int64
         let kind: SwingPalCourse.Hole.FeatureKind
         let geometry: [SwingPalCourse.Coordinate]
+        var isEstimated = false
+        /// Set when this green is part of a double green shared with another hole.
+        var sharedWithHole: Int?
+
+        init(id: Int64, kind: SwingPalCourse.Hole.FeatureKind, geometry: [SwingPalCourse.Coordinate], sharedWithHole: Int?) {
+            self.id = id
+            self.kind = kind
+            self.geometry = geometry
+            self.sharedWithHole = sharedWithHole
+        }
+
+        /// A round shape standing in for a polygon OpenStreetMap doesn't have.
+        init(estimated kind: SwingPalCourse.Hole.FeatureKind, id: Int64, around centre: SwingPalCourse.Coordinate, radiusMeters: Double) {
+            self.id = id
+            self.kind = kind
+            self.isEstimated = true
+            let cosLat = max(cos(centre.latitude * .pi / 180), 0.1)
+            let ring = (0..<16).map { step -> SwingPalCourse.Coordinate in
+                let angle = Double(step) / 16 * 2 * .pi
+                return .init(
+                    latitude: centre.latitude + sin(angle) * radiusMeters / 110_540,
+                    longitude: centre.longitude + cos(angle) * radiusMeters / (111_320 * cosLat)
+                )
+            }
+            self.geometry = ring + [ring[0]]
+        }
 
         init?(element: Element) {
             guard let golf = element.tags?["golf"] else { return nil }
@@ -192,7 +251,7 @@ enum RuntimeOSMCourseConverter {
             return .green
         case "bunker":
             return .bunker
-        case "water_hazard":
+        case "water_hazard", "lateral_water_hazard":
             return .water
         default:
             return nil
@@ -280,6 +339,53 @@ enum RuntimeOSMCourseConverter {
         return Int(digits)
     }
 
+    /// When every hole carries a numeric `ref`, the course size those numbers
+    /// imply (9 or 18) and which of them aren't mapped. `nil` when nothing is
+    /// missing or the refs can't tell.
+    private static func missingHoleNumbers(in holes: [HoleWay]) -> (expected: Int, missing: [Int])? {
+        let refs = holes.compactMap { numericPrefix(of: $0.tags["ref"] ?? "") }
+        guard refs.count == holes.count, let highest = refs.max(), highest <= maxHolesForCourse else { return nil }
+        let expected = highest <= 9 ? 9 : 18
+        let missing = (1...expected).filter { !refs.contains($0) }
+        return missing.isEmpty ? nil : (expected, missing)
+    }
+
+    private static func nearest(
+        to point: SwingPalCourse.Coordinate,
+        in candidates: [SwingPalCourse.Coordinate],
+        within limit: Double
+    ) -> SwingPalCourse.Coordinate? {
+        let origin = CLLocationCoordinate2D(latitude: point.latitude, longitude: point.longitude)
+        return candidates
+            .map { ($0, haversineMeters(origin, CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude))) }
+            .filter { $0.1 <= limit }
+            .min { $0.1 < $1.1 }?
+            .0
+    }
+
+    /// Plain-language notes on what the converter had to work out for
+    /// itself: greens or tees it estimated, and double greens it split
+    /// between two holes.
+    static func importNotes(for course: SwingPalCourse) -> [String] {
+        course.holes.flatMap { hole in
+            hole.features.compactMap { feature -> String? in
+                if feature.label.hasSuffix(estimatedLabelSuffix) {
+                    return "Hole \(hole.number): \(feature.kind == .green ? "green" : "tee") estimated, as OpenStreetMap has none drawn. Distances to it are approximate."
+                }
+                if let other = sharedGreenPartner(of: feature), other > hole.number {
+                    return "Holes \(hole.number) and \(other) share a double green. Each hole measures to its own half, split between the two flags."
+                }
+                return nil
+            }
+        }
+    }
+
+    /// The other hole's number when `feature` is half of a double green.
+    static func sharedGreenPartner(of feature: SwingPalCourse.Hole.Feature) -> Int? {
+        guard feature.kind == .green, feature.label.hasPrefix(sharedGreenLabelPrefix) else { return nil }
+        return Int(feature.label.dropFirst(sharedGreenLabelPrefix.count).prefix { $0.isNumber })
+    }
+
     private static func parseHolePar(from tags: [String: String]) -> Int? {
         guard let raw = tags["par"], let value = Int(raw), (3...5).contains(value) else {
             return nil
@@ -321,27 +427,26 @@ enum RuntimeOSMCourseConverter {
         forHoleNumber holeNumber: Int,
         hole: HoleWay,
         records: [FeatureWay],
+        pins: [SwingPalCourse.Coordinate] = [],
         slug: String
     ) -> [SwingPalCourse.Hole.Feature] {
-        let endA = hole.geometry.first ?? .init(latitude: 0, longitude: 0)
-        let endB = hole.geometry.last ?? endA
-
-        let teeRecords = records.filter { $0.kind == .tee }
-        let greenRecords = records.filter { $0.kind == .green }
+        var teeRecords = records.filter { $0.kind == .tee }
+        var greenRecords = records.filter { $0.kind == .green }
         let fairwayRecords = records.filter { $0.kind == .fairway }
         let bunkerRecords = records.filter { $0.kind == .bunker }
         let waterRecords = records.filter { $0.kind == .water }
 
-        let endATees = minDistanceMeters(from: endA, to: teeRecords)
-        let endBTees = minDistanceMeters(from: endB, to: teeRecords)
-        let teeEnd: SwingPalCourse.Coordinate
-        let greenEnd: SwingPalCourse.Coordinate
-        if endATees <= endBTees {
-            teeEnd = endA
-            greenEnd = endB
-        } else {
-            teeEnd = endB
-            greenEnd = endA
+        let (teeEnd, greenEnd) = ends(of: hole, records: records)
+
+        // Fill a missing green or tee from what the hole does have, so one
+        // unmapped polygon doesn't sink the whole course. Estimated shapes are
+        // labelled, and the import reports them.
+        if greenRecords.isEmpty {
+            let pin = nearest(to: greenEnd, in: pins, within: pinSnapMeters) ?? greenEnd
+            greenRecords = [FeatureWay(estimated: .green, id: -hole.id, around: pin, radiusMeters: estimatedGreenRadiusMeters)]
+        }
+        if teeRecords.isEmpty {
+            teeRecords = [FeatureWay(estimated: .tee, id: -hole.id - 1, around: teeEnd, radiusMeters: 5)]
         }
 
         let sortedTees = teeRecords.sorted {
@@ -362,11 +467,17 @@ enum RuntimeOSMCourseConverter {
             switch record.kind {
             case .tee:
                 teeIndex += 1
-                label = "Tee box \(teeIndex)"
+                label = record.isEstimated ? "Tee \(estimatedLabelSuffix)" : "Tee box \(teeIndex)"
             case .fairway:
                 label = "Fairway corridor"
             case .green:
-                label = "Green"
+                if record.isEstimated {
+                    label = "Green \(estimatedLabelSuffix)"
+                } else if let other = record.sharedWithHole {
+                    label = "\(sharedGreenLabelPrefix)\(other))"
+                } else {
+                    label = "Green"
+                }
             case .bunker:
                 bunkerIndex += 1
                 label = "Bunker \(bunkerIndex)"
@@ -388,6 +499,142 @@ enum RuntimeOSMCourseConverter {
             )
         }
         return features
+    }
+
+    /// The tee and green ends of a hole line: the tee end is the one nearest
+    /// a tee polygon; failing that, the one farthest from a green; failing
+    /// that, the way's first point (OpenStreetMap draws golf=hole from tee to
+    /// green).
+    private static func ends(
+        of hole: HoleWay,
+        records: [FeatureWay]
+    ) -> (tee: SwingPalCourse.Coordinate, green: SwingPalCourse.Coordinate) {
+        let endA = hole.geometry.first ?? .init(latitude: 0, longitude: 0)
+        let endB = hole.geometry.last ?? endA
+        let tees = records.filter { $0.kind == .tee }
+        let greens = records.filter { $0.kind == .green }
+        let aIsTee: Bool
+        if !tees.isEmpty {
+            aIsTee = minDistanceMeters(from: endA, to: tees) <= minDistanceMeters(from: endB, to: tees)
+        } else if !greens.isEmpty {
+            aIsTee = minDistanceMeters(from: endA, to: greens) >= minDistanceMeters(from: endB, to: greens)
+        } else {
+            aIsTee = true
+        }
+        return aIsTee ? (endA, endB) : (endB, endA)
+    }
+
+    /// Where a hole's flag is: the mapped pin nearest the green end of its
+    /// line, or the green end itself.
+    private static func flag(
+        of hole: HoleWay,
+        records: [FeatureWay],
+        pins: [SwingPalCourse.Coordinate]
+    ) -> SwingPalCourse.Coordinate {
+        let greenEnd = ends(of: hole, records: records).green
+        return nearest(to: greenEnd, in: pins, within: pinSnapMeters) ?? greenEnd
+    }
+
+    // MARK: - Double greens
+
+    /// A double green (one putting surface serving two holes) is drawn once
+    /// in OpenStreetMap, so it's assigned to whichever hole line is nearest
+    /// and the other hole looks green-less. For each hole without a green
+    /// whose flag is on a mapped green, split that green between the two
+    /// flags, so each hole gets its own half and measures to it. A green no
+    /// hole claimed is simply given to the hole.
+    private static func shareDoubleGreens(
+        holes: [HoleWay],
+        assignments: inout [Int64: [FeatureWay]],
+        greens: [FeatureWay],
+        pins: [SwingPalCourse.Coordinate]
+    ) {
+        for (index, hole) in holes.enumerated() {
+            let records = assignments[hole.id] ?? []
+            guard !records.contains(where: { $0.kind == .green }) else { continue }
+            let holeFlag = flag(of: hole, records: records, pins: pins)
+            guard let green = greens.first(where: {
+                ringContains($0.geometry, holeFlag)
+                    || distanceToRingMeters(holeFlag, ring: $0.geometry) <= flagOnGreenToleranceMeters
+            }) else { continue }
+
+            let owner = holes.enumerated().first { other in
+                other.element.id != hole.id
+                    && (assignments[other.element.id] ?? []).contains { $0.kind == .green && $0.id == green.id }
+            }
+            guard let owner,
+                  let ownerRecords = assignments[owner.element.id],
+                  let ownerGreenIndex = ownerRecords.firstIndex(where: { $0.kind == .green && $0.id == green.id })
+            else {
+                assignments[hole.id, default: []].append(green)
+                continue
+            }
+
+            let (ownerIndex, ownerHole) = (owner.offset, owner.element)
+            let ownerGreen = ownerRecords[ownerGreenIndex]
+            let ownerFlag = flag(of: ownerHole, records: ownerRecords, pins: pins)
+            // Both holes found the same flag: this hole's own green is just
+            // unmapped, not shared. Leave it to be estimated.
+            guard haversineMeters(
+                CLLocationCoordinate2D(latitude: ownerFlag.latitude, longitude: ownerFlag.longitude),
+                CLLocationCoordinate2D(latitude: holeFlag.latitude, longitude: holeFlag.longitude)
+            ) >= minimumFlagSeparationMeters else { continue }
+            let halves = split(ownerGreen.geometry, between: ownerFlag, and: holeFlag)
+            assignments[ownerHole.id]?[ownerGreenIndex] = FeatureWay(
+                id: green.id, kind: .green,
+                geometry: halves?.nearA ?? ownerGreen.geometry,
+                sharedWithHole: index + 1
+            )
+            assignments[hole.id, default: []].append(FeatureWay(
+                id: green.id, kind: .green,
+                geometry: halves?.nearB ?? ownerGreen.geometry,
+                sharedWithHole: ownerIndex + 1
+            ))
+        }
+    }
+
+    /// Cuts a polygon along the perpendicular bisector of `a` and `b`,
+    /// returning the part on each point's side as closed rings. `nil` when
+    /// the points are too close to tell apart or either part is degenerate.
+    static func split(
+        _ ring: [SwingPalCourse.Coordinate],
+        between a: SwingPalCourse.Coordinate,
+        and b: SwingPalCourse.Coordinate
+    ) -> (nearA: [SwingPalCourse.Coordinate], nearB: [SwingPalCourse.Coordinate])? {
+        let plane = LocalPlane(origin: a)
+        let pb = plane.point(b)
+        let length = hypot(pb.x, pb.y)
+        guard length >= minimumFlagSeparationMeters else { return nil }
+        // Signed distance past the bisector, towards b.
+        func side(_ p: (x: Double, y: Double)) -> Double {
+            ((p.x - pb.x / 2) * pb.x + (p.y - pb.y / 2) * pb.y) / length
+        }
+        var points = ring.map(plane.point)
+        if points.count > 1, let first = points.first, let last = points.last, first == last {
+            points.removeLast()
+        }
+        guard points.count >= 3 else { return nil }
+
+        func clip(keepingSign sign: Double) -> [SwingPalCourse.Coordinate]? {
+            var kept: [(x: Double, y: Double)] = []
+            for i in points.indices {
+                let current = points[i]
+                let next = points[(i + 1) % points.count]
+                let fc = side(current) * sign
+                let fn = side(next) * sign
+                if fc <= 0 { kept.append(current) }
+                if (fc < 0 && fn > 0) || (fc > 0 && fn < 0) {
+                    let t = fc / (fc - fn)
+                    kept.append((current.x + (next.x - current.x) * t, current.y + (next.y - current.y) * t))
+                }
+            }
+            guard kept.count >= 3 else { return nil }
+            let coordinates = kept.map(plane.coordinate)
+            return coordinates + [coordinates[0]]
+        }
+
+        guard let nearA = clip(keepingSign: 1), let nearB = clip(keepingSign: -1) else { return nil }
+        return (nearA, nearB)
     }
 
     private static func distanceFromTee(
@@ -514,6 +761,47 @@ extension RuntimeOSMCourseConverter {
         let h = sin(dLat / 2) * sin(dLat / 2)
             + cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2)
         return 2 * earthRadiusMeters * asin(min(1.0, sqrt(h)))
+    }
+
+    /// An east/north plane in metres around `origin`; exact enough over a
+    /// golf hole.
+    struct LocalPlane {
+        let origin: SwingPalCourse.Coordinate
+        private var cosLat: Double { max(cos(origin.latitude * .pi / 180), 0.1) }
+
+        func point(_ coordinate: SwingPalCourse.Coordinate) -> (x: Double, y: Double) {
+            ((coordinate.longitude - origin.longitude) * 111_320 * cosLat,
+             (coordinate.latitude - origin.latitude) * 110_540)
+        }
+
+        func coordinate(_ point: (x: Double, y: Double)) -> SwingPalCourse.Coordinate {
+            .init(latitude: origin.latitude + point.y / 110_540,
+                  longitude: origin.longitude + point.x / (111_320 * cosLat))
+        }
+    }
+
+    /// Whether `point` lies inside the polygon `ring` (even-odd rule).
+    static func ringContains(_ ring: [SwingPalCourse.Coordinate], _ point: SwingPalCourse.Coordinate) -> Bool {
+        guard ring.count >= 3 else { return false }
+        var inside = false
+        var previous = ring[ring.count - 1]
+        for current in ring {
+            if (current.latitude > point.latitude) != (previous.latitude > point.latitude) {
+                let crossing = (previous.longitude - current.longitude)
+                    * (point.latitude - current.latitude) / (previous.latitude - current.latitude)
+                    + current.longitude
+                if point.longitude < crossing { inside.toggle() }
+            }
+            previous = current
+        }
+        return inside
+    }
+
+    /// Distance in metres from `point` to the outline of `ring`.
+    static func distanceToRingMeters(_ point: SwingPalCourse.Coordinate, ring: [SwingPalCourse.Coordinate]) -> Double {
+        guard let first = ring.first else { return .infinity }
+        let closed = ring.last == first ? ring : ring + [first]
+        return closestSegmentDistanceMeters(point, polyline: closed)
     }
 
     /// Closest distance in metres from `point` to a polyline. Uses a flat-

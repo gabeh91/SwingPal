@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Launch: the yardage book's cover. Paper, and the hole mark centred at 200 pt.
+            LaunchSplashView picks up from exactly this frame.-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
@@ -16,57 +18,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashBackground" translatesAutoresizingMaskIntoConstraints="NO" id="bgx-SplashBg">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                            </imageView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="box-SplashColumn">
-                                <rect key="frame" x="24.0" y="252.0" width="345.0" height="348.0"/>
-                                <subviews>
-                                    <imageView clipsSubviews="NO" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchScreenIcon" translatesAutoresizingMaskIntoConstraints="NO" id="img-LaunchCard">
-                                        <rect key="frame" x="112.5" y="0.0" width="120.0" height="120.0"/>
-                                    </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="SwingPal" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V08-0x-W5J">
-                                        <rect key="frame" x="0.0" y="244.0" width="345.0" height="53.0"/>
-                                        <fontDescription key="fontDescription" type="custom" name="NewYorkLarge-Semibold" family="New York Large" pointSize="44"/>
-                                        <color key="textColor" name="SplashTitleColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Power Up your golf game" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AdY-oM-hvE">
-                                        <rect key="frame" x="0.0" y="307.0" width="345.0" height="48.0"/>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3" weight="medium"/>
-                                        <color key="textColor" name="SplashSubtitleColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchMark" translatesAutoresizingMaskIntoConstraints="NO" id="mrk-Ln-Mk1">
+                                <rect key="frame" x="96.5" y="326" width="200" height="200"/>
                                 <constraints>
-                                    <constraint firstItem="img-LaunchCard" firstAttribute="top" secondItem="box-SplashColumn" secondAttribute="top" id="cr-Img-T"/>
-                                    <constraint firstItem="img-LaunchCard" firstAttribute="centerX" secondItem="box-SplashColumn" secondAttribute="centerX" id="cr-Img-CX"/>
-                                    <constraint firstItem="img-LaunchCard" firstAttribute="width" constant="120" id="cr-Card-W"/>
-                                    <constraint firstItem="img-LaunchCard" firstAttribute="height" constant="120" id="cr-Card-H"/>
-                                    <constraint firstItem="V08-0x-W5J" firstAttribute="top" secondItem="img-LaunchCard" secondAttribute="bottom" constant="24" id="cr-Title-T"/>
-                                    <constraint firstItem="V08-0x-W5J" firstAttribute="centerX" secondItem="box-SplashColumn" secondAttribute="centerX" id="cr-Title-CX"/>
-                                    <constraint firstItem="V08-0x-W5J" firstAttribute="leading" secondItem="box-SplashColumn" secondAttribute="leading" id="cr-Title-L"/>
-                                    <constraint firstItem="box-SplashColumn" firstAttribute="trailing" secondItem="V08-0x-W5J" secondAttribute="trailing" id="cr-Title-R"/>
-                                    <constraint firstItem="AdY-oM-hvE" firstAttribute="top" secondItem="V08-0x-W5J" secondAttribute="bottom" constant="10" id="cr-Tag-T"/>
-                                    <constraint firstItem="AdY-oM-hvE" firstAttribute="centerX" secondItem="box-SplashColumn" secondAttribute="centerX" id="cr-Tag-CX"/>
-                                    <constraint firstItem="AdY-oM-hvE" firstAttribute="leading" secondItem="box-SplashColumn" secondAttribute="leading" id="cr-Tag-L"/>
-                                    <constraint firstItem="box-SplashColumn" firstAttribute="trailing" secondItem="AdY-oM-hvE" secondAttribute="trailing" id="cr-Tag-R"/>
-                                    <constraint firstItem="box-SplashColumn" firstAttribute="bottom" secondItem="AdY-oM-hvE" secondAttribute="bottom" id="cr-Col-B"/>
+                                    <constraint firstAttribute="width" constant="200" id="mrk-W-200"/>
+                                    <constraint firstAttribute="height" constant="200" id="mrk-H-200"/>
                                 </constraints>
-                            </view>
+                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
-                        <color key="backgroundColor" red="0.050980392160000001" green="0.078431372549000003" blue="0.070588235293999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" name="CourseGround"/>
                         <constraints>
-                            <constraint firstItem="bgx-SplashBg" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="cr-Bg-L"/>
-                            <constraint firstItem="bgx-SplashBg" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="cr-Bg-R"/>
-                            <constraint firstItem="bgx-SplashBg" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="cr-Bg-T"/>
-                            <constraint firstItem="bgx-SplashBg" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="cr-Bg-B"/>
-                            <constraint firstItem="box-SplashColumn" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cr-Col-CX"/>
-                            <constraint firstItem="box-SplashColumn" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="cr-Col-CY"/>
-                            <constraint firstItem="box-SplashColumn" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="24" id="cr-Col-Lead"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="box-SplashColumn" secondAttribute="trailing" constant="24" id="cr-Col-Trail"/>
+                            <constraint firstItem="mrk-Ln-Mk1" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="mrk-CX"/>
+                            <constraint firstItem="mrk-Ln-Mk1" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="mrk-CY"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -76,9 +40,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="SplashBackground" width="1242" height="2688"/>
-        <image name="LaunchScreenIcon" width="180" height="180"/>
-        <namedColor name="SplashSubtitleColor"/>
-        <namedColor name="SplashTitleColor"/>
+        <image name="LaunchMark" width="200" height="200"/>
+        <namedColor name="CourseGround">
+            <color red="0.94901960784313721" green="0.93725490196078431" blue="0.90196078431372551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

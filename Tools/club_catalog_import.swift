@@ -1,319 +1,154 @@
 import Foundation
 
-enum ImportCategory: String, Codable {
-    case driver
-    case fairwayWood
-    case hybrid
-    case utilityIron
-    case iron
-    case wedge
-    case putter
+/// Offline compiler for reviewed manufacturer facts. No inferred club ranges or network fallback.
+enum ImportCategory: String, Codable { case driver, fairwayWood, hybrid, utilityIron, iron, wedge, putter }
+struct CatalogSource: Codable {
+    let id: String
+    let url: String
+    let checkedAt: String
 }
-
-/// A minimal interchange format so we can do a "one-time scrape" externally
-/// and feed the results into this tool without editing Swift by hand.
-struct SeedDocument: Codable {
-    let seeds: [BrandSeed]
-}
-
 struct ImportVariant: Codable {
     let code: String
     let displayName: String
 }
-
 struct ImportFamily: Codable {
     let brand: String
     let name: String
     let category: ImportCategory
     let variants: [ImportVariant]
+    let sourceIDs: [String]
 }
-
-struct ImportDocument: Codable {
-    let brands: [String]
+struct SourceDocument: Codable {
+    let schemaVersion: Int
+    let sources: [CatalogSource]
     let families: [ImportFamily]
 }
-
-struct BrandSeed: Codable {
-    let brand: String
-    let name: String
-    let category: ImportCategory
+struct ImportDocument: Codable {
+    let schemaVersion: Int
+    let brands: [String]
+    let sources: [CatalogSource]
+    let families: [ImportFamily]
+}
+struct ImportError: LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
 }
 
 struct ClubCatalogImportTool {
-    private static let browserUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
-
     static func run() throws {
-        let outputURL = try outputURLFromArguments()
-        let seedOverrideURL = seedOverrideURLFromArguments()
-        let shouldEmitSeeds = CommandLine.arguments.contains("--emit-seeds")
-
-        let document = try buildDocument()
+        let arguments = Array(CommandLine.arguments.dropFirst())
+        if arguments == ["--help"] {
+            print("swift Tools/club_catalog_import.swift --source Tools/club_catalog_sources.json --output SwingPal/Resources/club_catalog.json [--check]")
+            return
+        }
+        var options: [String: String] = [:]
+        var check = false
+        var index = 0
+        while index < arguments.count {
+            let flag = arguments[index]
+            if flag == "--check", !check { check = true; index += 1; continue }
+            guard ["--source", "--output"].contains(flag), options[flag] == nil,
+                  index + 1 < arguments.count, !arguments[index + 1].hasPrefix("--") else {
+                throw ImportError(message: "Unknown, repeated or incomplete argument: \(flag)")
+            }
+            options[flag] = arguments[index + 1]
+            index += 2
+        }
+        guard let sourcePath = options["--source"], let outputPath = options["--output"] else {
+            throw ImportError(message: "Both --source and --output are required. Use --help for usage.")
+        }
+        let sourceURL = URL(fileURLWithPath: sourcePath).standardizedFileURL
+        let outputURL = URL(fileURLWithPath: outputPath).standardizedFileURL
+        guard sourceURL.resolvingSymlinksInPath() != outputURL.resolvingSymlinksInPath() else {
+            throw ImportError(message: "Source and output must be different files.")
+        }
+        let source = try JSONDecoder().decode(SourceDocument.self, from: Data(contentsOf: sourceURL))
+        try validate(source)
+        let families = source.families.sorted {
+            [$0.brand, $0.name, $0.category.rawValue].lexicographicallyPrecedes([$1.brand, $1.name, $1.category.rawValue])
+        }
+        let document = ImportDocument(schemaVersion: source.schemaVersion,
+                                      brands: Array(Set(families.map(\.brand))).sorted(),
+                                      sources: source.sources.sorted { $0.id < $1.id }, families: families)
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(document)
-        try data.write(to: outputURL, options: .atomic)
-        FileHandle.standardOutput.write(Data("wrote \(document.families.count) families to \(outputURL.path)\n".utf8))
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        var data = try encoder.encode(document)
+        data.append(0x0A)
+        if check {
+            guard (try? Data(contentsOf: outputURL)) == data else {
+                throw ImportError(message: "Catalog is stale or missing. Regenerate without --check.")
+            }
+            print("Catalog is up to date (\(families.count) models, \(document.brands.count) brands).")
+        } else {
+            try data.write(to: outputURL, options: .atomic)
+            print("Wrote \(families.count) models across \(document.brands.count) brands to \(outputPath)")
+        }
+    }
 
-        if shouldEmitSeeds {
-            let seeds = try loadSeeds(overrideURL: seedOverrideURL)
-            let mergedFamilies = (seeds.map { seed in
-                ImportFamily(
-                    brand: seed.brand,
-                    name: seed.name,
-                    category: seed.category,
-                    variants: variants(for: seed.category)
-                )
-            } + scrapeSupportedBrandFamilies())
-            let deduped = Dictionary(grouping: mergedFamilies, by: familyKey)
-                .values
-                .compactMap { $0.first }
-                .sorted {
-                    if $0.brand == $1.brand { return $0.name < $1.name }
-                    return $0.brand < $1.brand
+    private static func normalized(_ value: String) -> String {
+        value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    }
+    private static func requireText(_ value: String, _ label: String) throws {
+        guard !value.isEmpty, value == value.trimmingCharacters(in: .whitespacesAndNewlines),
+              value.rangeOfCharacter(from: .controlCharacters) == nil else {
+            throw ImportError(message: "\(label) must be nonempty text without surrounding whitespace or control characters.")
+        }
+    }
+    private static func validate(_ document: SourceDocument) throws {
+        guard document.schemaVersion == 1, !document.families.isEmpty, !document.sources.isEmpty else {
+            throw ImportError(message: "Expected schemaVersion 1 and nonempty families and sources.")
+        }
+        let date = DateFormatter()
+        date.locale = Locale(identifier: "en_US_POSIX")
+        date.timeZone = TimeZone(secondsFromGMT: 0)
+        date.dateFormat = "yyyy-MM-dd"
+        date.isLenient = false
+        var sourceIDs = Set<String>()
+        for source in document.sources {
+            try requireText(source.id, "Source ID")
+            guard sourceIDs.insert(source.id).inserted,
+                  let url = URLComponents(string: source.url), url.scheme == "https",
+                  let host = url.host, host.contains("."), url.user == nil, url.password == nil,
+                  let parsed = date.date(from: source.checkedAt), date.string(from: parsed) == source.checkedAt else {
+                throw ImportError(message: "Invalid/duplicate source \(source.id): use an HTTPS URL and real YYYY-MM-DD date.")
+            }
+        }
+        var keys = Set<[String]>()
+        var savedClubIdentities = Set<[String]>()
+        var brandSpellings: [String: String] = [:]
+        for family in document.families {
+            try requireText(family.brand, "Brand")
+            try requireText(family.name, "Model")
+            let brandKey = normalized(family.brand)
+            if let spelling = brandSpellings[brandKey], spelling != family.brand {
+                throw ImportError(message: "Inconsistent brand spelling: \(family.brand) / \(spelling)")
+            }
+            brandSpellings[brandKey] = family.brand
+            guard keys.insert([brandKey, normalized(family.name), family.category.rawValue]).inserted else {
+                throw ImportError(message: "Duplicate model: \(family.brand) \(family.name)")
+            }
+            guard !family.sourceIDs.isEmpty, Set(family.sourceIDs).count == family.sourceIDs.count,
+                  family.sourceIDs.allSatisfy(sourceIDs.contains) else {
+                throw ImportError(message: "Missing or unknown source for \(family.brand) \(family.name)")
+            }
+            guard !family.variants.isEmpty else { throw ImportError(message: "No variants for \(family.name)") }
+            var codes = Set<String>()
+            var names = Set<String>()
+            for variant in family.variants {
+                try requireText(variant.code, "Variant code")
+                try requireText(variant.displayName, "Variant name")
+                guard codes.insert(normalized(variant.code)).inserted,
+                      names.insert(normalized(variant.displayName)).inserted,
+                      savedClubIdentities.insert([brandKey, normalized(family.name), normalized(variant.displayName)]).inserted else {
+                    throw ImportError(message: "Duplicate variant in \(family.name): \(variant.code)")
                 }
-            FileHandle.standardOutput.write(Data("\n// Swift seeds (copy into manualSeeds)\n".utf8))
-            for family in deduped {
-                FileHandle.standardOutput.write(Data("        .init(brand: \"\(family.brand)\", name: \"\(family.name)\", category: .\(family.category.rawValue)),\n".utf8))
             }
         }
     }
-
-    private static func outputURLFromArguments() throws -> URL {
-        let arguments = CommandLine.arguments
-        guard let outputIndex = arguments.firstIndex(of: "--output"), arguments.indices.contains(outputIndex + 1) else {
-            throw NSError(domain: "ClubCatalogImportTool", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing --output /path/to/club_catalog.json"])
-        }
-        return URL(fileURLWithPath: arguments[outputIndex + 1])
-    }
-
-    private static func seedOverrideURLFromArguments() -> URL? {
-        let arguments = CommandLine.arguments
-        guard let index = arguments.firstIndex(of: "--seed-file"), arguments.indices.contains(index + 1) else {
-            return nil
-        }
-        return URL(fileURLWithPath: arguments[index + 1])
-    }
-
-    private static func buildDocument() throws -> ImportDocument {
-        var families = try manualFamilies()
-        families.append(contentsOf: scrapeSupportedBrandFamilies())
-
-        let dedupedFamilies = Dictionary(grouping: families, by: familyKey)
-            .values
-            .compactMap { $0.first }
-            .sorted {
-                if $0.brand == $1.brand {
-                    return $0.name < $1.name
-                }
-                return $0.brand < $1.brand
-            }
-
-        let brands = Array(Set(dedupedFamilies.map(\.brand))).sorted()
-        return ImportDocument(brands: brands, families: dedupedFamilies)
-    }
-
-    private static func familyKey(_ family: ImportFamily) -> String {
-        "\(family.brand)|\(family.name)|\(family.category.rawValue)"
-    }
-
-    private static func manualFamilies() throws -> [ImportFamily] {
-        let seeds = try loadSeeds(overrideURL: seedOverrideURLFromArguments())
-        return seeds.map { seed in
-            ImportFamily(
-                brand: seed.brand,
-                name: seed.name,
-                category: seed.category,
-                variants: variants(for: seed.category)
-            )
-        }
-    }
-
-    private static func loadSeeds(overrideURL: URL?) throws -> [BrandSeed] {
-        guard let overrideURL else {
-            return manualSeeds
-        }
-        let data = try Data(contentsOf: overrideURL)
-        let doc = try JSONDecoder().decode(SeedDocument.self, from: data)
-        return doc.seeds
-    }
-
-    /// Scrapes families for brands where we have a reliable, automated source.
-    ///
-    /// Today this is **PING-only** (their site exposes a stable search page).
-    /// Other brands are still "supported" in-app via `manualSeeds`, and can be
-    /// upgraded to automated scraping later by adding a new scraper here.
-    private static func scrapeSupportedBrandFamilies() -> [ImportFamily] {
-        BrandScraper.supported.flatMap { $0.scrapeFamilies() }
-    }
-
-    private struct BrandScraper {
-        let brand: String
-        let scrapeFamilies: () -> [ImportFamily]
-
-        static let supported: [BrandScraper] = [
-            .init(brand: "PING", scrapeFamilies: scrapePingFamilies)
-        ]
-    }
-
-    private static func scrapePingFamilies() -> [ImportFamily] {
-        guard let url = URL(string: "https://ping.com/en-us/clubs/search"),
-              let html = try? fetchHTML(from: url) else {
-            return []
-        }
-
-        let candidates: [(needle: String, brand: String, name: String, category: ImportCategory)] = [
-            ("G440 DRIVER", "PING", "G440 Drivers", .driver),
-            ("G440 FAIRWAY/HYBRID SOLE WEIGHT", "PING", "G440 Fairway Woods", .fairwayWood),
-            ("G440 HYBRID", "PING", "G440 Hybrids", .hybrid),
-            ("BLUEPRINT", "PING", "Blueprint Irons", .iron),
-            ("G740", "PING", "G740 Irons", .iron),
-            ("I530", "PING", "i530 Irons", .iron),
-            ("IDI", "PING", "iDi Utility Irons", .utilityIron),
-            ("BUNKR", "PING", "BunkR Wedges", .wedge),
-            ("SCOTTSDALE TEC", "PING", "Scottsdale TEC Putters", .putter),
-            ("PLD", "PING", "PLD Putters", .putter)
-        ]
-
-        let uppercasedHTML = html.uppercased()
-        return candidates.compactMap { candidate in
-            guard uppercasedHTML.contains(candidate.needle) else { return nil }
-            return ImportFamily(
-                brand: candidate.brand,
-                name: candidate.name,
-                category: candidate.category,
-                variants: variants(for: candidate.category)
-            )
-        }
-    }
-
-    private static func fetchHTML(from url: URL) throws -> String {
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: Result<String, Error>!
-
-        var request = URLRequest(url: url)
-        request.setValue(browserUserAgent, forHTTPHeaderField: "User-Agent")
-
-        URLSession.shared.dataTask(with: request) { data, _, error in
-            defer { semaphore.signal() }
-            if let error {
-                result = .failure(error)
-                return
-            }
-            guard let data, let html = String(data: data, encoding: .utf8), !html.isEmpty else {
-                result = .failure(NSError(domain: "ClubCatalogImportTool", code: 2, userInfo: [NSLocalizedDescriptionKey: "Empty response for \(url.absoluteString)"]))
-                return
-            }
-            result = .success(html)
-        }.resume()
-
-        semaphore.wait()
-        return try result.get()
-    }
-
-    private static func variants(for category: ImportCategory) -> [ImportVariant] {
-        switch category {
-        case .driver:
-            return [ImportVariant(code: "1W", displayName: "Driver")]
-        case .fairwayWood:
-            return ["1W", "2W", "3W", "4W", "5W", "7W", "9W", "11W"].map { ImportVariant(code: $0, displayName: $0) }
-        case .hybrid:
-            return ["1H", "2H", "3H", "4H", "5H", "6H", "7H"].map { ImportVariant(code: $0, displayName: $0) }
-        case .utilityIron:
-            return ["1U", "2U", "3U", "4U", "5U", "6U"].map { ImportVariant(code: $0, displayName: $0) }
-        case .iron:
-            return ["1I", "2I", "3I", "4I", "5I", "6I", "7I", "8I", "9I", "PW", "AW", "GW", "SW", "LW"]
-                .map { ImportVariant(code: $0, displayName: $0) }
-        case .wedge:
-            return ["46°", "48°", "50°", "52°", "54°", "56°", "58°", "60°", "62°"]
-                .map { ImportVariant(code: $0, displayName: $0) }
-        case .putter:
-            return ["Blade", "Mid-Mallet", "Mallet", "Counterbalanced"].map { ImportVariant(code: $0, displayName: $0) }
-        }
-    }
-
-    private static let manualSeeds: [BrandSeed] = [
-        .init(brand: "Titleist", name: "GT Drivers", category: .driver),
-        .init(brand: "Titleist", name: "GT Fairway Woods", category: .fairwayWood),
-        .init(brand: "Titleist", name: "GT Hybrids", category: .hybrid),
-        .init(brand: "Titleist", name: "T-Series Irons", category: .iron),
-        .init(brand: "Titleist", name: "Vokey SM11 Wedges", category: .wedge),
-        .init(brand: "Scotty Cameron", name: "Phantom Putters", category: .putter),
-        .init(brand: "Scotty Cameron", name: "Studio Style Putters", category: .putter),
-
-        .init(brand: "TaylorMade", name: "Qi4D Drivers", category: .driver),
-        .init(brand: "TaylorMade", name: "Qi4D Fairway Woods", category: .fairwayWood),
-        .init(brand: "TaylorMade", name: "Qi4D Rescue", category: .hybrid),
-        .init(brand: "TaylorMade", name: "Qi Max Irons", category: .iron),
-        .init(brand: "TaylorMade", name: "MG5 Wedges", category: .wedge),
-        .init(brand: "TaylorMade", name: "Spider ZT Putters", category: .putter),
-
-        .init(brand: "Callaway", name: "Quantum Drivers", category: .driver),
-        .init(brand: "Callaway", name: "Quantum Fairway Woods", category: .fairwayWood),
-        .init(brand: "Callaway", name: "Quantum Hybrids", category: .hybrid),
-        .init(brand: "Callaway", name: "Quantum Irons", category: .iron),
-        .init(brand: "Callaway", name: "Opus Wedges", category: .wedge),
-        .init(brand: "Odyssey", name: "Ai-ONE Putters", category: .putter),
-
-        .init(brand: "Cobra", name: "DS-ADAPT Drivers", category: .driver),
-        .init(brand: "Cobra", name: "DS-ADAPT Fairway Woods", category: .fairwayWood),
-        .init(brand: "Cobra", name: "DS-ADAPT Hybrids", category: .hybrid),
-        .init(brand: "Cobra", name: "DS-ADAPT Irons", category: .iron),
-
-        .init(brand: "Mizuno", name: "ST Drivers", category: .driver),
-        .init(brand: "Mizuno", name: "ST Fairway Woods", category: .fairwayWood),
-        .init(brand: "Mizuno", name: "JPX 925 Irons", category: .iron),
-        .init(brand: "Mizuno", name: "Pro T-1 Wedges", category: .wedge),
-
-        .init(brand: "Takomo", name: "101 Irons", category: .iron),
-        .init(brand: "Takomo", name: "101T Irons", category: .iron),
-        .init(brand: "Takomo", name: "301 Irons", category: .iron),
-
-        .init(brand: "PXG", name: "Black Ops Drivers", category: .driver),
-        .init(brand: "PXG", name: "Black Ops Fairway Woods", category: .fairwayWood),
-        .init(brand: "PXG", name: "Black Ops Hybrids", category: .hybrid),
-        .init(brand: "PXG", name: "0311 GEN8 Irons", category: .iron),
-        .init(brand: "PXG", name: "Sugar Daddy III Wedges", category: .wedge),
-        .init(brand: "PXG", name: "Hot Rod ZT Putters", category: .putter),
-
-        .init(brand: "Wilson", name: "DYNAPWR Max+ Drivers", category: .driver),
-        .init(brand: "Wilson", name: "DYNAPWR Fairway Woods", category: .fairwayWood),
-        .init(brand: "Wilson", name: "DYNAPWR Hybrids", category: .hybrid),
-        .init(brand: "Wilson", name: "DYNAPWR Forged Irons", category: .iron),
-        .init(brand: "Wilson", name: "Staff Model CB Irons", category: .iron),
-        .init(brand: "Wilson", name: "Staff Model XB Irons", category: .iron),
-
-        .init(brand: "Cleveland", name: "RTZ Wedges", category: .wedge),
-        .init(brand: "Cleveland", name: "CBX 4 ZipCore Wedges", category: .wedge),
-
-        .init(brand: "Srixon", name: "ZXi Drivers", category: .driver),
-        .init(brand: "Srixon", name: "ZXi Fairway Woods", category: .fairwayWood),
-        .init(brand: "Srixon", name: "ZXi Hybrids", category: .hybrid),
-        .init(brand: "Srixon", name: "ZXi Irons", category: .iron),
-
-        .init(brand: "Tour Edge", name: "Exotics Max Drivers", category: .driver),
-        .init(brand: "Tour Edge", name: "Exotics Max Fairway Woods", category: .fairwayWood),
-        .init(brand: "Tour Edge", name: "Exotics Max Hybrids", category: .hybrid),
-        .init(brand: "Tour Edge", name: "Exotics Max Irons", category: .iron),
-        .init(brand: "Tour Edge", name: "725 Series Irons", category: .iron),
-        .init(brand: "Tour Edge", name: "Hot Launch Max Wedges", category: .wedge),
-
-        .init(brand: "LAB Golf", name: "LINK.2 Putters", category: .putter),
-        .init(brand: "LAB Golf", name: "DF3 Putters", category: .putter),
-        .init(brand: "LAB Golf", name: "MEZZ.1 Putters", category: .putter),
-        .init(brand: "LAB Golf", name: "OZ.1 Putters", category: .putter),
-
-        .init(brand: "Honma", name: "TW767 Drivers", category: .driver),
-        .init(brand: "Honma", name: "TW767 Fairway Woods", category: .fairwayWood),
-        .init(brand: "Honma", name: "TW767 Hybrids", category: .hybrid),
-        .init(brand: "Honma", name: "TW777 PCB MAX Irons", category: .iron),
-
-        .init(brand: "Miura", name: "TC-202 Irons", category: .iron),
-        .init(brand: "Miura", name: "CB-302 Irons", category: .iron),
-        .init(brand: "Miura", name: "MC-502 Irons", category: .iron),
-        .init(brand: "Miura", name: "IC-602 Irons", category: .iron),
-        .init(brand: "Miura", name: "KM-700 Irons", category: .iron),
-        .init(brand: "Miura", name: "Forged Wedge Series", category: .wedge)
-    ]
 }
 
-try ClubCatalogImportTool.run()
+do { try ClubCatalogImportTool.run() }
+catch {
+    FileHandle.standardError.write(Data("Catalog import failed: \(error.localizedDescription)\n".utf8))
+    exit(1)
+}

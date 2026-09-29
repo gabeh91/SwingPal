@@ -23,6 +23,9 @@ struct CourseValidationResult: Equatable {
     let aiConcerns: [String]
     let aiSummary: String?
     let aiAvailable: Bool
+    /// What the import had to fill in itself (e.g. an estimated green), in
+    /// plain language, so the player knows where distances are approximate.
+    let importNotes: [String]
 
     var isUsable: Bool { outcome != .rejected }
     var requiresUserAcknowledgement: Bool { outcome == .provisional }
@@ -32,12 +35,14 @@ struct CourseValidationResult: Equatable {
         deterministicFailures: [String] = [],
         aiConcerns: [String] = [],
         aiSummary: String? = nil,
-        aiAvailable: Bool = false
+        aiAvailable: Bool = false,
+        importNotes: [String] = []
     ) {
         self.outcome = outcome
         self.deterministicFailures = deterministicFailures
         self.aiConcerns = aiConcerns
         self.aiSummary = aiSummary
         self.aiAvailable = aiAvailable
+        self.importNotes = importNotes
     }
 }

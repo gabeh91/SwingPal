@@ -115,7 +115,7 @@ struct WatchQuickShotView: View {
     private func backgroundStyle(for prominence: WatchActionProminence) -> some ShapeStyle {
         switch prominence {
         case .primary:
-            return AnyShapeStyle(.green.opacity(0.24))
+            return AnyShapeStyle(Color(red: 0.81, green: 0.89, blue: 0.77).opacity(0.28))
         case .secondary:
             return AnyShapeStyle(.thinMaterial)
         }

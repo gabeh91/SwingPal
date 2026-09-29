@@ -1,5 +1,7 @@
 # Supabase setup
 
+For the public club catalog, automatic manufacturer refresh and deployment command, see [Club catalog](../docs/data/club-catalog.md#hosting-and-automatic-maintenance). Migration `0005_club_catalog.sql` adds its Storage buckets and service-only job infrastructure.
+
 The iOS app expects a Supabase project with the schema in
 `supabase/migrations/0001_init.sql` plus a few dashboard-only steps that
 can't be expressed as SQL.

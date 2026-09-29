@@ -1,21 +1,18 @@
 import SwiftUI
 import AuthenticationServices
 
-/// Full-screen auth flow shown when the user is signed out. Wraps the
-/// existing AppShell visual language (pine palette, splash gradient)
-/// so it feels of a piece with the launch screen.
+/// Full-screen auth flow shown when the user is signed out: the front page
+/// of the book, with the mark, ruled lines to write on and the stamp.
 struct AuthFlowView: View {
     @StateObject var viewModel: AuthViewModel
     @Environment(\.colorScheme) private var colorScheme
-
-    private var palette: AuthPalette { AuthPalette.forColorScheme(colorScheme) }
 
     var body: some View {
         ZStack {
             backgroundGradient
 
             ScrollView {
-                VStack(spacing: ShellTokens.Spacing.x24) {
+                VStack(spacing: 28) {
                     header
 
                     Group {
@@ -50,55 +47,38 @@ struct AuthFlowView: View {
                         errorBanner(error)
                     }
                 }
-                .padding(.horizontal, ShellTokens.Spacing.x24)
-                .padding(.top, ShellTokens.Spacing.x40)
-                .padding(.bottom, ShellTokens.Spacing.x32)
+                .padding(.horizontal, 24)
+                .padding(.top, 40)
+                .padding(.bottom, 32)
                 .frame(maxWidth: 540)
                 .frame(maxWidth: .infinity)
             }
         }
+        .foregroundStyle(Book.ink)
+        .tint(Book.stamp)
         .animation(.spring(response: 0.36, dampingFraction: 0.86), value: viewModel.step)
     }
 
     // MARK: - Background
 
     private var backgroundGradient: some View {
-        ZStack {
-            palette.backgroundBase
-            LinearGradient(
-                colors: [palette.glowTop, palette.backgroundBase, palette.glowBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            Circle()
-                .fill(ShellTokens.ColorRole.pine500.opacity(colorScheme == .dark ? 0.16 : 0.12))
-                .frame(width: 280, height: 280)
-                .blur(radius: 42)
-                .offset(x: 156, y: -176)
-
-            Circle()
-                .fill(Color.white.opacity(colorScheme == .dark ? 0.04 : 0.22))
-                .frame(width: 240, height: 240)
-                .blur(radius: 36)
-                .offset(x: -142, y: 188)
-        }
-        .ignoresSafeArea()
+        Book.paper.ignoresSafeArea()
     }
 
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: ShellTokens.Spacing.x12) {
-            SwingPalLaunchLogoView(size: 84)
+        VStack(spacing: 14) {
+            SwingPalMarkTile(size: 84)
 
             VStack(spacing: 6) {
                 Text(headerTitle)
-                    .font(ShellTokens.Typography.stageTitle)
-                    .foregroundStyle(palette.primaryText)
+                    .font(Book.Typeface.display)
                     .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
                 Text(headerSubtitle)
-                    .font(ShellTokens.Typography.body)
-                    .foregroundStyle(palette.secondaryText)
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 360)
             }
@@ -138,7 +118,7 @@ struct AuthFlowView: View {
 
     private var entryStep: some View {
         cardContainer {
-            VStack(spacing: ShellTokens.Spacing.x12) {
+            VStack(spacing: 10) {
                 appleButton
                 googleButton
                 divider
@@ -168,7 +148,7 @@ struct AuthFlowView: View {
     private var appleButton: some View {
         SignInWithAppleButton(.signIn, onRequest: { _ in }, onCompletion: { _ in })
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            .frame(height: 50)
+            .frame(height: 56)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .allowsHitTesting(false)
             .overlay {
@@ -190,29 +170,22 @@ struct AuthFlowView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "g.circle.fill")
-                    .font(.title3.weight(.semibold))
                 Text("Continue with Google")
-                    .font(.body.weight(.semibold))
-            }
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .foregroundStyle(palette.primaryText)
-            .background(palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(palette.border, lineWidth: 1)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(BookStampButtonStyle(prominent: false))
         .opacity(viewModel.isBusy ? 0.6 : 1.0)
         .disabled(viewModel.isBusy)
     }
 
     private var divider: some View {
-        HStack {
-            Rectangle().frame(height: 1).foregroundStyle(palette.border.opacity(0.7))
-            Text("OR").font(.caption.weight(.semibold)).foregroundStyle(palette.tertiaryText)
-            Rectangle().frame(height: 1).foregroundStyle(palette.border.opacity(0.7))
+        HStack(spacing: 10) {
+            Rectangle().fill(Book.rule).frame(height: 1)
+            BookNote("or")
+            Rectangle().fill(Book.rule).frame(height: 1)
         }
+        .padding(.vertical, 6)
+        .accessibilityHidden(true)
     }
 
     // MARK: - Email step
@@ -220,23 +193,23 @@ struct AuthFlowView: View {
     @ViewBuilder
     private func emailStep(mode: AuthViewModel.Mode) -> some View {
         cardContainer {
-            VStack(spacing: ShellTokens.Spacing.x12) {
+            VStack(spacing: 18) {
                 if mode == .signUp {
-                    fieldRow {
+                    fieldRow("Name") {
                         TextField("Display name (optional)", text: $viewModel.displayName)
                             .textContentType(.name)
                             .textInputAutocapitalization(.words)
                     }
                 }
-                fieldRow {
-                    TextField("Email", text: $viewModel.email)
+                fieldRow("Email") {
+                    TextField("Your email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                         .textContentType(mode == .signUp ? .username : .emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
-                fieldRow {
-                    SecureField(mode == .signUp ? "Choose a password" : "Password", text: $viewModel.password)
+                fieldRow("Password") {
+                    SecureField(mode == .signUp ? "Choose a password" : "Your password", text: $viewModel.password)
                         .textContentType(mode == .signUp ? .newPassword : .password)
                 }
 
@@ -255,7 +228,7 @@ struct AuthFlowView: View {
                         viewModel.goTo(.forgotPassword)
                     }
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.accent)
+                    .foregroundStyle(Book.stamp)
                 }
 
                 bottomSwitchRow(
@@ -273,9 +246,9 @@ struct AuthFlowView: View {
 
     private var magicLinkStep: some View {
         cardContainer {
-            VStack(spacing: ShellTokens.Spacing.x12) {
-                fieldRow {
-                    TextField("Email", text: $viewModel.email)
+            VStack(spacing: 18) {
+                fieldRow("Email") {
+                    TextField("Your email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
@@ -292,7 +265,7 @@ struct AuthFlowView: View {
                 }
                 Button("Back") { viewModel.goTo(.entry) }
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.accent)
+                    .foregroundStyle(Book.stamp)
             }
         }
     }
@@ -301,9 +274,9 @@ struct AuthFlowView: View {
 
     private var forgotPasswordStep: some View {
         cardContainer {
-            VStack(spacing: ShellTokens.Spacing.x12) {
-                fieldRow {
-                    TextField("Email", text: $viewModel.email)
+            VStack(spacing: 18) {
+                fieldRow("Email") {
+                    TextField("Your email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
@@ -320,7 +293,7 @@ struct AuthFlowView: View {
                 }
                 Button("Back") { viewModel.goTo(.email(.signIn)) }
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.accent)
+                    .foregroundStyle(Book.stamp)
             }
         }
     }
@@ -334,16 +307,15 @@ struct AuthFlowView: View {
         buttonAction: @escaping () -> Void
     ) -> some View {
         cardContainer {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                Image(systemName: "envelope.badge.fill")
+            VStack(alignment: .leading, spacing: 12) {
+                Image(systemName: "envelope")
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(palette.accent)
+                    .foregroundStyle(Book.stamp)
                 Text(title)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(palette.primaryText)
+                    .font(Book.Typeface.heading)
                 Text(detail)
                     .font(.subheadline)
-                    .foregroundStyle(palette.secondaryText)
+                    .foregroundStyle(Book.pencil)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 primaryButton(
                     title: buttonTitle,
@@ -357,31 +329,21 @@ struct AuthFlowView: View {
 
     // MARK: - Primitives
 
+    /// The step's content, written straight on the page.
     private func cardContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         VStack(spacing: 0) { content() }
-            .padding(ShellTokens.Spacing.x20)
-            .background {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(palette.cardTint)
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(palette.border, lineWidth: 1)
-            }
-            .shadow(color: palette.shadow, radius: 18, y: 10)
+            .frame(maxWidth: .infinity)
     }
 
-    private func fieldRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .font(.body)
-            .foregroundStyle(palette.primaryText)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(palette.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(palette.border, lineWidth: 1)
-            }
+    /// A labelled line to write on.
+    private func fieldRow<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            BookNote(label)
+            content()
+                .font(.body)
+                .bookRuledField()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private enum ButtonStyleVariant { case primary, secondary }
@@ -398,31 +360,15 @@ struct AuthFlowView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 if isLoading {
-                    ProgressView().controlSize(.regular)
+                    ProgressView().tint(style == .primary ? Book.onStamp : Book.ink)
                 } else if let systemImage {
                     Image(systemName: systemImage)
                 }
-                Text(title).font(.body.weight(.semibold))
-            }
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .foregroundStyle(style == .primary ? Color.white : palette.primaryText)
-            .background {
-                let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
-                if style == .primary {
-                    shape.fill(palette.accent)
-                } else {
-                    shape.fill(palette.surface)
-                }
-            }
-            .overlay {
-                if style == .secondary {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(palette.border, lineWidth: 1)
-                }
+                Text(title)
             }
         }
-        .buttonStyle(.plain)
-        .opacity(isEnabled && !isLoading ? 1.0 : 0.55)
+        .buttonStyle(BookStampButtonStyle(prominent: style == .primary))
+        .opacity(isLoading ? 0.8 : 1.0)
         .disabled(!isEnabled || isLoading)
     }
 
@@ -438,27 +384,26 @@ struct AuthFlowView: View {
         HStack(spacing: 6) {
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(palette.secondaryText)
+                .foregroundStyle(Book.pencil)
             Button(actionTitle, action: action)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.accent)
+                .foregroundStyle(Book.stamp)
         }
     }
 
     private func errorBanner(_ message: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.red)
+                .foregroundStyle(Book.warning)
             Text(message)
                 .font(.subheadline)
-                .foregroundStyle(palette.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(12)
-        .background(Color.red.opacity(0.10), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Book.leaf, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.red.opacity(0.30), lineWidth: 1)
+                .strokeBorder(Book.warning.opacity(0.6), lineWidth: 1)
         }
     }
 }
@@ -485,66 +430,19 @@ struct AuthFlowModalView: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.headline.weight(.semibold))
-                    .foregroundStyle(Color.white.opacity(0.92))
-                    .frame(width: 42, height: 42)
-                    .background(Color.black.opacity(0.18), in: Circle())
+                    .foregroundStyle(Book.ink)
+                    .frame(width: 44, height: 44)
+                    .background(Book.leaf, in: Circle())
                     .overlay {
                         Circle()
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            .stroke(Book.rule, lineWidth: 1)
                     }
             }
             .buttonStyle(.plain)
-            .padding(.top, ShellTokens.Spacing.x20)
-            .padding(.leading, ShellTokens.Spacing.x20)
+            .padding(.top, 20)
+            .padding(.leading, 20)
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-    }
-}
-
-private struct AuthPalette {
-    let backgroundBase: Color
-    let glowTop: Color
-    let glowBottom: Color
-    let cardTint: Color
-    let surface: Color
-    let border: Color
-    let primaryText: Color
-    let secondaryText: Color
-    let tertiaryText: Color
-    let accent: Color
-    let shadow: Color
-
-    static func forColorScheme(_ scheme: ColorScheme) -> AuthPalette {
-        switch scheme {
-        case .dark:
-            return .init(
-                backgroundBase: Color(red: 0.05, green: 0.08, blue: 0.07),
-                glowTop: Color(red: 0.18, green: 0.30, blue: 0.22).opacity(0.54),
-                glowBottom: Color(red: 0.10, green: 0.15, blue: 0.13).opacity(0.72),
-                cardTint: Color.white.opacity(0.08),
-                surface: Color.white.opacity(0.06),
-                border: Color.white.opacity(0.22),
-                primaryText: Color.white.opacity(0.96),
-                secondaryText: Color.white.opacity(0.78),
-                tertiaryText: Color.white.opacity(0.55),
-                accent: ShellTokens.ColorRole.pine500,
-                shadow: Color.black.opacity(0.34)
-            )
-        default:
-            return .init(
-                backgroundBase: Color(red: 0.95, green: 0.96, blue: 0.92),
-                glowTop: Color(red: 0.84, green: 0.92, blue: 0.80).opacity(0.78),
-                glowBottom: Color(red: 0.97, green: 0.95, blue: 0.89).opacity(0.66),
-                cardTint: Color.white.opacity(0.62),
-                surface: Color.white.opacity(0.92),
-                border: Color.white.opacity(0.45),
-                primaryText: ShellTokens.ColorRole.textPrimary,
-                secondaryText: ShellTokens.ColorRole.textSecondary,
-                tertiaryText: ShellTokens.ColorRole.textTertiary,
-                accent: ShellTokens.ColorRole.pine700,
-                shadow: Color.black.opacity(0.10)
-            )
-        }
     }
 }

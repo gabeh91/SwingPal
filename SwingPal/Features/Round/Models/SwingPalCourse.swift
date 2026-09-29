@@ -84,16 +84,6 @@ struct SwingPalCourse: Identifiable, Equatable, Codable {
         let access: CommunityAccess
         let correctionCount: Int
 
-        var summaryLabel: String {
-            switch access {
-            case .closed:
-                return "Corrections paused"
-            case .reviewOnly:
-                return "Corrections under review"
-            case .open:
-                return correctionCount == 0 ? "Community corrections open" : "\(correctionCount) community refinements"
-            }
-        }
     }
 
     struct Tee: Identifiable, Equatable, Codable {
@@ -277,7 +267,7 @@ struct SwingPalCourse: Identifiable, Equatable, Codable {
 
     let id: UUID
     let name: String
-    let distanceKilometers: Double
+    var distanceKilometers: Double?
     let coordinate: Coordinate
     let holeCount: Int
     let par: Int
@@ -290,7 +280,7 @@ struct SwingPalCourse: Identifiable, Equatable, Codable {
     init(
         id: UUID = UUID(),
         name: String,
-        distanceKilometers: Double,
+        distanceKilometers: Double?,
         coordinate: Coordinate,
         holeCount: Int,
         par: Int,
@@ -315,6 +305,11 @@ struct SwingPalCourse: Identifiable, Equatable, Codable {
 }
 
 extension SwingPalCourse {
+    func proximityLabel(distanceUnit: DistanceUnit) -> String {
+        guard let distanceKilometers else { return "Distance unavailable" }
+        return "\(distanceUnit.travelLabel(forKilometers: distanceKilometers)) away"
+    }
+
     private static func offsetCoordinate(
         from coordinate: Coordinate,
         northMeters: Double,
@@ -357,7 +352,7 @@ extension SwingPalCourse {
 
     static func test(
         name: String,
-        distanceKilometers: Double,
+        distanceKilometers: Double?,
         holeCount: Int = 18,
         par: Int = 72,
         coordinate: Coordinate? = nil,

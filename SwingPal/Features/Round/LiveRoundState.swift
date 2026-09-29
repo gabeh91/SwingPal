@@ -200,10 +200,6 @@ final class CoreLocationRoundLocationProvider: NSObject, CLLocationManagerDelega
 }
 
 final class LiveRoundState: ObservableObject {
-    struct InstrumentMetric: Equatable {
-        let title: String
-        let value: String
-    }
 
     /// Single spoke on the live-round club selector wheel. The wheel is the
     /// primary "what should I hit?" surface during a round, so the entry has
@@ -649,7 +645,8 @@ final class LiveRoundState: ObservableObject {
             }
             return decodedHoleSessions.enumerated().map { index, session in
                 let hole = courseHoles[index]
-                guard session.number == hole.number else {
+                // Par always comes from the course (older saves could carry a default).
+                guard session.number == hole.number, session.par == hole.par else {
                     return HoleSession(
                         number: hole.number,
                         par: hole.par,
@@ -675,20 +672,6 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
-    struct CodablePoint: Equatable, Codable {
-        let x: Double
-        let y: Double
-
-        init(_ point: CGPoint) {
-            x = point.x
-            y = point.y
-        }
-
-        var cgPoint: CGPoint {
-            CGPoint(x: x, y: y)
-        }
-    }
-
     struct CodableSize: Equatable, Codable {
         let width: Double
         let height: Double
@@ -709,18 +692,6 @@ final class LiveRoundState: ObservableObject {
         case scoring
         case greenSide
 
-        var defaultLieSummary: String {
-            switch self {
-            case .teeShot:
-                return "Tee shot"
-            case .approach:
-                return "Approach play"
-            case .scoring:
-                return "Scoring zone"
-            case .greenSide:
-                return "Green-side play"
-            }
-        }
     }
 
     static let defaultClubNames = [
@@ -778,8 +749,30 @@ final class LiveRoundState: ObservableObject {
     @Published private(set) var planningTargetCoordinate: MapCoordinate {
         didSet { notifyRoundUpdated() }
     }
-    @Published private(set) var reviewPlayers: [PlayerScoreState] {
-        didSet { notifyRoundUpdated() }
+    private var storedReviewPlayers: [PlayerScoreState]
+
+    /// Only the owner has a score stream. Companion players remain untracked.
+    var reviewPlayers: [PlayerScoreState] {
+        storedReviewPlayers.map { player in
+            guard !player.isGuest else { return player }
+            var review = player
+            let hasScore = holeSessions.contains { $0.recordedScore != nil || !$0.shots.isEmpty }
+            review.strokes = hasScore ? roundTotalStrokes : nil
+            review.status = canCompleteRound ? .confirmed : (hasScore ? .edited : .pending)
+            return review
+        }
+    }
+
+    var roundTotalStrokes: Int {
+        holeSessions.reduce(0) { $0 + $1.totalScore }
+    }
+
+    var roundTotalHoleCount: Int { holeSessions.count }
+
+    var canCompleteRound: Bool {
+        players.contains { $0.kind == .selfPlayer }
+            && !holeSessions.isEmpty
+            && holeSessions.allSatisfy { $0.isConfirmed && ($0.recordedScore ?? 0) > 0 }
     }
     @Published private(set) var weatherSnapshot: RoundWeatherSnapshot?
     @Published private(set) var playerLocation: RoundLocationSnapshot? {
@@ -1255,7 +1248,8 @@ final class LiveRoundState: ObservableObject {
     }
 
     var shotLoggingTitle: String {
-        "\(pendingShotClubName) • \(shortDistanceLabel(forMeters: displayedPinDistanceMeters)) to pin"
+        if targetLabel == "Target unavailable" { return "\(pendingShotClubName) • Target unavailable" }
+        return "\(pendingShotClubName) • \(shortDistanceLabel(forMeters: displayedPinDistanceMeters)) to green centre"
     }
 
     var currentPlayerTotalPutts: Int {
@@ -1451,17 +1445,6 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
-    var shotLoggingSubtitle: String {
-        switch currentShotLoggerContext {
-        case .tee:
-            return "Pick the club, tag the outcome, log the tee shot."
-        case .shot:
-            return "Pick the club and tag where the ball ended up."
-        case .putt:
-            return "Mark holed or missed — tap to log it."
-        }
-    }
-
     /// Derived contextual mode the shot logger sheet uses to tailor its UI.
     /// The mode follows the inferred lie (`pendingShotSurface`) but falls
     /// back to "tee" on the first stroke even when the surface inference is
@@ -1636,43 +1619,6 @@ final class LiveRoundState: ObservableObject {
         return Int((Double(selectedTeeYards) * 0.9144).rounded())
     }
 
-    /// Per-hole tee→pin distance in metres, derived from the
-    /// course geometry of the *displayed* hole (so it updates
-    /// when the player taps the chevrons to inspect another
-    /// hole). Returns `nil` when we don't have usable tee /
-    /// green features yet — falling back keeps the subtitle
-    /// from rendering a meaningless `0m`.
-    var displayedHoleTeeToPinMeters: Int? {
-        let teeLocation = CLLocation(
-            latitude: teeCoordinate.latitude,
-            longitude: teeCoordinate.longitude
-        )
-        let pinLocation = CLLocation(
-            latitude: displayedPinTargetCoordinate.latitude,
-            longitude: displayedPinTargetCoordinate.longitude
-        )
-        let distance = teeLocation.distance(from: pinLocation)
-        guard distance > 0 else { return nil }
-        return Int(distance.rounded())
-    }
-
-    /// Subtitle printed under the hole title in the navigation cluster.
-    /// Just `Par N` — short enough to never ellipsise.
-    ///
-    /// Earlier iterations also appended:
-    /// - the running round score (`+1 thru 4`) — now redundant
-    ///   with the dedicated `scoreStrokeChip` in the same row;
-    /// - the round-level course total (`selectedTeeDistanceMeters`)
-    ///   — irrelevant for a single hole;
-    /// - the per-hole tee→pin distance (`displayedHoleTeeToPinMeters`)
-    ///   — redundant with the now-correctly-anchored PIN value
-    ///   in the hero row directly below.
-    /// The hero row carries the live distance signal already, so
-    /// the cluster can stay compact.
-    var topPanelHoleSubtitle: String {
-        "Par \(statefulDisplayedHolePar)"
-    }
-
     var canLogLiveShotOnDisplayedHole: Bool {
         isDisplayedHoleLive
     }
@@ -1706,10 +1652,6 @@ final class LiveRoundState: ObservableObject {
 
     var canMarkBallOnDisplayedHole: Bool {
         canLogLiveShotOnDisplayedHole && !hole.isOpeningShot
-    }
-
-    var currentClubLauncherTitle: String {
-        selectedClubName
     }
 
     /// Distance (in meters) the wheel is currently recommending against. We
@@ -1775,6 +1717,20 @@ final class LiveRoundState: ObservableObject {
             return lhs.signedGap > rhs.signedGap
         }
         return recommendation?.clubName
+    }
+
+    /// The full-swing club whose carry best matches `meters`, using the same
+    /// rule as the recommendation (nearest carry, ties go to the longer club).
+    /// `nil` inside putting range or when the bag has no full-swing clubs.
+    func suggestedClubName(forMeters meters: Int) -> String? {
+        guard meters >= 22 else { return nil }
+        let candidates = availableClubNames.filter { !Self.isLikelyPutterCarryName($0) }
+        return candidates
+            .map { (name: $0, gap: displayCarryMeters(for: $0) - meters) }
+            .min { lhs, rhs in
+                abs(lhs.gap) != abs(rhs.gap) ? abs(lhs.gap) < abs(rhs.gap) : lhs.gap > rhs.gap
+            }?
+            .name
     }
 
     var clubWheelEntries: [ClubWheelEntry] {
@@ -1880,10 +1836,6 @@ final class LiveRoundState: ObservableObject {
         return .viable
     }
 
-    var showsFinishHoleInvoker: Bool {
-        isDisplayedHoleLive
-    }
-
     var showsAtBallAction: Bool {
         canMarkBallOnDisplayedHole
     }
@@ -1985,24 +1937,6 @@ final class LiveRoundState: ObservableObject {
         shortDistanceLabel(forMeters: displayedPinDistanceMeters)
     }
 
-    var pendingShotSurfaceReasonTitle: String {
-        switch inferredShotSurfaceContext {
-        case .mapped:
-            return "Mapped lie detected"
-        case .phaseFallback:
-            return "Phase-based starting lie"
-        }
-    }
-
-    var pendingShotSurfaceReasonText: String {
-        switch inferredShotSurfaceContext {
-        case .mapped(let surface, let featureLabel):
-            return "You are inside \(featureLabel), so SwingPal starts the shot from \(surface.rawValue)."
-        case .phaseFallback(let surface, let phase):
-            return "\(phase.defaultLieSummary) defaults to \(surface.rawValue) until mapped lie data says otherwise."
-        }
-    }
-
     var planningCarryDistanceMeters: Int {
         let origin = shotOriginCoordinate
         let originLocation = CLLocation(latitude: origin.latitude, longitude: origin.longitude)
@@ -2028,10 +1962,6 @@ final class LiveRoundState: ObservableObject {
         )
     }
 
-    var liveDistanceToPlanningTargetMeters: Int {
-        planningCarryDistanceMeters
-    }
-
     var planningRemainingDistanceMeters: Int {
         let planning = CLLocation(
             latitude: planningTargetCoordinate.latitude,
@@ -2039,14 +1969,6 @@ final class LiveRoundState: ObservableObject {
         )
         let target = CLLocation(latitude: targetCoordinate.latitude, longitude: targetCoordinate.longitude)
         return Int(planning.distance(from: target).rounded())
-    }
-
-    var liveDistanceCaption: String {
-        "Meters to aim"
-    }
-
-    var planningRemainingCaption: String {
-        "Remain to pin"
     }
 
     var atBallActionTitle: String {
@@ -2081,42 +2003,6 @@ final class LiveRoundState: ObservableObject {
                 wasEditedAfterConfirmation: session.wasEditedAfterConfirmation
             )
         }
-    }
-
-    var leadingInstrumentMetrics: [InstrumentMetric] {
-        [
-            .init(
-                title: "Plays Like",
-                value: "\(distanceUnit.scalarValue(fromMeters: playsLikeDistanceMeters))\(distanceUnit.shortSuffix)"
-            ),
-            .init(title: "Club", value: selectedClubName)
-        ]
-    }
-
-    var trailingInstrumentMetrics: [InstrumentMetric] {
-        [
-            .init(title: "Strokes", value: "\(hole.strokeCount)"),
-            .init(title: "Target", value: targetLabel)
-        ]
-    }
-
-    var holeTransitionTitle: String {
-        "Hole \(hole.number)"
-    }
-
-    var holeTransitionSubtitle: String {
-        "Par \(hole.par) • \(distanceUnit.shortLabel(forMeters: openingNumberMeters)) opening number"
-    }
-
-    var holeTransitionDetail: String {
-        shotFocus
-    }
-
-    var windSummaryText: String {
-        guard let weatherSnapshot else {
-            return "Weather unavailable"
-        }
-        return "Wind \(weatherSnapshot.windSpeedKilometersPerHour) km/h \(weatherSnapshot.windCompassDirection)"
     }
 
     var temperatureSummaryText: String {
@@ -2346,24 +2232,6 @@ final class LiveRoundState: ObservableObject {
         abs(playsLikeDeltaSignedMeters) >= 2
     }
 
-    /// Compact hero distance for the top bar. We currently use the
-    /// displayed-hole pin distance for every phase — including
-    /// green-side where it doubles as the putt distance — because
-    /// that's the single number the player actually wants to see at
-    /// the top of the screen. Future iterations can pivot this to a
-    /// ball-mark-relative number on the green if needed.
-    var topBarHeroDistanceMeters: Int {
-        displayedPinDistanceMeters
-    }
-
-    /// Headline for the small score chip in the identity strip. Uses
-    /// `roundScoreToParDisplay` ("E" / "+1" / "-2") which only ticks
-    /// over on hole confirmation, so the chip doesn't flicker mid-hole
-    /// when strokes change.
-    var topBarScoreHeadline: String {
-        roundScoreToParDisplay
-    }
-
     /// Subtitle line under the score headline. Live holes show the
     /// stroke counter ("Stk 2"), confirmed holes show the recorded
     /// score ("Score 4"), and pre-shot states fall back to the par
@@ -2375,39 +2243,6 @@ final class LiveRoundState: ObservableObject {
         }
         let strokeNumber = max(1, displayedHoleSession.strokeCount + 1)
         return "Stroke \(strokeNumber)"
-    }
-
-    /// Subtitle text the top-bar hero prints under the big number.
-    /// Combines the meaningful plays-like delta with the recommended
-    /// club (when both are available) for non-putt phases; on the
-    /// green it switches to a stroke-count read instead so the
-    /// player isn't reminded about wind they don't care about.
-    var topBarHeroSubtitle: String? {
-        switch topBarPhase {
-        case .greenSide:
-            let par = displayedHole?.par ?? hole.par
-            let strokeNumber = max(1, displayedHoleSession.strokeCount + 1)
-            return "Stroke \(strokeNumber) of par \(par)"
-        case .tee:
-            return hasMeaningfulPlaysLikeDelta ? signedPlaysLikeDeltaText : nil
-        case .approach, .scoring:
-            var parts: [String] = []
-            if hasMeaningfulPlaysLikeDelta {
-                parts.append(signedPlaysLikeDeltaText)
-            }
-            if let club = recommendedClubName {
-                parts.append(club)
-            }
-            return parts.isEmpty ? nil : parts.joined(separator: " · ")
-        }
-    }
-
-    private var signedPlaysLikeDeltaText: String {
-        let delta = playsLikeDeltaSignedMeters
-        let scalar = distanceUnit.scalarValue(fromMeters: abs(delta))
-        let suffix = distanceUnit.shortSuffix
-        if delta > 0 { return "+\(scalar)\(suffix) plays" }
-        return "-\(scalar)\(suffix) plays"
     }
 
     /// One-line copy used by the Conditions sheet's wind hero card to
@@ -2430,24 +2265,12 @@ final class LiveRoundState: ObservableObject {
         return parts.joined(separator: " · ")
     }
 
-    var primaryContextPills: [String] {
-        [conditionsSummaryText, playerLocationSummaryText]
-    }
-
-    var secondaryContextPills: [String] {
-        [weatherConditionText, "\(courseName) • pan / rotate"]
-    }
-
     var playerCoordinate: CLLocationCoordinate2D {
         playerLocation?.coordinate.clLocationCoordinate2D ?? courseCoordinate.clLocationCoordinate2D
     }
 
     var displayedHoleSession: HoleSession {
         displayedHoleSessionState
-    }
-
-    private var statefulDisplayedHolePar: Int {
-        displayedHoleSessionState.par
     }
 
     var displayedHole: SwingPalCourse.Hole? {
@@ -2470,8 +2293,7 @@ final class LiveRoundState: ObservableObject {
     }
 
     private var displayedHoleScore: Int {
-        displayedHoleSessionState.recordedScore
-            ?? (displayedHoleSessionState.strokeCount + displayedHolePenaltyCount)
+        displayedHoleSessionState.totalScore
     }
 
     /// Round-level scoring totals. Only confirmed holes contribute, so the
@@ -2590,20 +2412,6 @@ final class LiveRoundState: ObservableObject {
         let southWest = CLLocation(latitude: bounds.minLatitude, longitude: bounds.minLongitude)
         let northEast = CLLocation(latitude: bounds.maxLatitude, longitude: bounds.maxLongitude)
         return southWest.distance(from: northEast)
-    }
-
-    var courseRegion: MKCoordinateRegion {
-        let bounds = courseBounds
-        return MKCoordinateRegion(
-            center: CLLocationCoordinate2D(
-                latitude: bounds.center.latitude,
-                longitude: bounds.center.longitude
-            ),
-            span: MKCoordinateSpan(
-                latitudeDelta: bounds.latitudeDelta,
-                longitudeDelta: bounds.longitudeDelta
-            )
-        )
     }
 
     var currentHoleBounds: SwingPalCourse.Hole.Bounds {
@@ -2966,12 +2774,6 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
-    private var openingNumberMeters: Int {
-        let tee = CLLocation(latitude: teeCoordinate.latitude, longitude: teeCoordinate.longitude)
-        let target = CLLocation(latitude: targetCoordinate.latitude, longitude: targetCoordinate.longitude)
-        return Int(tee.distance(from: target).rounded())
-    }
-
     private var displayedPinTargetCoordinate: CLLocationCoordinate2D {
         Self.pinCoordinate(
             for: courseCoordinate.clLocationCoordinate2D,
@@ -3072,31 +2874,6 @@ final class LiveRoundState: ObservableObject {
         return (front: frontMeters, back: backMeters)
     }
 
-    private var conditionsSummaryText: String {
-        guard let weatherSnapshot else {
-            return "Weather unavailable"
-        }
-
-        return "Wind \(weatherSnapshot.windSpeedKilometersPerHour) km/h \(weatherSnapshot.windCompassDirection) • \(weatherSnapshot.temperatureCelsius)°C"
-    }
-
-    private var playerLocationSummaryText: String {
-        switch locationStatus {
-        case .ready:
-            if let playerLocation {
-                let accuracy = distanceUnit.scalarValue(fromMeters: playerLocation.horizontalAccuracyMeters)
-                return "GPS ±\(accuracy)\(distanceUnit.shortSuffix)"
-            }
-            return "GPS ready"
-        case .locating, .requestingPermission:
-            return "GPS warming up"
-        case .permissionDenied:
-            return "Location blocked"
-        case .unavailable:
-            return "Location unavailable"
-        }
-    }
-
     var shotPhase: ShotPhase {
         if distanceToPinMeters <= 30 {
             return .greenSide
@@ -3113,19 +2890,6 @@ final class LiveRoundState: ObservableObject {
         return .approach
     }
 
-    var shotPhaseTitle: String {
-        switch shotPhase {
-        case .teeShot:
-            return "Tee shot"
-        case .approach:
-            return "Approach"
-        case .scoring:
-            return "Scoring zone"
-        case .greenSide:
-            return "Green side"
-        }
-    }
-
     var shotFocus: String {
         switch shotPhase {
         case .teeShot:
@@ -3140,7 +2904,9 @@ final class LiveRoundState: ObservableObject {
     }
 
     var targetLabel: String {
-        "Pin"
+        currentHoleFeatures.contains { $0.kind == .green && !$0.coordinates.isEmpty }
+            ? "Green centre"
+            : "Target unavailable"
     }
 
     init(
@@ -3187,7 +2953,7 @@ final class LiveRoundState: ObservableObject {
             features: self.courseHoles.first(where: { $0.number == hole.number })?.features ?? holeFeatures,
             playerCoordinate: locationProvider.currentSnapshot?.coordinate.clLocationCoordinate2D ?? courseCoordinate.clLocationCoordinate2D
         )
-        reviewPlayers = players.map {
+        storedReviewPlayers = players.map {
             PlayerScoreState(
                 name: $0.name,
                 isGuest: $0.kind == .guest,
@@ -3243,7 +3009,7 @@ final class LiveRoundState: ObservableObject {
         mapRotationDegrees = snapshot.mapRotationDegrees
         mapPanOffset = snapshot.mapPanOffset.cgSize
         planningTargetCoordinate = snapshot.planningTargetCoordinate
-        reviewPlayers = snapshot.reviewPlayers
+        storedReviewPlayers = snapshot.reviewPlayers
         playerLocation = snapshot.playerLocation ?? locationProvider.currentSnapshot
         refreshLivePinDistanceFromCurrentLocationIfPossible()
         ballMarkState = snapshot.ballMarkState
@@ -3336,16 +3102,6 @@ final class LiveRoundState: ObservableObject {
         dismissClubWheel()
     }
 
-    func presentClubPicker() {
-        guard isDisplayedHoleLive else { return }
-        launcherDetent = .collapsed
-        isShowingClubPicker = true
-    }
-
-    func dismissClubPicker() {
-        isShowingClubPicker = false
-    }
-
     func presentClubWheel() {
         guard isDisplayedHoleLive else { return }
         launcherDetent = .collapsed
@@ -3410,7 +3166,8 @@ final class LiveRoundState: ObservableObject {
         // `canFinishHole` companion flag + the sheet's confirm button)
         // reads `true` immediately. Players can still adjust the
         // steppers if their actual totals differ.
-        pendingHoleScore = hole.recordedScore ?? max(hole.strokeCount, 1)
+        // With nothing logged yet, start the count at par rather than a hole-in-one.
+        pendingHoleScore = hole.totalScore > 0 ? hole.totalScore : max(hole.par, 1)
         pendingHolePutts = hole.recordedPutts ?? (derivedHolePuttCount ?? 0)
         pendingHolePenaltyCount = hole.recordedPenaltyCount ?? derivedHolePenaltyCount
         pendingHoleDropCount = hole.recordedDropCount ?? derivedHoleDropCount
@@ -3428,11 +3185,6 @@ final class LiveRoundState: ObservableObject {
         notifyRoundUpdated()
     }
 
-    func setLauncherDetent(_ detent: LauncherDetent) {
-        guard launcherDetent != detent else { return }
-        launcherDetent = detent
-    }
-
     func selectShotSurface(_ surface: ShotEvent.Surface) {
         pendingShotSurface = surface
     }
@@ -3447,10 +3199,6 @@ final class LiveRoundState: ObservableObject {
 
     func selectShotStrike(_ strike: ShotEvent.StrikeResult) {
         pendingShotStrike = strike
-    }
-
-    func clearPendingShotStrike() {
-        pendingShotStrike = nil
     }
 
     func setPendingShotStrike(_ strike: ShotEvent.StrikeResult?) {
@@ -3725,15 +3473,15 @@ final class LiveRoundState: ObservableObject {
         shotLogConfirmationCount += 1
     }
 
-    /// Populate the `pendingHole*` state purely from the per-shot
+    /// Populate the `pendingHole*` state from entered values or the per-shot
     /// stream. Used by the holed-putt auto-seed and by
     /// `confirmCurrentHoleFromDerivedValues` so both surfaces produce
     /// identical aggregate values.
     private func seedPendingHoleSummaryFromDerivedValues() {
-        pendingHoleScore = max(hole.strokeCount, 1)
-        pendingHolePutts = derivedHolePuttCount ?? 0
-        pendingHolePenaltyCount = derivedHolePenaltyCount
-        pendingHoleDropCount = derivedHoleDropCount
+        pendingHoleScore = max(hole.totalScore, 1)
+        pendingHolePutts = hole.recordedPutts ?? derivedHolePuttCount ?? 0
+        pendingHolePenaltyCount = hole.recordedPenaltyCount ?? derivedHolePenaltyCount
+        pendingHoleDropCount = hole.recordedDropCount ?? derivedHoleDropCount
         pendingHoleShotOutcomeSummary = nil
         pendingHoleClubCorrectionSummary = nil
         pendingHoleNotes = hole.recordedNotes
@@ -3801,7 +3549,7 @@ final class LiveRoundState: ObservableObject {
         lastLoggedShotTargetLabel = snapshot.previousLastLoggedShotTargetLabel
         ballMarkState = snapshot.previousBallMarkState
         ballMarkSuggestionBaselineCoordinate = snapshot.previousBallMarkSuggestionBaselineCoordinate
-        reviewPlayers = snapshot.previousReviewPlayers
+        storedReviewPlayers = snapshot.previousReviewPlayers
 
         lastShotUndoSnapshot = nil
         // Removing the holed putt obviously voids the "confirm hole?"
@@ -3958,11 +3706,6 @@ final class LiveRoundState: ObservableObject {
             note: note
         ))
 
-        if let playerIndex = reviewPlayers.firstIndex(where: { !$0.isGuest }) {
-            reviewPlayers[playerIndex].strokes = hole.strokeCount
-            reviewPlayers[playerIndex].status = .edited
-        }
-
         clearBallMarkIfNeededAfterLogging(used: originSource)
     }
 
@@ -4014,11 +3757,6 @@ final class LiveRoundState: ObservableObject {
             hole.wasEditedAfterConfirmation = false
         }
 
-        if let playerIndex = reviewPlayers.firstIndex(where: { !$0.isGuest }) {
-            reviewPlayers[playerIndex].strokes = hole.recordedScore
-            reviewPlayers[playerIndex].status = .confirmed
-        }
-
         isShowingHoleConfirmation = false
         isShowingHoleConfirmationPill = false
         // Confirming a hole resets the single-level undo so the player
@@ -4032,6 +3770,7 @@ final class LiveRoundState: ObservableObject {
     }
 
     func updateInspectedHoleScore(_ score: Int) {
+        guard score > 0 else { return }
         guard holeSessions.indices.contains(displayedHoleIndex) else { return }
         guard displayedHoleIndex <= activeHoleIndex else { return }
 
@@ -4071,68 +3810,6 @@ final class LiveRoundState: ObservableObject {
         notifyRoundUpdated()
     }
 
-    func updateInspectedHolePenaltyCount(_ penaltyCount: Int) {
-        guard holeSessions.indices.contains(displayedHoleIndex) else { return }
-        guard displayedHoleIndex <= activeHoleIndex else { return }
-
-        if displayedHoleIndex == activeHoleIndex {
-            let previousHole = hole
-            hole.recordedPenaltyCount = max(0, penaltyCount)
-            updateHoleAuditFlagIfNeeded(previous: previousHole)
-            return
-        }
-
-        let previousHole = holeSessions[displayedHoleIndex]
-        holeSessions[displayedHoleIndex].recordedPenaltyCount = max(0, penaltyCount)
-        updateHoleAuditFlagIfNeeded(
-            previous: previousHole,
-            at: displayedHoleIndex
-        )
-        notifyRoundUpdated()
-    }
-
-    func updateInspectedHoleDropCount(_ dropCount: Int) {
-        guard holeSessions.indices.contains(displayedHoleIndex) else { return }
-        guard displayedHoleIndex <= activeHoleIndex else { return }
-
-        if displayedHoleIndex == activeHoleIndex {
-            let previousHole = hole
-            hole.recordedDropCount = max(0, dropCount)
-            updateHoleAuditFlagIfNeeded(previous: previousHole)
-            return
-        }
-
-        let previousHole = holeSessions[displayedHoleIndex]
-        holeSessions[displayedHoleIndex].recordedDropCount = max(0, dropCount)
-        updateHoleAuditFlagIfNeeded(
-            previous: previousHole,
-            at: displayedHoleIndex
-        )
-        notifyRoundUpdated()
-    }
-
-    func updateInspectedHoleShotOutcomeSummary(_ summary: String?) {
-        guard holeSessions.indices.contains(displayedHoleIndex) else { return }
-        guard displayedHoleIndex <= activeHoleIndex else { return }
-
-        let normalizedSummary = summary?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
-
-        if displayedHoleIndex == activeHoleIndex {
-            let previousHole = hole
-            hole.recordedShotOutcomeSummary = normalizedSummary
-            updateHoleAuditFlagIfNeeded(previous: previousHole)
-            return
-        }
-
-        let previousHole = holeSessions[displayedHoleIndex]
-        holeSessions[displayedHoleIndex].recordedShotOutcomeSummary = normalizedSummary
-        updateHoleAuditFlagIfNeeded(
-            previous: previousHole,
-            at: displayedHoleIndex
-        )
-        notifyRoundUpdated()
-    }
-
     func updateInspectedHoleClubCorrectionSummary(_ summary: String?) {
         guard holeSessions.indices.contains(displayedHoleIndex) else { return }
         guard displayedHoleIndex <= activeHoleIndex else { return }
@@ -4155,28 +3832,6 @@ final class LiveRoundState: ObservableObject {
         notifyRoundUpdated()
     }
 
-    func updateInspectedHoleNotes(_ notes: String?) {
-        guard holeSessions.indices.contains(displayedHoleIndex) else { return }
-        guard displayedHoleIndex <= activeHoleIndex else { return }
-
-        let normalizedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
-
-        if displayedHoleIndex == activeHoleIndex {
-            let previousHole = hole
-            hole.recordedNotes = normalizedNotes
-            updateHoleAuditFlagIfNeeded(previous: previousHole)
-            return
-        }
-
-        let previousHole = holeSessions[displayedHoleIndex]
-        holeSessions[displayedHoleIndex].recordedNotes = normalizedNotes
-        updateHoleAuditFlagIfNeeded(
-            previous: previousHole,
-            at: displayedHoleIndex
-        )
-        notifyRoundUpdated()
-    }
-
     func makeCurrentHoleEditDraft() -> CurrentHoleEditDraft {
         // Default to derived per-shot values when the hole hasn't been
         // confirmed yet, mirroring `presentHoleConfirmation`. Without
@@ -4184,7 +3839,7 @@ final class LiveRoundState: ObservableObject {
         // putts/penalties/drops and silently overwrite the per-shot
         // truth on save.
         .init(
-            score: hole.recordedScore ?? max(hole.strokeCount, 1),
+            score: max(hole.totalScore, 1),
             putts: hole.recordedPutts ?? (derivedHolePuttCount ?? 0),
             penaltyCount: hole.recordedPenaltyCount ?? derivedHolePenaltyCount,
             dropCount: hole.recordedDropCount ?? derivedHoleDropCount,
@@ -4242,6 +3897,23 @@ final class LiveRoundState: ObservableObject {
 
     func movePlanningTarget(to coordinate: MapCoordinate) {
         movePlanningTarget(to: coordinate.clLocationCoordinate2D)
+    }
+
+    /// Puts the aim where a shot of `carryMeters` lands on the line from the
+    /// ball to the pin, or on the pin when the club reaches it. This is the
+    /// default plan for whichever club is in hand; dragging the ring overrides it.
+    func placePlanningTarget(atCarryMeters carryMeters: Int) {
+        guard canAdjustTargetOnDisplayedHole, carryMeters > 0 else { return }
+        let origin = shotOriginCoordinate
+        let pin = targetCoordinate
+        let length = HoleMapGeometry.distance(origin, pin)
+        guard length > 1 else { return }
+        let point = HoleMapGeometry.coordinate(
+            from: origin,
+            bearing: HoleMapGeometry.bearing(from: origin, to: pin),
+            distance: min(Double(carryMeters), length)
+        )
+        planningTargetCoordinate = clampedPlanningCoordinate(for: point)
     }
 
     func refreshWeather() async {
@@ -4502,6 +4174,11 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
+    /// Where an aim at `coordinate` would be kept: inside the displayed hole.
+    func clampedPlanningTarget(for coordinate: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        clampedPlanningCoordinate(for: coordinate).clLocationCoordinate2D
+    }
+
     private func clampedPlanningCoordinate(for coordinate: CLLocationCoordinate2D) -> MapCoordinate {
         let rawCoordinate = SwingPalCourse.Coordinate(
             latitude: coordinate.latitude,
@@ -4595,10 +4272,6 @@ final class LiveRoundState: ObservableObject {
             latitudinalMeters: latitudinalMeters,
             longitudinalMeters: longitudinalMeters
         )
-    }
-
-    private func primaryFeatureLabel(for kind: SwingPalCourse.Hole.FeatureKind) -> String? {
-        currentHoleFeatures.first(where: { $0.kind == kind })?.label
     }
 
     private func primaryFeatureCoordinate(for kind: SwingPalCourse.Hole.FeatureKind) -> CLLocationCoordinate2D? {

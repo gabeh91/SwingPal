@@ -544,6 +544,10 @@ final class AppState: ObservableObject {
 
     func completeActiveRound() {
         guard let activeRoundID, let activeRoundState else { return }
+        guard activeRoundState.canCompleteRound else {
+            suspendActiveRound()
+            return
+        }
         upsertRoundHistorySummary(
             makeRoundHistorySummary(
                 id: activeRoundID,
@@ -735,11 +739,20 @@ final class AppState: ObservableObject {
     }
 
     func addClubs(_ clubs: [Club]) {
-        guard !clubs.isEmpty else { return }
-        bag = Bag(clubs: bag.clubs + clubs)
+        var identities = Set(bag.clubs.map(\.bagIdentity))
+        var ids = Set(bag.clubs.map(\.id))
+        let additions = clubs.filter { club in
+            guard !ids.contains(club.id), !identities.contains(club.bagIdentity) else { return false }
+            ids.insert(club.id)
+            identities.insert(club.bagIdentity)
+            return true
+        }
+        guard !additions.isEmpty else { return }
+        let previousClubNames = liveRoundClubNamesByID
+        bag = Bag(clubs: bag.clubs + additions)
         bagStore.saveBag(bag)
         Task { await userDataSync.pushBag(sessionUser: currentUser) }
-        refreshActiveRoundClubContext()
+        refreshActiveRoundClubContext(previousClubNames: previousClubNames)
     }
 
     func updateClub(_ updatedClub: Club) {
@@ -749,19 +762,21 @@ final class AppState: ObservableObject {
 
         var clubs = bag.clubs
         clubs[existingIndex] = updatedClub
+        let previousClubNames = liveRoundClubNamesByID
         bag = Bag(clubs: clubs)
         bagStore.saveBag(bag)
         Task { await userDataSync.pushBag(sessionUser: currentUser) }
-        refreshActiveRoundClubContext()
+        refreshActiveRoundClubContext(previousClubNames: previousClubNames)
     }
 
     func deleteClub(id: UUID) {
         let filteredClubs = bag.clubs.filter { $0.id != id }
         guard filteredClubs.count != bag.clubs.count else { return }
+        let previousClubNames = liveRoundClubNamesByID
         bag = Bag(clubs: filteredClubs)
         bagStore.saveBag(bag)
         Task { await userDataSync.pushBag(sessionUser: currentUser) }
-        refreshActiveRoundClubContext()
+        refreshActiveRoundClubContext(previousClubNames: previousClubNames)
     }
 
     func setManualHandicapIndex(_ index: Double?) {
@@ -852,9 +867,29 @@ final class AppState: ObservableObject {
         )
     }
 
+    private var liveRoundClubNamesByID: [UUID: String] {
+        let groups = Dictionary(grouping: bag.clubs) {
+            $0.liveRoundName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        }
+        var names: [UUID: String] = [:]
+        var usedNames = Set<String>()
+        for club in bag.clubs {
+            let base = club.liveRoundName.trimmingCharacters(in: .whitespacesAndNewlines)
+            var name = (groups[base.lowercased()]?.count ?? 0) > 1
+                ? "\(base) · \(club.subtitle ?? "Custom")" : base
+            if !usedNames.insert(name.lowercased()).inserted {
+                name += " · \(club.id.uuidString.prefix(8))"
+                usedNames.insert(name.lowercased())
+            }
+            names[club.id] = name
+        }
+        return names
+    }
+
     var liveRoundClubCarryMetersByClubName: [String: Int] {
-        bag.clubs.reduce(into: [String: Int]()) { partialResult, club in
-            partialResult[club.name] = club.typicalDistanceMeters
+        let names = liveRoundClubNamesByID
+        return bag.clubs.reduce(into: [:]) { carries, club in
+            if let name = names[club.id] { carries[name] = club.typicalDistanceMeters }
         }
     }
 
@@ -873,13 +908,20 @@ final class AppState: ObservableObject {
         )
     }
 
-    private func refreshActiveRoundClubContext() {
+    private func refreshActiveRoundClubContext(previousClubNames: [UUID: String]) {
         guard let activeRoundID, let snapshot = activeRoundState?.snapshot else {
             return
         }
 
         activeRoundState?.onRoundUpdated = nil
         let rebuiltRound = makeLiveRound(from: snapshot)
+        // Model-qualified labels may change as clubs are added or removed. Follow the
+        // physical club by ID so the selected carry never falls back to an estimate.
+        if let selectedID = previousClubNames.first(where: {
+            $0.value.caseInsensitiveCompare(snapshot.selectedClubName) == .orderedSame
+        })?.key, let currentName = liveRoundClubNamesByID[selectedID] {
+            rebuiltRound.selectedClubName = currentName
+        }
         bindActiveRound(rebuiltRound)
         activeRoundState = rebuiltRound
         self.activeRoundID = activeRoundID
@@ -893,12 +935,8 @@ final class AppState: ObservableObject {
     ) -> RoundHistorySummary {
         let snapshot = state.snapshot
         let totalHoleCount = max(snapshot.courseHoles.count, snapshot.holeSessions.count, 1)
-        let totalStrokes = snapshot.holeSessions.reduce(0) { partialResult, hole in
-            partialResult + hole.strokeCount
-        }
-        let completedHoleCount = status == .finished
-            ? totalHoleCount
-            : snapshot.holeSessions.filter(\.isConfirmed).count
+        let totalStrokes = state.roundTotalStrokes
+        let completedHoleCount = state.roundConfirmedHoleCount
         let totalPutts = snapshot.holeSessions.reduce(0) { partialResult, hole in
             partialResult + resolvedPutts(for: hole)
         }
@@ -961,11 +999,12 @@ final class AppState: ObservableObject {
     }
 
     private func reloadFromPersistentStores() {
+        let previousClubNames = liveRoundClubNamesByID
         bag = bagStore.loadBag()
         handicapSnapshot = handicapStore.loadHandicapSnapshot()
         previousRounds = roundHistoryStore.loadRoundHistory()
             .sorted(by: { $0.updatedAt > $1.updatedAt })
-        refreshActiveRoundClubContext()
+        refreshActiveRoundClubContext(previousClubNames: previousClubNames)
     }
 
     private func persistRoundHistory() {

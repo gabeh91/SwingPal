@@ -51,7 +51,14 @@ struct CompositeCourseRepository: CourseRepository {
         }
 
         return (bundledCourses + importedDeduped + communityDeduped)
-            .sorted { $0.distanceKilometers < $1.distanceKilometers }
+            .map { course in
+                // A persisted distance belongs to an earlier location, or even
+                // another user who uploaded the course. It is not proximity.
+                var course = course
+                course.distanceKilometers = nil
+                return course
+            }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     private func courseDedupeKey(_ course: SwingPalCourse) -> String {

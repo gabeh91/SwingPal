@@ -143,4 +143,52 @@ final class DeterministicCourseValidatorTests: XCTestCase {
         let failures = DeterministicCourseValidator.validate(course)
         XCTAssertTrue(failures.contains(where: { $0.contains("tee→green distance") }))
     }
+
+    // MARK: - Duplicate greens
+
+    private func square(east: Double, north: Double, side: Double = 0.0002) -> [SwingPalCourse.Coordinate] {
+        let lat = -37.82 + north, lon = 144.88 + east
+        let ring: [SwingPalCourse.Coordinate] = [
+            .init(latitude: lat, longitude: lon),
+            .init(latitude: lat, longitude: lon + side),
+            .init(latitude: lat + side, longitude: lon + side),
+            .init(latitude: lat + side, longitude: lon)
+        ]
+        return ring + [ring[0]]
+    }
+
+    private func green(_ coordinates: [SwingPalCourse.Coordinate], label: String = "Green") -> SwingPalCourse.Hole.Feature {
+        .init(kind: .green, label: label, coordinates: coordinates)
+    }
+
+    func testTheSameGreenOnTwoHolesIsADuplicate() {
+        let pair = DeterministicCourseValidator.duplicateGreens([
+            (holeNumber: 1, feature: green(square(east: 0, north: 0))),
+            (holeNumber: 2, feature: green(square(east: 0.001, north: 0))),
+            (holeNumber: 3, feature: green(square(east: 0, north: 0)))
+        ])
+        XCTAssertEqual(pair?.0, 1)
+        XCTAssertEqual(pair?.1, 3)
+    }
+
+    func testGreensThatTouchAreNotDuplicates() {
+        // Two neighbouring greens drawn with a common edge (shared nodes).
+        XCTAssertNil(DeterministicCourseValidator.duplicateGreens([
+            (holeNumber: 1, feature: green(square(east: 0, north: 0))),
+            (holeNumber: 2, feature: green(square(east: 0.0002, north: 0)))
+        ]))
+    }
+
+    func testTheHalvesOfADoubleGreenAreNotDuplicates() {
+        let whole = square(east: 0, north: 0)
+        XCTAssertNil(DeterministicCourseValidator.duplicateGreens([
+            (holeNumber: 4, feature: green(whole, label: "Green (shared with hole 6)")),
+            (holeNumber: 6, feature: green(whole, label: "Green (shared with hole 4)"))
+        ]))
+        // …but a green labelled as shared with some other hole is still caught.
+        XCTAssertNotNil(DeterministicCourseValidator.duplicateGreens([
+            (holeNumber: 4, feature: green(whole, label: "Green (shared with hole 6)")),
+            (holeNumber: 5, feature: green(whole, label: "Green (shared with hole 4)"))
+        ]))
+    }
 }

@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class AppStateTests: XCTestCase {
     func testInitialStateDefaultsToHomeGuestAndNoActiveRound() {
-        let state = AppState()
+        let state = AppState(store: StubActiveRoundStore(), bagStore: StubBagStore(bag: .starter), gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
 
         XCTAssertEqual(state.selectedTab, .home)
         XCTAssertEqual(state.authState, .guest)
@@ -13,7 +13,7 @@ final class AppStateTests: XCTestCase {
     }
 
     func testActiveRoundStateCanBeStoredForResume() {
-        let state = AppState()
+        let state = AppState(store: StubActiveRoundStore(), bagStore: StubBagStore(bag: .starter), gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
         let liveRound = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
@@ -27,7 +27,7 @@ final class AppStateTests: XCTestCase {
     }
 
     func testImmersiveRoundRequiresRoundTabLiveChromeAndActiveState() {
-        let state = AppState()
+        let state = AppState(store: StubActiveRoundStore(), bagStore: StubBagStore(bag: .starter), gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
         let liveRound = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
@@ -119,6 +119,40 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(state.bag, restoredBag)
     }
 
+    func testLiveRoundKeepsDistinctSameNumberModelsAndRecognizesCustomPutters() {
+        let clubs = [
+            Club(name: "7I", typicalDistanceMeters: 145, brand: "PING", family: "i230", category: .iron),
+            Club(name: "7i", typicalDistanceMeters: 155, brand: "Mizuno", family: "JPX", category: .iron),
+            Club(name: "Scotty", typicalDistanceMeters: 10, category: .putter)
+        ]
+        let state = AppState(store: StubActiveRoundStore(), bagStore: StubBagStore(bag: Bag(clubs: clubs)),
+            gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
+        let carries = state.liveRoundClubCarryMetersByClubName
+        XCTAssertEqual(carries["7I · PING • i230"], 145)
+        XCTAssertEqual(carries["7i · Mizuno • JPX"], 155)
+        XCTAssertEqual(carries["Scotty Putter"], 10)
+        let recommendation = BagClubRecommendation.make(bag: Bag(clubs: clubs), playsLikeDistanceMeters: 10)
+        XCTAssertNotEqual(recommendation.clubName, "Scotty")
+    }
+
+    func testActiveClubKeepsItsCarryWhenSameNumberModelsAreAddedAndRemoved() {
+        let first = Club(name: "7I", typicalDistanceMeters: 145, brand: "PING", family: "i230")
+        let second = Club(name: "7I", typicalDistanceMeters: 155, brand: "Mizuno", family: "JPX")
+        let state = AppState(store: StubActiveRoundStore(), bagStore: StubBagStore(bag: Bag(clubs: [first])),
+            gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
+        let round = LiveRoundState(hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)], clubCarryMetersByClubName: state.liveRoundClubCarryMetersByClubName)
+        round.selectClub(named: "7I")
+        state.resumeRound(id: UUID(), state: round, chromeMode: .live)
+        state.addClubs([second])
+        XCTAssertEqual(state.activeRoundState?.selectedClubWheelEntry.displayCarryMeters, 145)
+        XCTAssertEqual(state.activeRoundState?.selectedClubName, "7I · PING • i230")
+        state.activeRoundState?.selectClub(named: "7I · Mizuno • JPX")
+        state.deleteClub(id: first.id)
+        XCTAssertEqual(state.activeRoundState?.selectedClubWheelEntry.displayCarryMeters, 155)
+        XCTAssertEqual(state.activeRoundState?.selectedClubName, "7I")
+    }
+
     func testAddingSingleClubPersistsBag() {
         let bagStore = StubBagStore(bag: .init(clubs: []))
         let state = AppState(
@@ -133,6 +167,18 @@ final class AppStateTests: XCTestCase {
 
         XCTAssertEqual(state.bag.clubs, [club])
         XCTAssertEqual(bagStore.savedBags.last, Bag(clubs: [club]))
+    }
+
+    func testAddingDuplicateClubsPreservesExistingCarryAndDistinctModels() {
+        let owned = Club(name: "7I", typicalDistanceMeters: 145, brand: "PING", family: "i230", source: .catalog)
+        let bagStore = StubBagStore(bag: Bag(clubs: [owned]))
+        let state = AppState(store: StubActiveRoundStore(), bagStore: bagStore,
+            gpsModeStore: StubGPSModeStore(), appearanceModeStore: StubAppearanceModeStore())
+        let duplicate = Club(name: "7i", typicalDistanceMeters: 160, brand: "ping", family: "I230", source: .catalog)
+        let different = Club(name: "7I", typicalDistanceMeters: 152, brand: "Mizuno", family: "JPX", source: .catalog)
+        state.addClubs([duplicate, different, different])
+        XCTAssertEqual(state.bag.clubs, [owned, different])
+        XCTAssertEqual(bagStore.savedBags.last?.clubs, [owned, different])
     }
 
     func testAddingClubRefreshesActiveRoundClubContext() {
@@ -226,16 +272,14 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(document.families(for: "TaylorMade").first?.variants.map(\.code), ["4I", "7I"])
     }
 
-    func testClubCatalogDocumentFallsBackToSeedWhenNoJSONDataProvided() throws {
+    func testMissingCatalogLeavesCustomEntryAvailableWithoutInventingModels() throws {
         let document = try ClubCatalogDocument.load(from: nil)
-
-        XCTAssertTrue(document.brands.contains("Titleist"))
-        XCTAssertTrue(document.brands.contains("LAB Golf"))
-        XCTAssertTrue(
-            document.families.contains(where: { family in
-                family.brand == "Titleist" && family.name == "T-Series" && family.category == .iron
-            })
-        )
+        XCTAssertTrue(document.brands.isEmpty)
+        XCTAssertTrue(document.families.isEmpty)
+        var selection = AddClubSelection(existingClubs: [])
+        XCTAssertTrue(selection.addCustom(name: "7I", brand: "My maker", model: "My model",
+                                         category: .iron, distanceText: "150", unit: .meters))
+        XCTAssertEqual(selection.clubs?.first?.family, "My model")
     }
 
     func testClubAutoRecommendationDefaultsToEnabled() {
@@ -606,11 +650,39 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(savedSummary.courseName, "Royal Melbourne")
         XCTAssertEqual(savedSummary.holeNumber, 2)
         XCTAssertEqual(savedSummary.totalHoleCount, 3)
-        XCTAssertEqual(savedSummary.totalStrokes, 2)
+        XCTAssertEqual(savedSummary.totalStrokes, 5)
         XCTAssertEqual(savedSummary.completedHoleCount, 0)
         XCTAssertEqual(savedSummary.totalPutts, 2)
         XCTAssertEqual(savedSummary.totalPenalties, 1)
         XCTAssertEqual(state.previousRounds.first?.id, roundID)
+    }
+
+    func testCompletingIncompleteRoundRetainsResumableDraftAndActualProgress() throws {
+        let store = StubActiveRoundStore()
+        let historyStore = StubRoundHistoryStore()
+        let state = AppState(store: store, roundHistoryStore: historyStore)
+        let roundID = UUID()
+        let liveRound = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            courseHoles: [
+                .init(number: 1, par: 4, features: []),
+                .init(number: 2, par: 3, features: [])
+            ],
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.resumeRound(id: roundID, state: liveRound, chromeMode: .live)
+        liveRound.presentHoleConfirmation()
+        liveRound.setPendingHoleScore(5)
+        XCTAssertTrue(liveRound.confirmCurrentHole())
+        liveRound.logShot(clubName: "7i", distanceToTargetMeters: 130)
+
+        state.completeActiveRound()
+
+        XCTAssertEqual(state.activeRoundID, roundID)
+        XCTAssertNotNil(store.savedSnapshots.last ?? nil)
+        XCTAssertEqual(state.previousRounds.first?.status, .unfinished)
+        XCTAssertEqual(state.previousRounds.first?.completedHoleCount, 1)
+        XCTAssertEqual(state.previousRounds.first?.totalStrokes, 6)
     }
 
     func testCompletingActiveRoundArchivesFinishedSummaryAndClearsActiveState() throws {
@@ -622,7 +694,7 @@ final class AppStateTests: XCTestCase {
         )
         let roundID = UUID()
         let liveRound = LiveRoundState(
-            hole: HoleSession(number: 3, par: 5),
+            hole: HoleSession(number: 1, par: 4),
             courseName: "Kingston Heath",
             courseHoles: [
                 .init(number: 1, par: 4, features: []),
@@ -633,6 +705,11 @@ final class AppStateTests: XCTestCase {
         )
 
         state.resumeRound(id: roundID, state: liveRound, chromeMode: .live)
+        for score in [4, 3, 5] {
+            liveRound.presentHoleConfirmation()
+            liveRound.setPendingHoleScore(score)
+            XCTAssertTrue(liveRound.confirmCurrentHole())
+        }
         state.completeActiveRound()
 
         let savedSummary = try XCTUnwrap((historyStore.savedSnapshots.last ?? nil)?.first)
@@ -646,6 +723,8 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(savedSummary.courseName, "Kingston Heath")
         XCTAssertEqual(savedSummary.holeNumber, 3)
         XCTAssertEqual(savedSummary.totalHoleCount, 3)
+        XCTAssertEqual(savedSummary.totalStrokes, 12)
+        XCTAssertEqual(savedSummary.completedHoleCount, 3)
         XCTAssertEqual(state.previousRounds.first?.status, .finished)
     }
 }

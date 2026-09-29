@@ -1,9 +1,4 @@
 struct ProfileViewModel {
-    enum IdentityPrimaryActionIntent: Equatable {
-        case requestSignIn
-        case statusOnly
-    }
-
     struct PreviousRoundSheetModel: Equatable {
         let title: String
         let statusTitle: String
@@ -31,27 +26,9 @@ struct ProfileViewModel {
 
     let statusTitle: String
     let identityTitle: String
-    let identitySubtitle: String
-    let identityAssetName: String
-    let membershipTitle: String
-    let membershipSubtitle: String
-    let bagSummary: String
-    let identityPrimaryActionTitle: String
-    let identityPrimaryActionIntent: IdentityPrimaryActionIntent
-    let identitySecondaryActionTitle: String
-    let setupTitle: String
-    let setupSubtitle: String
-    let clubRecommendationTitle: String
-    let appearanceTitle: String
-    let appearanceSubtitle: String
-    let gpsModeTitle: String
     let gpsModeSubtitle: String
-    let diagnosticsTitle: String
-    let diagnosticsSubtitle: String
     let premiumTitle: String
     let premiumSubtitle: String
-    let premiumCTA: String
-    let premiumAssetName: String
 
     init(
         authState: AuthState,
@@ -60,54 +37,26 @@ struct ProfileViewModel {
         gpsMode: AppGPSMode
     ) {
         statusTitle = authState == .guest ? "Guest Mode" : "Signed In"
-        identityAssetName = "ProfileBagStage"
-        bagSummary = "\(bag.clubs.count) club\(bag.clubs.count == 1 ? "" : "s") dialed in"
-        setupTitle = "Bag and setup"
-        setupSubtitle = "Keep your bag, appearance, and GPS behavior ready before the next round."
-        clubRecommendationTitle = "Club starting point"
-        appearanceTitle = "Appearance"
-        appearanceSubtitle = "Choose light, dark, or follow the system appearance across the app."
         switch gpsMode {
         case .live:
-            gpsModeTitle = "Live GPS"
             gpsModeSubtitle = "Use your real on-course location for live yardages and planning."
         case .testPreview:
-            gpsModeTitle = "Test GPS"
             gpsModeSubtitle = "Keep the live round pinned to the stable preview location while you build and QA."
         }
-        diagnosticsTitle = "Testing and diagnostics"
-        diagnosticsSubtitle = "Keep preview GPS and round playback controls tucked away from the main profile flow."
 
         switch authState {
         case .guest:
-            identityTitle = "Keep your golf ready to sync"
-            identitySubtitle = "Sign in to save rounds, sync your golf setup, and keep premium tools within reach."
-            membershipTitle = "Free Membership"
-            membershipSubtitle = "Sign in to save your golf identity and unlock premium intelligence when you're ready."
-            identityPrimaryActionTitle = "Sign In to Save"
-            identityPrimaryActionIntent = .requestSignIn
-            identitySecondaryActionTitle = "Watch benefits"
+            identityTitle = "Guest profile"
         case .authenticated:
-            identityTitle = "Your golf identity is live"
-            identitySubtitle = "Your rounds, clubs, and account state are ready across devices."
-            membershipTitle = entitlements == .premium ? "Premium Membership" : "Free Membership"
-            membershipSubtitle = entitlements == .premium
-                ? "Your premium tools are active, including watch control and deeper round intelligence."
-                : "Your free membership is active and ready to upgrade when you want deeper coaching."
-            identityPrimaryActionTitle = "Saved to Cloud"
-            identityPrimaryActionIntent = .statusOnly
-            identitySecondaryActionTitle = "Open Watch Companion"
+            identityTitle = "Your profile"
         }
 
         premiumTitle = PremiumFeature.watchCompanion.title
-        premiumAssetName = "PremiumCoachingStage"
         switch entitlements {
         case .free:
-            premiumSubtitle = "Upgrade for Apple Watch live round support, smarter on-course intelligence, and richer post-round coaching."
-            premiumCTA = "Unlock Premium"
+            premiumSubtitle = "Premium purchases are not available in this version. Check availability for the Apple Watch companion."
         case .premium:
-            premiumSubtitle = "Your premium tools are active, including live watch support and deeper round intelligence."
-            premiumCTA = "Open Watch Companion"
+            premiumSubtitle = "Apple Watch companion access is enabled."
         }
     }
 

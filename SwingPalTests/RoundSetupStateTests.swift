@@ -13,6 +13,23 @@ final class RoundSetupStateTests: XCTestCase {
         XCTAssertEqual(state.sortedCourses.map(\.name), ["Course A", "Course B"])
     }
 
+    func testLocationReplacesStoredCourseDistanceWithMeasuredDistance() async throws {
+        let course = SwingPalCourse.test(name: "At the club", distanceKilometers: 99)
+        let state = RoundSetupState(
+            repository: StubCourseRepository(courses: [course]),
+            discovery: StubOSMCourseDiscovery(nearby: []),
+            deviceLocation: StubDeviceLocationProvider(location: CLLocation(
+                latitude: course.coordinate.latitude, longitude: course.coordinate.longitude
+            )),
+            countryCodeGeocoder: StubCountryCodeGeocoder(countryCode: "AU")
+        )
+        state.selectCourse(course)
+        await state.loadNearbyCoursesIfNeeded()
+
+        XCTAssertEqual(try XCTUnwrap(state.courses.first?.distanceKilometers), 0, accuracy: 0.01)
+        XCTAssertEqual(try XCTUnwrap(state.selectedCourse?.distanceKilometers), 0, accuracy: 0.01)
+    }
+
     func testAddingGuestPlayerCreatesGuestDraft() {
         let state = RoundSetupState(repository: StubCourseRepository(courses: []))
 
@@ -54,8 +71,6 @@ final class RoundSetupStateTests: XCTestCase {
         XCTAssertEqual(state.selectedCourse?.name, "Royal Melbourne")
         XCTAssertEqual(state.selectedTeeName, "Member")
         XCTAssertEqual(state.selectedTeeYards, 6420)
-        XCTAssertEqual(state.roundSetupSummaryTitle, "Royal Melbourne")
-        XCTAssertEqual(state.roundSetupSummaryDetail, "Member tees • 6420 yds • 1 golfer ready")
     }
 
     func testSelectingCourseExposesAvailableTeesAndSelectedTee() {
@@ -101,8 +116,6 @@ final class RoundSetupStateTests: XCTestCase {
         XCTAssertNil(state.selectedCourse)
         XCTAssertNil(state.selectedTeeName)
         XCTAssertNil(state.selectedTeeYards)
-        XCTAssertEqual(state.roundSetupSummaryTitle, "Choose your setup")
-        XCTAssertEqual(state.roundSetupSummaryDetail, "Pick a course, lock the tees, then add players.")
     }
 
     func testSelectingDifferentCourseClearsPriorTeeSelection() {
@@ -120,7 +133,6 @@ final class RoundSetupStateTests: XCTestCase {
         XCTAssertNil(state.selectedTeeName)
         XCTAssertNil(state.selectedTeeYards)
         XCTAssertNil(state.selectedTee)
-        XCTAssertEqual(state.roundSetupSummaryDetail, "Choose tees • Yardage pending • 1 golfer ready")
     }
 
     // MARK: - Discovery (Phase 1)

@@ -3,38 +3,60 @@ import Supabase
 
 @main
 struct SwingPalApp: App {
-    @State private var isShowingSplash = true
     @StateObject private var appState: AppState
+    @State private var showsLaunchSplash: Bool
     private let authService: AuthService
 
     init() {
-        let service = SwingPalAuthServiceFactory.make()
-        let state = AppState()
+        let service: AuthService
+        #if DEBUG
+        if DesignReviewScenario.current != nil {
+            service = MissingConfigurationAuthService()
+        } else {
+            service = SwingPalAuthServiceFactory.make()
+        }
+        #else
+        service = SwingPalAuthServiceFactory.make()
+        #endif
+        let state: AppState
+        #if DEBUG
+        if DesignReviewScenario.current != nil {
+            // Never restore a real round (and start its location service) behind a fixture.
+            state = AppState(store: DesignReviewActiveRoundStore())
+        } else {
+            state = AppState()
+        }
+        #else
+        state = AppState()
+        #endif
         state.attachAuthService(service)
         _appState = StateObject(wrappedValue: state)
         authService = service
+        var splash = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
+        #if DEBUG
+        if DesignReviewScenario.current != nil { splash = false }
+        #endif
+        _showsLaunchSplash = State(initialValue: splash)
     }
 
     var body: some Scene {
         WindowGroup {
             ZStack {
                 rootContent
-
-                if isShowingSplash {
-                    SwingPalSplashView()
-                        .transition(
-                            .asymmetric(
-                                insertion: .opacity.combined(with: .scale(scale: 0.97)),
-                                removal: .move(edge: .top)
-                                    .combined(with: .opacity)
-                                    .combined(with: .scale(scale: 0.96))
-                            )
-                        )
+                if showsLaunchSplash {
+                    // Continues LaunchScreen.storyboard, then lifts away on its own.
+                    LaunchSplashView { showsLaunchSplash = false }
                         .zIndex(1)
                 }
             }
-            .preferredColorScheme(appState.appearanceMode.preferredColorScheme)
-            .animation(.spring(response: 0.52, dampingFraction: 0.84), value: isShowingSplash)
+            .preferredColorScheme(reviewColorScheme ?? appState.appearanceMode.preferredColorScheme)
+            .task {
+                #if DEBUG
+                guard DesignReviewScenario.current == nil,
+                      ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+                #endif
+                await ClubCatalogStore.shared.refreshIfNeeded()
+            }
             .onOpenURL { url in
                 if let userId = FollowDeepLink.userId(from: url) {
                     appState.presentFollowInvite(userId: userId, displayName: nil)
@@ -42,34 +64,39 @@ struct SwingPalApp: App {
                 }
                 Task { await authService.handleAuthCallback(url: url) }
             }
-            .task {
-                await splashSequence()
-            }
         }
+    }
+
+    /// Review fixtures ending in `-night` render the night book regardless of the saved appearance.
+    private var reviewColorScheme: ColorScheme? {
+        #if DEBUG
+        if DesignReviewScenario.current?.hasSuffix("-night") == true { return .dark }
+        #endif
+        return nil
     }
 
     @ViewBuilder
     private var rootContent: some View {
-        switch SwingPalRootPresentation.resolve(authState: appState.authState) {
-        case .appShell:
+        #if DEBUG
+        if DesignReviewScenario.current == "splash" {
+            DesignReviewSplash()
+        } else if DesignReviewScenario.current == "brand" {
+            DesignReviewBrandSheet()
+        } else if let scenario = DesignReviewScenario.current {
+            NativeDesignReview(scenario: scenario.replacingOccurrences(of: "-night", with: ""))
+        } else {
             AppShellView(appState: appState, authService: authService)
         }
+        #else
+        AppShellView(appState: appState, authService: authService)
+        #endif
     }
 
-    @MainActor
-    private func splashSequence() async {
-        guard isShowingSplash else { return }
-        try? await Task.sleep(for: .milliseconds(950))
-        withAnimation(.spring(response: 0.52, dampingFraction: 0.84)) {
-            isShowingSplash = false
-        }
-    }
 }
 
 /// Resolves which `AuthService` to use at launch. If `SUPABASE_URL` /
 /// `SUPABASE_ANON_KEY` are present we use the real `SupabaseAuthService`;
-/// otherwise we fall back to `MockAuthService` so debug builds work
-/// without backend wiring.
+/// otherwise sign-in reports that configuration is unavailable.
 enum SwingPalAuthServiceFactory {
     @MainActor
     static func make() -> AuthService {
@@ -97,130 +124,189 @@ enum SwingPalAuthServiceFactory {
     }
 }
 
-private struct SwingPalSplashView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    @State private var showMark = false
 
-    private var backgroundBase: Color {
-        colorScheme == .dark
-            ? Color(red: 0.05, green: 0.08, blue: 0.07)
-            : Color(red: 0.95, green: 0.96, blue: 0.92)
+#if DEBUG
+/// Opt-in review fixtures: launch with SWINGPAL_DESIGN_REVIEW=home|live|live-unavailable|live-played|live-logger|review|complete|stats|setup|bag|splash|brand.
+/// Append `-night` (e.g. `live-night`) to render the night book.
+enum DesignReviewScenario {
+    static var current: String? { ProcessInfo.processInfo.environment["SWINGPAL_DESIGN_REVIEW"] ?? override }
+    /// Local review convenience only; keep nil in commits.
+    static let override: String? = nil
+}
+
+/// Explicit opt-in native review fixtures. Preview providers and no-op callbacks keep
+/// sample records out of persistence, authentication, companion sync and social feeds.
+private struct NativeDesignReview: View {
+    let scenario: String
+    @StateObject private var round: LiveRoundState
+    @StateObject private var setup: RoundSetupState
+    @State private var showsPlayingReview = false
+
+    init(scenario: String) {
+        self.scenario = scenario
+        let course = SeededCourseRepository().nearbyCourses().first!
+        let tee = course.holes.first?.features.first(where: { $0.kind == .tee })?.coordinates.first
+        let location = DesignReviewLocationProvider(coordinate: scenario == "live-unavailable" ? nil : tee ?? course.coordinate)
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: course.holes.first?.par ?? 4),
+            courseName: course.name,
+            courseCoordinate: .init(latitude: course.coordinate.latitude, longitude: course.coordinate.longitude),
+            courseHoles: course.holes,
+            selectedTeeName: course.tees.first?.name,
+            players: [.init(name: "You", kind: .selfPlayer), .init(name: "Alex", kind: .guest)],
+            clubCarryMetersByClubName: ["Driver": 220, "7 Iron": 140, "Pitching Wedge": 95, "Putter": 10],
+            locationProvider: location
+        )
+        if scenario == "review" || scenario == "complete" {
+            let count = scenario == "complete" ? course.holes.count : 3
+            let offsets = [0, 1, -1, 0, 2, 0, 1, 0, -1, 0, 1, 1, 0, -2, 0, 1, 0, 2]
+            for index in 0..<count {
+                state.presentHoleConfirmation()
+                let par = course.holes.indices.contains(index) ? course.holes[index].par : 4
+                state.setPendingHoleScore(max(1, par + offsets[index % offsets.count]))
+                state.setPendingHolePutts(offsets[index % offsets.count] < 0 ? 1 : 2)
+                _ = state.confirmCurrentHole()
+            }
+        }
+        if scenario == "live-played" || scenario == "live-logger" {
+            // Three holes on the card and a tee shot logged on the fourth.
+            let offsets = [0, 1, -1]
+            for index in 0..<3 {
+                state.presentHoleConfirmation()
+                let par = course.holes.indices.contains(index) ? course.holes[index].par : 4
+                state.setPendingHoleScore(max(1, par + offsets[index]))
+                state.setPendingHolePutts(offsets[index] < 0 ? 1 : 2)
+                _ = state.confirmCurrentHole()
+            }
+            state.logShot(clubName: "Driver", distanceToTargetMeters: 350, surface: .tee)
+            if scenario == "live-logger" { state.presentShotLogger() }
+        }
+        if scenario == "live-clubs" {
+            state.setClubAutoRecommendationEnabled(false)
+            state.selectClubFromWheel(named: "PW")
+            state.presentClubWheel()
+        }
+        if scenario == "live-marked" {
+            state.logShot(clubName: "Driver", distanceToTargetMeters: 388, surface: .tee)
+            state.markBall()
+        }
+        _round = StateObject(wrappedValue: state)
+        let setupState = RoundSetupState(repository: SeededCourseRepository())
+        if scenario == "setup-selected" {
+            setupState.selectCourse(course)
+            if let tee = course.tees.first { setupState.selectTee(tee) }
+        }
+        _setup = StateObject(wrappedValue: setupState)
     }
 
-    private var backgroundGlowTop: Color {
-        colorScheme == .dark
-            ? Color(red: 0.18, green: 0.30, blue: 0.22).opacity(0.52)
-            : Color(red: 0.84, green: 0.92, blue: 0.80).opacity(0.78)
-    }
-
-    private var backgroundGlowBottom: Color {
-        colorScheme == .dark
-            ? Color(red: 0.10, green: 0.15, blue: 0.13).opacity(0.72)
-            : Color(red: 0.97, green: 0.95, blue: 0.89).opacity(0.66)
-    }
-
-    private var primaryText: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.96)
-            : ShellTokens.ColorRole.textPrimary
-    }
-
-    private var secondaryText: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.78)
-            : ShellTokens.ColorRole.textSecondary
-    }
-
-    private var cardTint: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.08)
-            : Color.white.opacity(0.52)
-    }
-
-    private var cardBorder: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.18)
-            : Color.white.opacity(0.42)
+    private var sampleHistory: [RoundHistorySummary] {
+        [
+            .init(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, courseName: "Medway Golf Club", status: .finished, holeNumber: 18, totalHoleCount: 18, playerCount: 1, totalStrokes: 84, completedHoleCount: 18, totalPutts: 32, totalPenalties: 2, updatedAt: Date(timeIntervalSince1970: 1789858800)),
+            .init(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, courseName: "Royal Melbourne", status: .finished, holeNumber: 18, totalHoleCount: 18, playerCount: 1, totalStrokes: 89, completedHoleCount: 18, totalPutts: 35, totalPenalties: 3, updatedAt: Date(timeIntervalSince1970: 1789254000)),
+            .init(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, courseName: "Medway Golf Club", status: .finished, holeNumber: 18, totalHoleCount: 18, playerCount: 2, totalStrokes: 87, completedHoleCount: 18, totalPutts: 34, totalPenalties: 2, updatedAt: Date(timeIntervalSince1970: 1788649200)),
+            .init(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, courseName: "Medway Golf Club", status: .unfinished, holeNumber: 11, totalHoleCount: 18, playerCount: 1, totalStrokes: 47, completedHoleCount: 10, totalPutts: 18, totalPenalties: 1, updatedAt: Date(timeIntervalSince1970: 1788303600)),
+            .init(id: UUID(uuidString: "EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEEE")!, courseName: "Royal Melbourne", status: .finished, holeNumber: 18, totalHoleCount: 18, playerCount: 1, totalStrokes: 91, completedHoleCount: 18, totalPutts: 36, totalPenalties: 4, updatedAt: Date(timeIntervalSince1970: 1787785200)),
+            .init(id: UUID(uuidString: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")!, courseName: "Medway Golf Club", status: .finished, holeNumber: 18, totalHoleCount: 18, playerCount: 1, totalStrokes: 86, completedHoleCount: 18, totalPutts: 33, totalPenalties: 2, updatedAt: Date(timeIntervalSince1970: 1787180400))
+        ]
     }
 
     var body: some View {
-        ZStack {
-            background
-
-            VStack(spacing: ShellTokens.Spacing.x24) {
-                Group {
-                    if colorScheme == .dark {
-                        // Same pre-rendered asset as `LaunchScreen.storyboard` (reliable on all devices).
-                        Image("LaunchScreenIcon")
-                            .resizable()
-                            .interpolation(.high)
-                            .scaledToFit()
-                            .frame(width: 120, height: 120)
-                    } else {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 38, style: .continuous)
-                                .fill(cardTint)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 38, style: .continuous)
-                                        .stroke(cardBorder, lineWidth: 1)
-                                }
-                                .frame(width: 164, height: 164)
-                                .shadow(color: Color.black.opacity(0.10), radius: 18, y: 10)
-
-                            SwingPalLaunchLogoView(size: 124)
+        Group {
+            switch scenario {
+            case "review", "complete":
+                NavigationStack {
+                    RoundReviewView(state: round, onInspectHole: { round.inspectHole(at: $0) }, onDone: {})
+                }
+            case "live", "live-unavailable", "live-clubs", "live-marked", "live-played", "live-logger":
+                FreshLiveRoundScreen(state: round, onFinishHole: { showsPlayingReview = true }, onSaveAndExitRound: {}, onDiscardRound: {}, onReviewRound: { showsPlayingReview = true })
+                    .sheet(isPresented: $showsPlayingReview) {
+                        NavigationStack {
+                            RoundReviewView(state: round, onInspectHole: { number in
+                                round.inspectHole(at: number)
+                                showsPlayingReview = false
+                            }, onDone: { showsPlayingReview = false })
                         }
                     }
+            case "setup", "setup-selected":
+                NavigationStack {
+                    RoundSetupView(state: setup, onStartRound: {}, onExitSetup: {})
                 }
-                .scaleEffect(showMark ? 1.0 : 0.92)
-
-                VStack(spacing: ShellTokens.Spacing.x10) {
-                    Text("SwingPal")
-                        .font(ShellTokens.Typography.mastheadTitle)
-                        .foregroundStyle(primaryText)
-
-                    Text("Power Up your golf game")
-                        .font(ShellTokens.Typography.lead)
-                        .foregroundStyle(secondaryText)
-                }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, ShellTokens.Spacing.x24)
-                .opacity(showMark ? 1.0 : 0.0)
-                .offset(y: showMark ? 0 : 10)
+            case "bag", "bag-yards":
+                AddClubReviewFixture(distanceUnit: scenario == "bag-yards" ? .yards : .meters)
+            case "stats":
+                StatsView(model: StatsViewModel(previousRounds: sampleHistory, analyses: []))
+            default:
+                HomeView(model: HomeViewModel(activeRoundTitle: "Medway Golf Club", previousRounds: sampleHistory, analyses: [], nearbyCourses: SeededCourseRepository().nearbyCourses(), handicapBadgeText: "Not set", distanceUnit: .meters), entitlements: .free, onOpenRound: {}, onOpenNearbyCourse: { _ in }, onOpenNearbyCourses: {}, onOpenWatchCompanion: {}, availableCourses: SeededCourseRepository().nearbyCourses(), activeHoleNumber: 4, confirmedHoleCount: 3)
             }
         }
-        .ignoresSafeArea()
-        .onAppear {
-            withAnimation(.spring(response: 0.48, dampingFraction: 0.86)) {
-                showMark = true
-            }
-        }
-    }
-
-    private var background: some View {
-        ZStack {
-            backgroundBase
-
-            LinearGradient(
-                colors: [
-                    backgroundGlowTop,
-                    backgroundBase,
-                    backgroundGlowBottom
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(ShellTokens.ColorRole.pine500.opacity(colorScheme == .dark ? 0.16 : 0.12))
-                .frame(width: 280, height: 280)
-                .blur(radius: 42)
-                .offset(x: 156, y: -176)
-
-            Circle()
-                .fill(Color.white.opacity(colorScheme == .dark ? 0.03 : 0.22))
-                .frame(width: 240, height: 240)
-                .blur(radius: 36)
-                .offset(x: -142, y: 188)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Text("Design review · sample data")
+                .font(.caption).dynamicTypeSize(.small ... .large).foregroundStyle(CourseStyle.muted)
+                .frame(maxWidth: .infinity).padding(5).background(CourseStyle.ground)
         }
     }
 }
+/// The launch splash slowed six-fold; tap to replay.
+private struct DesignReviewSplash: View {
+    @State private var take = 0
+
+    var body: some View {
+        ZStack {
+            Book.paper.ignoresSafeArea()
+            LaunchSplashView(pace: 6).id(take)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { take += 1 }
+    }
+}
+
+/// The mark at Home Screen, Settings and Spotlight sizes, and on the day and night page.
+private struct DesignReviewBrandSheet: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            panel.environment(\.colorScheme, .light)
+            panel.environment(\.colorScheme, .dark)
+        }
+        .ignoresSafeArea()
+    }
+
+    private var panel: some View {
+        VStack(spacing: 18) {
+            HStack(alignment: .bottom, spacing: 14) {
+                SwingPalMarkTile(size: 76)
+                SwingPalMarkTile(size: 60)
+                SwingPalMarkTile(size: 40)
+                SwingPalMarkTile(size: 29)
+            }
+            HStack(spacing: 18) {
+                SwingPalMark(colorway: .page).frame(width: 150)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("SwingPal").font(Book.Typeface.display).foregroundStyle(Book.ink)
+                    BookNote("Your yardage book")
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Book.paper)
+    }
+}
+
+private struct DesignReviewActiveRoundStore: ActiveRoundStoring {
+    func loadActiveRound() -> ActiveRoundSnapshot? { nil }
+    func saveActiveRound(_ snapshot: ActiveRoundSnapshot?) {}
+}
+
+private final class DesignReviewLocationProvider: RoundLocationProviding {
+    let currentSnapshot: RoundLocationSnapshot?
+    var currentStatus: RoundLocationStatus { currentSnapshot == nil ? .permissionDenied : .ready }
+    init(coordinate: SwingPalCourse.Coordinate?) {
+        currentSnapshot = coordinate.map {
+            RoundLocationSnapshot(coordinate: .init(latitude: $0.latitude, longitude: $0.longitude), headingDegrees: 0, horizontalAccuracyMeters: 8)
+        }
+    }
+    func setUpdateHandler(_ handler: @escaping (RoundLocationSnapshot) -> Void) {}
+    func setStatusHandler(_ handler: @escaping (RoundLocationStatus) -> Void) {}
+    func startUpdating() {}
+    func stopUpdating() {}
+}
+#endif

@@ -13,10 +13,6 @@ struct GatedActionResolver {
     let authState: AuthState
     let entitlements: EntitlementState
 
-    var canOpenWatchCompanion: Bool {
-        watchCompanionRequirement() == .none
-    }
-
     func requirement(for action: GatedAction) -> GateRequirement {
         switch action {
         case .saveRound:

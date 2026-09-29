@@ -96,15 +96,7 @@ struct LiveOSMCourseDiscovery: OSMCourseDiscovering {
         out tags center;
         """
 
-        var request = URLRequest(url: Self.overpassEndpoint)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        request.httpBody = "data=\(encoded)".data(using: .utf8)
-
-        let (data, response) = try await Self.send(request: request, on: session)
-        try Self.validate(response: response)
+        let data = try await OverpassClient(session: session).run(query)
         let discoveries = try OverpassDiscoveryParser.parse(data: data, anchor: coordinate)
         return discoveries.sorted { lhs, rhs in
             (lhs.distanceKilometers ?? .infinity) < (rhs.distanceKilometers ?? .infinity)
@@ -115,14 +107,29 @@ struct LiveOSMCourseDiscovery: OSMCourseDiscovering {
         named query: String,
         countryCode: String
     ) async throws -> [DiscoveredCourse] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        let variants = CourseSearchQuery.variants(for: query)
+        guard !variants.isEmpty else {
             throw OSMCourseDiscoveryError.emptyQuery
         }
 
+        // Nominatim matches every word, so "Westgate golf club golf course"
+        // or "Westgate Spotswood" find nothing when OpenStreetMap calls it
+        // "Westgate Golf Course". Try the cleaned-up phrasings in turn, one
+        // request a second (Nominatim's usage policy), until one hits.
+        for (index, variant) in variants.enumerated() {
+            if index > 0 {
+                try await Task.sleep(for: .seconds(1.1))
+            }
+            let hits = try await nominatimSearch(variant, countryCode: countryCode)
+            if !hits.isEmpty { return hits }
+        }
+        return []
+    }
+
+    private func nominatimSearch(_ text: String, countryCode: String) async throws -> [DiscoveredCourse] {
         var components = URLComponents(url: Self.nominatimEndpoint, resolvingAgainstBaseURL: false)
         components?.queryItems = [
-            URLQueryItem(name: "q", value: "\(trimmed) golf course"),
+            URLQueryItem(name: "q", value: text),
             URLQueryItem(name: "countrycodes", value: countryCode.lowercased()),
             URLQueryItem(name: "format", value: "json"),
             URLQueryItem(name: "limit", value: "20"),
@@ -170,6 +177,41 @@ struct LiveOSMCourseDiscovery: OSMCourseDiscovering {
             logger.warning("Discovery HTTP error: \(http.statusCode, privacy: .public)")
             throw OSMCourseDiscoveryError.invalidResponse
         }
+    }
+}
+
+/// Turns what someone types into the phrasings Nominatim can match.
+enum CourseSearchQuery {
+    /// Words people add that OpenStreetMap names often don't carry.
+    private static let venueWords: Set<String> = [
+        "golf", "club", "course", "links", "country", "cc", "gc", "gcc", "the", "and", "&", "resort", "public"
+    ]
+
+    /// Ordered, de-duplicated search strings for `input`:
+    /// 1. the distinctive words + "golf course"
+    /// 2. the distinctive words + "golf"
+    /// 3. each distinctive word + "golf course", in the order typed
+    ///    (so "Westgate Spotswood" still finds Westgate).
+    /// Empty when the input has nothing searchable.
+    static func variants(for input: String) -> [String] {
+        let words = input
+            .lowercased()
+            .replacingOccurrences(of: "[^\\p{L}\\p{N}&' ]", with: " ", options: .regularExpression)
+            .split(separator: " ")
+            .map(String.init)
+        let core = words.filter { !venueWords.contains($0) }
+        guard !core.isEmpty else {
+            let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+            // Only venue words ("The Golf Club"): search it as typed.
+            return trimmed.count >= 3 ? [trimmed] : []
+        }
+        let joined = core.joined(separator: " ")
+        var result = ["\(joined) golf course", "\(joined) golf"]
+        if core.count > 1 {
+            result += core.filter { $0.count >= 4 }.map { "\($0) golf course" }
+        }
+        var seen = Set<String>()
+        return Array(result.filter { seen.insert($0).inserted }.prefix(4))
     }
 }
 

@@ -114,10 +114,8 @@ struct ClubCatalogDocument: Equatable, Codable {
     }
 
     static var fallback: ClubCatalogDocument {
-        ClubCatalogDocument(
-            brands: InternalClubCatalog.brands,
-            families: InternalClubCatalog.families
-        )
+        // A missing resource must not reintroduce unverified equipment. Custom entry still works.
+        ClubCatalogDocument(brands: [], families: [])
     }
 }
 
@@ -132,9 +130,9 @@ enum ClubCatalogLoader {
 }
 
 enum ClubCatalog {
-    private static var activeDocument: ClubCatalogDocument {
-        ClubCatalogLoader.loadBundled() ?? ClubCatalogDocument.fallback
-    }
+    static let document = ClubCatalogLoader.loadBundled() ?? ClubCatalogDocument.fallback
+
+    private static var activeDocument: ClubCatalogDocument { document }
 
     static var brands: [String] {
         activeDocument.brands
@@ -149,70 +147,29 @@ enum ClubCatalog {
     }
 
     static func defaultDistanceMeters(for variant: ClubCatalogVariant, category: ClubCatalogCategory) -> Int {
-        InternalClubCatalog.defaultDistanceMeters(for: variant, category: category)
+        ClubCarryEstimates.defaultDistanceMeters(for: variant, category: category)
     }
 }
 
-enum InternalClubCatalog {
-    static let brands: [String] = [
-        "Titleist",
-        "TaylorMade",
-        "PING",
-        "Callaway",
-        "Cobra",
-        "Mizuno",
-        "Takomo",
-        "PXG",
-        "Wilson",
-        "Cleveland",
-        "Srixon",
-        "Tour Edge",
-        "Scotty Cameron",
-        "LAB Golf",
-        "Honma",
-        "Miura",
-        "Odyssey"
-    ]
-
-    static let families: [ClubCatalogFamily] = [
-        .init(brand: "Titleist", name: "GT Metals", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "Titleist", name: "T-Series", category: .iron, variants: ironVariants()),
-        .init(brand: "Titleist", name: "Vokey SM10", category: .wedge, variants: wedgeVariants()),
-        .init(brand: "TaylorMade", name: "Qi35", category: .driver, variants: driverVariants()),
-        .init(brand: "TaylorMade", name: "Qi35 Fairway", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "TaylorMade", name: "P790", category: .iron, variants: ironVariants()),
-        .init(brand: "PING", name: "G440 Max", category: .driver, variants: driverVariants()),
-        .init(brand: "PING", name: "G440 Fairway", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "PING", name: "Blueprint", category: .iron, variants: ironVariants()),
-        .init(brand: "Callaway", name: "Elyte", category: .driver, variants: driverVariants()),
-        .init(brand: "Callaway", name: "Apex", category: .iron, variants: ironVariants()),
-        .init(brand: "Callaway", name: "Opus", category: .wedge, variants: wedgeVariants()),
-        .init(brand: "Cobra", name: "DS-Adapt", category: .driver, variants: driverVariants()),
-        .init(brand: "Cobra", name: "King Tec", category: .iron, variants: ironVariants()),
-        .init(brand: "Mizuno", name: "JPX 925", category: .iron, variants: ironVariants()),
-        .init(brand: "Mizuno", name: "ST Fairway", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "Takomo", name: "101", category: .iron, variants: ironVariants()),
-        .init(brand: "PXG", name: "0311 Black Ops", category: .driver, variants: driverVariants()),
-        .init(brand: "PXG", name: "0317", category: .hybrid, variants: hybridVariants()),
-        .init(brand: "Wilson", name: "Dynapower", category: .driver, variants: driverVariants()),
-        .init(brand: "Wilson", name: "Staff Model", category: .iron, variants: ironVariants()),
-        .init(brand: "Cleveland", name: "RTX", category: .wedge, variants: wedgeVariants()),
-        .init(brand: "Srixon", name: "ZX Mk II", category: .iron, variants: ironVariants()),
-        .init(brand: "Srixon", name: "ZX Fairway", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "Tour Edge", name: "Exotics", category: .driver, variants: driverVariants()),
-        .init(brand: "Tour Edge", name: "Exotics Fairway", category: .fairwayWood, variants: woodVariants()),
-        .init(brand: "Scotty Cameron", name: "Phantom", category: .putter, variants: putterVariants()),
-        .init(brand: "LAB Golf", name: "Mezz", category: .putter, variants: putterVariants()),
-        .init(brand: "Honma", name: "TW767", category: .iron, variants: ironVariants()),
-        .init(brand: "Miura", name: "TC-202", category: .iron, variants: ironVariants()),
-        .init(brand: "Odyssey", name: "Ai-ONE", category: .putter, variants: putterVariants())
-    ]
-
-    static func families(for brand: String) -> [ClubCatalogFamily] {
-        families.filter { $0.brand == brand }
-    }
-
+/// Starting points only; these are not manufacturer specifications or measured player carries.
+enum ClubCarryEstimates {
     static func defaultDistanceMeters(for variant: ClubCatalogVariant, category: ClubCatalogCategory) -> Int {
+        // Some manufacturers identify heads by loft instead of a club number. Set wedges
+        // retain the iron category, but should receive wedge-sized starting carries.
+        let loftLabel = variant.code.split(separator: "-").last.map(String.init) ?? variant.code
+        if loftLabel.hasSuffix("°"), let loft = Double(loftLabel.dropLast()), loft.isFinite {
+            switch category {
+            case .fairwayWood:
+                return estimate(loft: loft, anchors: [(13.5, 220), (15, 210), (16.5, 205), (18, 195), (21, 185), (24, 175), (27, 168)])
+            case .hybrid:
+                return estimate(loft: loft, anchors: [(17, 205), (20, 195), (23, 185), (26, 175), (30, 168), (34, 160)])
+            case .utilityIron:
+                return estimate(loft: loft, anchors: [(16, 210), (18, 200), (21, 190), (24, 180), (27, 170)])
+            case .iron, .wedge:
+                return estimate(loft: loft, anchors: [(44, 125), (46, 120), (48, 115), (50, 110), (52, 105), (54, 98), (56, 92), (58, 85), (60, 78), (62, 70), (64, 64)])
+            default: break
+            }
+        }
         switch category {
         case .driver:
             return 230
@@ -220,7 +177,9 @@ enum InternalClubCatalog {
             switch variant.code {
             case "1W": return 230
             case "2W": return 220
-            case "3W": return 210
+            case "3W", "3T": return 210
+            case "3HL", "3HF": return 205
+            case "Heavenwood": return 190
             case "4W": return 205
             case "5W": return 195
             case "7W": return 185
@@ -229,12 +188,14 @@ enum InternalClubCatalog {
             }
         case .hybrid:
             switch variant.code {
-            case "1H": return 215
-            case "2H": return 205
-            case "3H": return 195
-            case "4H": return 185
-            case "5H": return 175
-            case "6H": return 168
+            case "1H", "1U": return 215
+            case "2H", "2U": return 205
+            case "3H", "3U": return 195
+            case "4H", "4U": return 185
+            case "5H", "5U": return 175
+            case "6H", "6U": return 168
+            case "7H", "7U": return 160
+            case "8H", "8U": return 153
             default: return 160
             }
         case .utilityIron:
@@ -258,60 +219,28 @@ enum InternalClubCatalog {
             case "7I": return 155
             case "8I": return 145
             case "9I": return 135
-            case "PW": return 125
-            case "AW": return 115
+            case "10I", "PW", "W": return 125
+            case "11I", "AW", "UW", "U": return 115
             case "GW": return 105
             case "SW": return 95
             case "LW": return 82
             default: return 150
             }
         case .wedge:
-            switch variant.code {
-            case "46°": return 120
-            case "48°": return 115
-            case "50°": return 110
-            case "52°": return 105
-            case "54°": return 98
-            case "56°": return 92
-            case "58°": return 85
-            case "60°": return 78
-            case "62°": return 70
-            default: return 95
-            }
+            return 95
         case .putter:
             return 10
         }
     }
 
-    private static func driverVariants() -> [ClubCatalogVariant] {
-        [ClubCatalogVariant(code: "1W", displayName: "Driver")]
-    }
-
-    private static func woodVariants() -> [ClubCatalogVariant] {
-        ["1W", "2W", "3W", "4W", "5W", "7W", "9W", "11W"].map { ClubCatalogVariant(code: $0) }
-    }
-
-    private static func hybridVariants() -> [ClubCatalogVariant] {
-        ["1H", "2H", "3H", "4H", "5H", "6H", "7H"].map { ClubCatalogVariant(code: $0) }
-    }
-
-    private static func ironVariants() -> [ClubCatalogVariant] {
-        ["1I", "2I", "3I", "4I", "5I", "6I", "7I", "8I", "9I", "PW", "AW", "GW", "SW", "LW"]
-            .map { ClubCatalogVariant(code: $0) }
-    }
-
-    private static func wedgeVariants() -> [ClubCatalogVariant] {
-        ["46°", "48°", "50°", "52°", "54°", "56°", "58°", "60°", "62°"]
-            .map { ClubCatalogVariant(code: $0) }
-    }
-
-    private static func putterVariants() -> [ClubCatalogVariant] {
-        [
-            ClubCatalogVariant(code: "Blade"),
-            ClubCatalogVariant(code: "Mid-Mallet"),
-            ClubCatalogVariant(code: "Mallet"),
-            ClubCatalogVariant(code: "Counterbalanced")
-        ]
+    private static func estimate(loft: Double, anchors: [(Double, Int)]) -> Int {
+        guard let first = anchors.first, let last = anchors.last else { return 150 }
+        if loft <= first.0 { return first.1 }
+        for (lower, upper) in zip(anchors, anchors.dropFirst()) where loft <= upper.0 {
+            let fraction = (loft - lower.0) / (upper.0 - lower.0)
+            return Int((Double(lower.1) + fraction * Double(upper.1 - lower.1)).rounded())
+        }
+        return last.1
     }
 }
 
@@ -322,6 +251,17 @@ struct Club: Identifiable, Equatable, Codable {
     let brand: String?
     let family: String?
     let source: ClubSource
+    let category: ClubCatalogCategory?
+
+    var isPutter: Bool {
+        if let category { return category == .putter }
+        return name.localizedCaseInsensitiveContains("putter") ||
+            ["blade", "mallet", "mid-mallet", "counterbalanced"].contains(name.lowercased())
+    }
+
+    var liveRoundName: String {
+        isPutter && !name.localizedCaseInsensitiveContains("putter") ? "\(name) Putter" : name
+    }
 
     var subtitle: String? {
         switch (brand, family) {
@@ -342,7 +282,8 @@ struct Club: Identifiable, Equatable, Codable {
         typicalDistanceMeters: Int,
         brand: String? = nil,
         family: String? = nil,
-        source: ClubSource = .custom
+        source: ClubSource = .custom,
+        category: ClubCatalogCategory? = nil
     ) {
         self.id = id
         self.name = name
@@ -350,5 +291,6 @@ struct Club: Identifiable, Equatable, Codable {
         self.brand = brand
         self.family = family
         self.source = source
+        self.category = category
     }
 }

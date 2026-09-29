@@ -65,6 +65,7 @@ final class RoundSetupState: ObservableObject {
         guard SupabaseShared.client() != nil else {
             // Signed out / not configured: fall back to local repository list.
             courses = repository.nearbyCourses()
+            updateCourseDistances()
             return
         }
 
@@ -75,13 +76,20 @@ final class RoundSetupState: ObservableObject {
                 communityCourses: { remoteCommunity }
             ).nearbyCourses()
             courses = merged
+            updateCourseDistances()
         } catch {
             // Keep whatever we had; setup UI should remain usable offline.
         }
     }
 
     var sortedCourses: [SwingPalCourse] {
-        courses.sorted { $0.distanceKilometers < $1.distanceKilometers }
+        courses.sorted {
+            let lhs = $0.distanceKilometers ?? .infinity
+            let rhs = $1.distanceKilometers ?? .infinity
+            return lhs == rhs
+                ? $0.name.localizedStandardCompare($1.name) == .orderedAscending
+                : lhs < rhs
+        }
     }
 
     var availableTees: [SwingPalCourse.Tee] {
@@ -95,22 +103,6 @@ final class RoundSetupState: ObservableObject {
 
     var canStartRound: Bool {
         selectedCourse != nil && selectedTee != nil && !players.isEmpty
-    }
-
-    var roundSetupSummaryTitle: String {
-        selectedCourse?.name ?? "Choose your setup"
-    }
-
-    var roundSetupSummaryDetail: String {
-        guard selectedCourse != nil else {
-            return "Pick a course, lock the tees, then add players."
-        }
-
-        let teeLabel = selectedTeeName.map { "\($0) tees" } ?? "Choose tees"
-        let yardageLabel = selectedTeeYards.map { "\($0)" } ?? "Tee distance pending"
-        let golferCount = players.count == 1 ? "1 golfer ready" : "\(players.count) golfers ready"
-
-        return "\(teeLabel) • \(yardageLabel) • \(golferCount)"
     }
 
     /// Names of bundled / cached courses (case-folded). Used to suppress
@@ -153,6 +145,7 @@ final class RoundSetupState: ObservableObject {
 
     func reset() {
         courses = repository.nearbyCourses()
+        updateCourseDistances()
         selectedCourse = nil
         selectedTeeName = nil
         selectedTeeYards = nil
@@ -183,6 +176,7 @@ final class RoundSetupState: ObservableObject {
             return
         }
         userLocation = location.coordinate
+        updateCourseDistances()
 
         if let country = try? await countryCodeGeocoder.countryCode(for: location) {
             userCountryCode = country
@@ -197,6 +191,23 @@ final class RoundSetupState: ObservableObject {
         } catch {
             discoveryStatusMessage = (error as? LocalizedError)?.errorDescription
                 ?? "Couldn't find nearby courses."
+        }
+    }
+
+    /// Proximity is transient context, recomputed only from this device's
+    /// location; never trust cached distances from an import or uploader.
+    private func updateCourseDistances() {
+        guard let userLocation else { return }
+        let origin = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+        courses = courses.map { course in
+            var course = course
+            let destination = CLLocation(latitude: course.coordinate.latitude, longitude: course.coordinate.longitude)
+            course.distanceKilometers = origin.distance(from: destination) / 1_000
+            return course
+        }
+        if let selectedID = selectedCourse?.id,
+           let updated = courses.first(where: { $0.id == selectedID }) {
+            selectedCourse = updated
         }
     }
 
@@ -313,6 +324,7 @@ final class RoundSetupState: ObservableObject {
             courses.append(course)
         }
         selectCourse(course)
+        updateCourseDistances()
         importTask = nil
         currentImportStage = nil
         pendingImportDiscovery = nil

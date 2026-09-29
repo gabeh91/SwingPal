@@ -30,78 +30,83 @@ struct CourseImportLoadingOverlay: View {
 
     var body: some View {
         ZStack {
-            ShellTokens.ColorRole.bgApp
+            Book.paper
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
+            VStack(alignment: .leading, spacing: 20) {
                 header
 
-                ForEach(pipelineStages, id: \.id) { pipelineStage in
-                    stageRow(pipelineStage)
+                VStack(spacing: 0) {
+                    ForEach(Array(pipelineStages.enumerated()), id: \.element.id) { index, pipelineStage in
+                        if index > 0 { BookHairline().padding(.leading, 36) }
+                        stageRow(pipelineStage)
+                    }
                 }
 
                 Spacer()
 
                 terminalSection
             }
-            .padding(.horizontal, ShellTokens.Spacing.x24)
-            .padding(.vertical, ShellTokens.Spacing.x32)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 32)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .foregroundStyle(Book.ink)
+        .tint(Book.stamp)
         .animation(.easeInOut(duration: 0.2), value: stage?.id)
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-            Text("Importing course")
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(ShellTokens.ColorRole.pine700)
+        VStack(alignment: .leading, spacing: 6) {
+            BookNote("Importing course")
 
             Text(courseName)
-                .font(.system(size: 30, weight: .semibold, design: .serif))
-                .foregroundStyle(ShellTokens.ColorRole.textPrimary)
+                .font(Book.Typeface.display)
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(stage?.headline ?? "Preparing…")
                 .font(.subheadline)
-                .foregroundStyle(ShellTokens.ColorRole.textSecondary)
+                .foregroundStyle(Book.pencil)
                 .lineLimit(2)
                 .contentTransition(.opacity)
         }
-        .padding(.bottom, ShellTokens.Spacing.x12)
+        .padding(.bottom, 8)
     }
 
     @ViewBuilder
     private func stageRow(_ pipelineStage: CourseImportStage) -> some View {
         let status = stageStatus(for: pipelineStage)
-        HStack(alignment: .center, spacing: ShellTokens.Spacing.x14) {
+        HStack(alignment: .center, spacing: 14) {
             stageIndicator(for: status)
+                .frame(width: 22)
             Text(pipelineStage.headline)
                 .font(.subheadline.weight(status == .active ? .semibold : .regular))
-                .foregroundStyle(
-                    status == .pending
-                    ? ShellTokens.ColorRole.textTertiary
-                    : ShellTokens.ColorRole.textPrimary
-                )
+                .foregroundStyle(status == .pending ? Book.pencil : Book.ink)
             Spacer()
         }
+        .frame(minHeight: 44)
+        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
     private func stageIndicator(for status: StageStatus) -> some View {
         switch status {
         case .pending:
-            Image(systemName: "circle")
-                .foregroundStyle(ShellTokens.ColorRole.textTertiary)
+            Circle().strokeBorder(Book.rule, lineWidth: 1.5).frame(width: 16, height: 16)
+                .accessibilityLabel("Waiting")
         case .active:
             ProgressView()
                 .controlSize(.small)
         case .completed:
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(ShellTokens.ColorRole.pine700)
+            Image(systemName: "checkmark")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Book.stamp)
+                .accessibilityLabel("Done")
         case .skipped:
-            Image(systemName: "minus.circle.fill")
-                .foregroundStyle(ShellTokens.ColorRole.textTertiary)
+            Image(systemName: "minus")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Book.pencil)
+                .accessibilityLabel("Skipped")
         }
     }
 
@@ -158,87 +163,86 @@ struct CourseImportLoadingOverlay: View {
     }
 
     private func failureCard(reason: String) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
+        VStack(alignment: .leading, spacing: 12) {
             Label("We couldn't import this course", systemImage: "exclamationmark.triangle.fill")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.red)
+                .foregroundStyle(Book.warning)
 
             Text(reason)
                 .font(.callout)
-                .foregroundStyle(ShellTokens.ColorRole.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                Button("Pick another course", action: onDismiss)
-                    .buttonStyle(.bordered)
-
-                Button("Try again", action: onRetry)
-                    .buttonStyle(.borderedProminent)
-            }
+            actions(primaryTitle: "Try again", primarySymbol: "arrow.clockwise", primary: onRetry)
         }
-        .padding(ShellTokens.Spacing.x16)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            ShellTokens.ColorRole.surfacePrimary,
-            in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                .stroke(.red.opacity(0.4), lineWidth: 1)
-        )
+        .bookLeaf(cornerRadius: 14)
     }
 
     private func provisionalCard(validation: CourseValidationResult) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            Label(
-                validation.aiAvailable ? "Course imported with concerns" : "Course imported provisionally",
-                systemImage: "info.circle.fill"
-            )
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(ShellTokens.ColorRole.pine700)
+        VStack(alignment: .leading, spacing: 12) {
+            BookNote(validation.aiAvailable ? "Imported with concerns" : "Imported, needs a check")
 
             if let summary = validation.aiSummary {
                 Text(summary)
                     .font(.callout)
-                    .foregroundStyle(ShellTokens.ColorRole.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             } else if !validation.aiAvailable {
                 Text("We couldn’t run the extra quality check on this device, so this course is marked as needing review. Distances may need a quick sanity check.")
                     .font(.callout)
-                    .foregroundStyle(ShellTokens.ColorRole.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if !validation.importNotes.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(validation.importNotes.enumerated()), id: \.offset) { _, note in
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "pencil")
+                                .font(.footnote)
+                                .foregroundStyle(Book.pencil)
+                            Text(note)
+                                .font(.footnote)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
             }
 
             if !validation.aiConcerns.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(Array(validation.aiConcerns.enumerated()), id: \.offset) { _, concern in
                         HStack(alignment: .top, spacing: 8) {
-                            Text("•").foregroundStyle(ShellTokens.ColorRole.textSecondary)
+                            Text("•").foregroundStyle(Book.pencil)
                             Text(concern)
                                 .font(.footnote)
-                                .foregroundStyle(ShellTokens.ColorRole.textSecondary)
+                                .foregroundStyle(Book.pencil)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }
             }
 
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                Button("Pick another course", action: onDismiss)
-                    .buttonStyle(.bordered)
-
-                Button("Use this course", action: onUseProvisional)
-                    .buttonStyle(.borderedProminent)
-            }
+            actions(primaryTitle: "Use this course", primarySymbol: "arrow.right", primary: onUseProvisional)
         }
-        .padding(ShellTokens.Spacing.x16)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            ShellTokens.ColorRole.surfaceTinted,
-            in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                .stroke(ShellTokens.ColorRole.pine700.opacity(0.4), lineWidth: 1)
-        )
+        .bookLeaf(cornerRadius: 14)
+    }
+
+    private func actions(primaryTitle: String, primarySymbol: String, primary: @escaping () -> Void) -> some View {
+        VStack(spacing: 8) {
+            Button(action: primary) {
+                HStack {
+                    Text(primaryTitle)
+                    Spacer(minLength: 12)
+                    Image(systemName: primarySymbol)
+                }
+            }
+            .buttonStyle(BookStampButtonStyle())
+
+            Button("Pick another course", action: onDismiss)
+                .buttonStyle(BookStampButtonStyle(prominent: false))
+        }
+        .padding(.top, 4)
     }
 }

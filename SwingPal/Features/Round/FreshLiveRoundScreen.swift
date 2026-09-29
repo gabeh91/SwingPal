@@ -1,401 +1,6 @@
 import SwiftUI
 import MapKit
 
-enum FreshLiveRoundClubWheelGeometry {
-    /// Default angular stickiness margin (as a fraction of one
-    /// `angleStep`). At 0.20 the touch must move past the midpoint plus
-    /// 20 % of a sector before the hover flips to an adjacent spoke,
-    /// which is enough to absorb small accidental drifts (e.g. drifting
-    /// upward toward the centre while resting on a side spoke) without
-    /// feeling sluggish for deliberate angular sweeps.
-    static let defaultAngularStickinessFraction: Double = 0.20
-
-    /// Finds the club whose spoke is nearest to the given screen
-    /// `location`, accounting for the wheel's rotation around the
-    /// currently selected entry.
-    ///
-    /// `FreshLiveRoundClubWheelLayout.entryPosition` rotates the layout
-    /// so the *selected* entry sits at the top (`-π/2`), with the rest
-    /// fanning out clockwise. The hover-hit math has to apply the same
-    /// rotation, otherwise the angle the player's finger points to maps
-    /// onto an unrotated index and the wheel "selects in reverse" the
-    /// further the user has rotated the wheel from its initial position.
-    ///
-    /// `previousHoveredClubName` enables angular hysteresis: once a
-    /// spoke has been engaged during a drag, small drifts past the
-    /// boundary into the adjacent sector won't flip the hover. The
-    /// player has to deliberately move *past* the midpoint plus a
-    /// stickiness margin before the wheel re-targets. This is what
-    /// makes the wheel feel "anchored" rather than springy when the
-    /// player drifts their finger toward the chrome's centre.
-    static func hoveredClubName(
-        for location: CGPoint,
-        center: CGPoint,
-        clubNames: [String],
-        segmentDistance: CGFloat,
-        entrySize: CGSize,
-        innerSelectionRadius: CGFloat,
-        selectedIndex: Int = 0,
-        previousHoveredClubName: String? = nil,
-        angularStickinessFraction: Double = FreshLiveRoundClubWheelGeometry.defaultAngularStickinessFraction
-    ) -> String? {
-        let dx = location.x - center.x
-        let dy = location.y - center.y
-        let distance = sqrt((dx * dx) + (dy * dy))
-        let outerSelectionRadius = segmentDistance + hypot(entrySize.width / 2, entrySize.height / 2)
-        guard distance >= innerSelectionRadius, distance <= outerSelectionRadius else {
-            return nil
-        }
-
-        let count = max(clubNames.count, 1)
-        var angle = Double(atan2(Double(dy), Double(dx))) + (.pi / 2)
-        if angle < 0 {
-            angle += (2 * .pi)
-        }
-        let angleStep = (2 * Double.pi) / Double(count)
-        let rawIndex = Int(round(angle / angleStep)) % count
-        // Re-apply the wheel's rotation: relativeIndex 0 always sits at
-        // the top, and that slot belongs to `selectedIndex`. Adding the
-        // selected offset in (mod count) lands us back on the entry
-        // visually under the player's finger.
-        let adjustedIndex = ((rawIndex + selectedIndex) % count + count) % count
-
-        // Fast path when there's no previous hover or the candidate is
-        // the same: just return the natural pick.
-        guard let previousName = previousHoveredClubName,
-              let previousAdjustedIndex = clubNames.firstIndex(of: previousName),
-              previousAdjustedIndex != adjustedIndex
-        else {
-            return clubNames[adjustedIndex]
-        }
-
-        // Hysteresis: compute the angular distance from the touch to
-        // the *previous* spoke's centre (in the rotated frame) and only
-        // flip to the new candidate when we're far enough past the
-        // midpoint (`angleStep / 2`).
-        let previousRelativeIndex = previousAdjustedIndex - selectedIndex
-        let normalizedPrevious = Self.wrapAngle(Double(previousRelativeIndex) * angleStep)
-        var deltaAngle = angle - normalizedPrevious
-        if deltaAngle > .pi { deltaAngle -= 2 * .pi }
-        if deltaAngle < -.pi { deltaAngle += 2 * .pi }
-        let stickinessThreshold = (angleStep / 2) + (angleStep * angularStickinessFraction)
-        if abs(deltaAngle) < stickinessThreshold {
-            return clubNames[previousAdjustedIndex]
-        }
-        return clubNames[adjustedIndex]
-    }
-
-    /// Wraps an angle into `[0, 2π)` so we can safely diff it against a
-    /// touch's `angle` value (which is already wrapped).
-    private static func wrapAngle(_ angle: Double) -> Double {
-        let twoPi = 2 * Double.pi
-        let modulo = angle.truncatingRemainder(dividingBy: twoPi)
-        return modulo < 0 ? modulo + twoPi : modulo
-    }
-}
-
-enum FreshLiveRoundTextContrast: Equatable {
-    case darkInk
-    case lightInk
-}
-
-struct FreshLiveRoundChromeMetrics {
-    let launcherHorizontalInset: CGFloat
-    let launcherContentPadding: CGFloat
-    let topPanelHorizontalPadding: CGFloat
-    let topPanelVerticalPadding: CGFloat
-
-    static let standard = FreshLiveRoundChromeMetrics(
-        launcherHorizontalInset: 0,
-        launcherContentPadding: 20,
-        topPanelHorizontalPadding: 12,
-        topPanelVerticalPadding: 12
-    )
-}
-
-enum FreshLiveRoundTopPanelDensity {
-    case compact
-    case regular
-}
-
-struct FreshLiveRoundTopPanelLayout {
-    let density: FreshLiveRoundTopPanelDensity
-    let panelMinHeight: CGFloat
-    let rowSpacing: CGFloat
-    let distanceCardSpacing: CGFloat
-    let distanceCardMinHeight: CGFloat
-    /// Font size used for the small "satellite" distance numbers
-    /// (Front / Back, recommended-club tile). The hero number uses
-    /// `heroValueFontSize` for a much larger weight.
-    let distanceValueFontSize: CGFloat
-    /// Font size for the centred hero distance number in the top
-    /// panel's second row. Sized intentionally larger than the
-    /// satellite numbers so the eye lands on the pin distance
-    /// (or putt distance on the green) before anything else.
-    let heroValueFontSize: CGFloat
-    let edgeMetricWidth: CGFloat
-    let navButtonSize: CGFloat
-    let centerHorizontalPadding: CGFloat
-    let prefersCondensedHoleTitle: Bool
-
-    static func resolve(containerSize: CGSize) -> FreshLiveRoundTopPanelLayout {
-        let compact = containerSize.width < 390 || containerSize.height < 760
-        let prefersCondensedHoleTitle = containerSize.width < 410
-
-        if compact {
-            return FreshLiveRoundTopPanelLayout(
-                density: .compact,
-                panelMinHeight: 142,
-                rowSpacing: 8,
-                distanceCardSpacing: 8,
-                distanceCardMinHeight: 78,
-                distanceValueFontSize: 18,
-                heroValueFontSize: 40,
-                edgeMetricWidth: 72,
-                navButtonSize: 32,
-                centerHorizontalPadding: 8,
-                prefersCondensedHoleTitle: true
-            )
-        }
-
-        return FreshLiveRoundTopPanelLayout(
-            density: .regular,
-            panelMinHeight: 168,
-            rowSpacing: 10,
-            distanceCardSpacing: 10,
-            distanceCardMinHeight: 90,
-            distanceValueFontSize: 20,
-            heroValueFontSize: 48,
-            edgeMetricWidth: 80,
-            navButtonSize: 36,
-            centerHorizontalPadding: 10,
-            prefersCondensedHoleTitle: prefersCondensedHoleTitle
-        )
-    }
-
-    static func compactHoleTitle(for holeNumber: Int) -> String {
-        "H\(holeNumber)"
-    }
-
-    func holeTitle(for holeNumber: Int) -> String {
-        if density == .compact || prefersCondensedHoleTitle {
-            return Self.compactHoleTitle(for: holeNumber)
-        }
-        return "Hole \(holeNumber)"
-    }
-}
-
-struct FreshLiveRoundPalette {
-    let primaryTextContrast: FreshLiveRoundTextContrast
-    let secondaryTextContrast: FreshLiveRoundTextContrast
-    let unselectedChipUsesProminentFill: Bool
-    let loggerOptionUsesTintedFill: Bool
-    let chromeTintOpacity: Double
-    let panelFillOpacity: Double
-    let secondaryFillOpacity: Double
-    let tertiaryFillOpacity: Double
-    let wheelEntryFillOpacity: Double
-    let wheelCenterFillOpacity: Double
-    let chromeTint: Color
-    let panelFill: Color
-    let secondaryFill: Color
-    let tertiaryFill: Color
-    let border: Color
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
-    let tertiaryTextColor: Color
-    let accent: Color
-    let accentForeground: Color
-    let quietIcon: Color
-    let scrim: Color
-    let loggerOptionFill: Color
-    let mapLabelFill: Color
-    let wheelRingStroke: Color
-    let wheelEntryFill: Color
-    let wheelCenterFill: Color
-    /// Soft radial halo painted *behind* the club wheel so it lifts off
-    /// the scrim and reads as the focal element. Used as the inner
-    /// stop of a `RadialGradient(... .clear)` — the outer stop is
-    /// always `.clear` so the backdrop blends seamlessly into the scrim.
-    let wheelBackdrop: Color
-    let modalCanvas: Color
-    let glassHighlight: Color
-    let glassGlow: Color
-    let shadowColor: Color
-
-    static func forColorScheme(_ colorScheme: ColorScheme) -> FreshLiveRoundPalette {
-        switch colorScheme {
-        case .dark:
-            return FreshLiveRoundPalette(
-                primaryTextContrast: .lightInk,
-                secondaryTextContrast: .lightInk,
-                unselectedChipUsesProminentFill: false,
-                loggerOptionUsesTintedFill: true,
-                chromeTintOpacity: 0.26,
-                panelFillOpacity: 0.16,
-                secondaryFillOpacity: 0.22,
-                tertiaryFillOpacity: 0.14,
-                wheelEntryFillOpacity: 0.16,
-                wheelCenterFillOpacity: 0.30,
-                chromeTint: Color(red: 0.05, green: 0.08, blue: 0.07).opacity(0.26),
-                panelFill: Color(red: 0.11, green: 0.14, blue: 0.13).opacity(0.68),
-                secondaryFill: Color(red: 0.13, green: 0.16, blue: 0.15).opacity(0.78),
-                tertiaryFill: Color(red: 0.16, green: 0.19, blue: 0.18).opacity(0.84),
-                border: Color.white.opacity(0.36),
-                primaryTextColor: Color.white.opacity(0.96),
-                secondaryTextColor: Color.white.opacity(0.86),
-                tertiaryTextColor: Color.white.opacity(0.68),
-                accent: ShellTokens.ColorRole.pine500,
-                accentForeground: .white,
-                quietIcon: Color.white.opacity(0.90),
-                scrim: Color.black.opacity(0.28),
-                loggerOptionFill: Color(red: 0.15, green: 0.17, blue: 0.16).opacity(0.92),
-                mapLabelFill: Color.black.opacity(0.58),
-                wheelRingStroke: Color.white.opacity(0.24),
-                wheelEntryFill: Color(red: 0.16, green: 0.19, blue: 0.18).opacity(0.86),
-                wheelCenterFill: Color(red: 0.10, green: 0.13, blue: 0.12).opacity(0.92),
-                wheelBackdrop: Color.black.opacity(0.52),
-                modalCanvas: Color(red: 0.06, green: 0.08, blue: 0.07),
-                glassHighlight: Color.white.opacity(0.22),
-                glassGlow: Color.white.opacity(0.06),
-                shadowColor: Color.black.opacity(0.28)
-            )
-        default:
-            return FreshLiveRoundPalette(
-                primaryTextContrast: .darkInk,
-                secondaryTextContrast: .darkInk,
-                unselectedChipUsesProminentFill: false,
-                loggerOptionUsesTintedFill: true,
-                chromeTintOpacity: 0.08,
-                panelFillOpacity: 0.055,
-                secondaryFillOpacity: 0.055,
-                tertiaryFillOpacity: 0.032,
-                wheelEntryFillOpacity: 0.12,
-                wheelCenterFillOpacity: 0.18,
-                chromeTint: Color(red: 0.93, green: 0.95, blue: 0.89).opacity(0.08),
-                panelFill: Color.white.opacity(0.055),
-                secondaryFill: Color.white.opacity(0.055),
-                tertiaryFill: Color.white.opacity(0.032),
-                border: Color.white.opacity(0.34),
-                primaryTextColor: ShellTokens.ColorRole.textPrimary,
-                secondaryTextColor: ShellTokens.ColorRole.textSecondary,
-                tertiaryTextColor: ShellTokens.ColorRole.textTertiary,
-                accent: ShellTokens.ColorRole.pine700,
-                accentForeground: .white,
-                quietIcon: ShellTokens.ColorRole.textPrimary,
-                scrim: Color.black.opacity(0.08),
-                loggerOptionFill: Color.white.opacity(0.14),
-                mapLabelFill: Color.black.opacity(0.32),
-                wheelRingStroke: Color.white.opacity(0.24),
-                wheelEntryFill: Color.white.opacity(0.12),
-                wheelCenterFill: Color.white.opacity(0.18),
-                wheelBackdrop: Color.black.opacity(0.32),
-                modalCanvas: Color(red: 0.95, green: 0.96, blue: 0.92),
-                glassHighlight: Color.white.opacity(0.42),
-                glassGlow: Color.white.opacity(0.14),
-                shadowColor: Color.black.opacity(0.08)
-            )
-        }
-    }
-}
-
-enum FreshLiveRoundGlassCapabilities {
-    static var supportsNativeGlass: Bool {
-        if #available(iOS 26.0, *) {
-            return true
-        }
-        return false
-    }
-}
-
-enum FreshLiveRoundNativeGlassKind: Equatable {
-    case regular
-    case clear
-}
-
-enum FreshLiveRoundNativeGlassPolicy {
-    static let primaryChrome: FreshLiveRoundNativeGlassKind = .regular
-    static let embeddedChrome: FreshLiveRoundNativeGlassKind = .regular
-}
-
-enum FreshLiveRoundHUDInteractionPolicy {
-    static let usesDedicatedTopPanelGestureShield = true
-    static let topPanelGestureShieldUsesBackgroundSizing = true
-}
-
-enum FreshLiveRoundLauncherLayoutPolicy {
-    static let liveActionsBaseHeight: CGFloat = 360
-    static let liveExpandedBaseHeight: CGFloat = 620
-    static let inspectionActionsBaseHeight: CGFloat = 360
-    static let inspectionExpandedBaseHeight: CGFloat = 620
-    static let maxExpandedHeightRatio: CGFloat = 0.78
-}
-
-struct FreshLiveRoundLauncherDetentHeights {
-    let collapsed: CGFloat
-    let actions: CGFloat
-    let expanded: CGFloat
-}
-
-enum FreshLiveRoundLauncherSnapPolicy {
-    private static let minimumThreshold: CGFloat = 36
-    private static let maximumThreshold: CGFloat = 84
-    private static let thresholdRatio: CGFloat = 0.24
-    private static let momentumLimit: CGFloat = 44
-
-    static func targetDetent(
-        from currentDetent: LiveRoundState.LauncherDetent,
-        translation: CGFloat,
-        predictedEndTranslation: CGFloat,
-        heights: FreshLiveRoundLauncherDetentHeights
-    ) -> LiveRoundState.LauncherDetent {
-        let effectiveTranslation = translation + clampedMomentumDelta(
-            predictedEndTranslation - translation
-        )
-
-        switch currentDetent {
-        case .collapsed:
-            let upwardThreshold = threshold(
-                from: heights.collapsed,
-                to: heights.actions
-            )
-            return effectiveTranslation <= -upwardThreshold ? .actions : .collapsed
-        case .actions:
-            let upwardThreshold = threshold(
-                from: heights.actions,
-                to: heights.expanded
-            )
-            let downwardThreshold = threshold(
-                from: heights.actions,
-                to: heights.collapsed
-            )
-
-            if effectiveTranslation <= -upwardThreshold {
-                return .expanded
-            }
-            if effectiveTranslation >= downwardThreshold {
-                return .collapsed
-            }
-            return .actions
-        case .expanded:
-            let downwardThreshold = threshold(
-                from: heights.expanded,
-                to: heights.actions
-            )
-            return effectiveTranslation >= downwardThreshold ? .actions : .expanded
-        }
-    }
-
-    private static func threshold(from origin: CGFloat, to target: CGFloat) -> CGFloat {
-        let distance = abs(target - origin)
-        return min(max(distance * thresholdRatio, minimumThreshold), maximumThreshold)
-    }
-
-    private static func clampedMomentumDelta(_ delta: CGFloat) -> CGFloat {
-        min(max(delta, -momentumLimit), momentumLimit)
-    }
-}
-
 enum FreshLiveRoundShotLoggerPresentationPolicy {
     static let usesSystemSheetBackground = true
 }
@@ -420,6 +25,7 @@ private struct FreshLiveRoundTrayActionsModifier<PickerContent: View>: ViewModif
     let quickPenaltyPicker: () -> PickerContent
     let modalCanvas: Color
     let surfaceLabel: (ShotEvent.Surface) -> String
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     func body(content: Content) -> some View {
         content
@@ -428,7 +34,7 @@ private struct FreshLiveRoundTrayActionsModifier<PickerContent: View>: ViewModif
                 set: { if !$0 { state.dismissQuickPenaltyPicker() } }
             )) {
                 quickPenaltyPicker()
-                    .presentationDetents([.medium])
+                    .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.medium, .large])
                     .presentationBackground(modalCanvas)
             }
             .alert(
@@ -464,144 +70,6 @@ private struct FreshLiveRoundTrayActionsModifier<PickerContent: View>: ViewModif
                 guard isVisible else { return }
                 onUndoneToastSchedule()
             }
-    }
-}
-
-private struct FreshLiveRoundGlassSurface<S: Shape>: ViewModifier {
-    let shape: S
-    let palette: FreshLiveRoundPalette
-    let tint: Color
-    let material: Material
-    let nativeGlass: FreshLiveRoundNativeGlassKind
-
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .glassEffect(nativeGlass == .clear ? .clear : .regular, in: shape)
-                .overlay {
-                    shape
-                        .stroke(palette.border.opacity(0.72), lineWidth: 1)
-                }
-        } else {
-            content
-                .background(material, in: shape)
-                .background(tint, in: shape)
-                .overlay {
-                    shape
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    palette.glassHighlight,
-                                    palette.glassGlow,
-                                    .clear
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .blendMode(.screen)
-                        .allowsHitTesting(false)
-                }
-                .overlay {
-                    shape
-                        .stroke(palette.border, lineWidth: 1)
-                }
-        }
-    }
-}
-
-private extension View {
-    func freshGlass<S: Shape>(
-        _ shape: S,
-        palette: FreshLiveRoundPalette,
-        tint: Color,
-        material: Material = .thinMaterial,
-        nativeGlass: FreshLiveRoundNativeGlassKind = .regular
-    ) -> some View {
-        modifier(FreshLiveRoundGlassSurface(shape: shape, palette: palette, tint: tint, material: material, nativeGlass: nativeGlass))
-    }
-
-    func freshRoundSheetCanvas(palette: FreshLiveRoundPalette) -> some View {
-        background(palette.modalCanvas.ignoresSafeArea())
-            .tint(palette.accent)
-    }
-
-    func freshRoundInputFieldStyle(palette: FreshLiveRoundPalette) -> some View {
-        font(.subheadline)
-            .foregroundStyle(palette.primaryTextColor)
-            .tint(palette.accent)
-            .padding(.horizontal, ShellTokens.Spacing.x14)
-            .padding(.vertical, ShellTokens.Spacing.x14)
-            .background(palette.secondaryFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(palette.border, lineWidth: 1)
-            }
-    }
-
-    func freshRoundListChrome(palette: FreshLiveRoundPalette) -> some View {
-        scrollContentBackground(.hidden)
-            .background(palette.modalCanvas)
-            .tint(palette.accent)
-    }
-}
-
-struct FreshLiveRoundClubWheelLayout {
-    let center: CGPoint
-    let outerRadius: CGFloat
-    let chromeDiameter: CGFloat
-    let segmentDistance: CGFloat
-    let entrySize: CGSize
-    let innerSelectionRadius: CGFloat
-    let orbitRingDiameter: CGFloat
-
-    static func resolve(
-        anchorFrame: CGRect,
-        safeAreaInsets: EdgeInsets,
-        containerSize: CGSize,
-        entryCount: Int
-    ) -> FreshLiveRoundClubWheelLayout {
-        let outerRadius = min(156, max(144, containerSize.width * 0.39))
-        let chromeDiameter = outerRadius * 2
-        let entrySize = CGSize(width: min(96, max(88, containerSize.width * 0.23)), height: 74)
-        let segmentDistance = outerRadius - 20
-        let innerSelectionRadius = max(54, outerRadius * 0.45)
-        let orbitRingDiameter = segmentDistance * 2
-        let usableMinY = safeAreaInsets.top + outerRadius + 16
-        // Reserve room *below* the chrome for the Auto/Manual toggle pill
-        // (52pt gap + ~44pt pill height + 16pt breathing room).
-        let usableMaxY = containerSize.height - safeAreaInsets.bottom - outerRadius - 112
-        let centeredY = min(max(containerSize.height / 2, usableMinY), usableMaxY)
-        let preferredCenter = CGPoint(
-            x: containerSize.width / 2,
-            y: centeredY
-        )
-
-        return FreshLiveRoundClubWheelLayout(
-            center: preferredCenter,
-            outerRadius: outerRadius,
-            chromeDiameter: chromeDiameter,
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: innerSelectionRadius,
-            orbitRingDiameter: orbitRingDiameter
-        )
-    }
-
-    func entryPosition(
-        for index: Int,
-        count: Int,
-        selectedIndex: Int,
-        anchorFrame: CGRect
-    ) -> CGPoint {
-        let angleStep = (2 * Double.pi) / Double(max(count, 1))
-        let relativeIndex = index - selectedIndex
-        let angle = (-Double.pi / 2) + (angleStep * Double(relativeIndex))
-
-        return CGPoint(
-            x: center.x + (CGFloat(cos(angle)) * segmentDistance),
-            y: center.y + (CGFloat(sin(angle)) * segmentDistance)
-        )
     }
 }
 
@@ -774,88 +242,25 @@ struct FreshLiveRoundAnnularSegmentShape: Shape {
     }
 }
 
-/// One concentric distance ring centred on the **pin** of the active hole. Rings are tighter on
-/// approach (25 m increments inside 150 m, where club selection precision matters most) and wider
-/// further out (50 m increments beyond 150 m). Colours are grouped into "club zones" so a glance
-/// tells you which class of shot you're looking at rather than just a raw number:
-///
-///   red    – chip / pitch zone (≤ 50 m)
-///   orange – wedge zone (50–100 m)
-///   white  – mid iron zone (100–150 m)
-///   blue   – long iron / wood zone (150 m+)
-struct FreshLiveRoundCarryRing: Identifiable, Hashable {
-    let id: Int
-    let radiusMeters: Int
-    let color: Color
-
-    private static let chip = Color(red: 0.94, green: 0.32, blue: 0.32)
-    private static let wedge = Color(red: 0.99, green: 0.69, blue: 0.21)
-    private static let midIron = Color.white.opacity(0.92)
-    private static let longIron = Color(red: 0.27, green: 0.62, blue: 0.96)
-
-    static let standardSet: [FreshLiveRoundCarryRing] = [
-        .init(id: 0, radiusMeters: 25,  color: chip),
-        .init(id: 1, radiusMeters: 50,  color: chip),
-        .init(id: 2, radiusMeters: 75,  color: wedge),
-        .init(id: 3, radiusMeters: 100, color: wedge),
-        .init(id: 4, radiusMeters: 125, color: midIron),
-        .init(id: 5, radiusMeters: 150, color: midIron),
-        .init(id: 6, radiusMeters: 200, color: longIron),
-        .init(id: 7, radiusMeters: 250, color: longIron),
-    ]
-
-    /// Compact legend rows: one entry per club-zone, showing both rings in that zone.
-    /// Used by `carryRingLegend` to keep the bottom strip readable now that we have 8
-    /// rings instead of 4.
-    struct LegendZone: Identifiable, Hashable {
-        let id: Int
-        let label: String
-        let color: Color
-    }
-
-    static let legendZones: [LegendZone] = [
-        .init(id: 0, label: "25 / 50",   color: chip),
-        .init(id: 1, label: "75 / 100",  color: wedge),
-        .init(id: 2, label: "125 / 150", color: midIron),
-        .init(id: 3, label: "200 / 250", color: longIron),
-    ]
-}
-
-struct FreshLiveRoundClubWheelMotion {
-    let entryBaseScale: CGFloat
-    let selectedScale: CGFloat
-    /// Per-entry delay used when the wheel breathes in. Kept small so the 12
-    /// entries feel like one cohesive motion rather than a 220ms cascade.
-    let entryDelayStep: Double
-    /// Extra scale bump applied when the entry is *both* selected and
-    /// recommended, so the user can pick out the "correct" club at a glance.
-    let recommendedScale: CGFloat
-
-    static let standard = FreshLiveRoundClubWheelMotion(
-        entryBaseScale: 0.84,
-        selectedScale: 1.06,
-        entryDelayStep: 0.006,
-        recommendedScale: 1.10
-    )
-}
-
 struct FreshLiveRoundScreen: View {
-    private static let clubWheelCoordinateSpace = "FreshLiveRoundScreenSpace"
     @ObservedObject var state: LiveRoundState
     let onFinishHole: () -> Void
     let onSaveAndExitRound: () -> Void
     let onDiscardRound: () -> Void
+    let onReviewRound: () -> Void
 
     init(
         state: LiveRoundState,
         onFinishHole: @escaping () -> Void,
         onSaveAndExitRound: @escaping () -> Void,
-        onDiscardRound: @escaping () -> Void
+        onDiscardRound: @escaping () -> Void,
+        onReviewRound: @escaping () -> Void = {}
     ) {
         self.state = state
         self.onFinishHole = onFinishHole
         self.onSaveAndExitRound = onSaveAndExitRound
         self.onDiscardRound = onDiscardRound
+        self.onReviewRound = onReviewRound
 
         // Seed the camera at the tee-biased framing so the very first frame is already
         // looking up the hole from the tee, instead of MapKit's default empty/automatic state
@@ -867,105 +272,57 @@ struct FreshLiveRoundScreen: View {
     }
 
     @State private var cameraPosition: MapCameraPosition
-    @State private var clubLauncherFrame: CGRect = .zero
+    @AppStorage("liveMapStyle") private var liveMapStyleRaw = "aerial"
+    /// The drag-to-plan hint shows until the ring has been moved once.
+    @AppStorage("liveAimHintSeen") private var hasSeenAimHint = false
+    @State private var playingPreviewClub: String?
+    @ScaledMetric(relativeTo: .largeTitle) private var playingDistanceSize: CGFloat = 30
     @State private var isShowingShotLoggedToast = false
     @State private var shotLoggedToastTask: Task<Void, Never>?
     /// Auto-dismiss timer for the post-undo "Undid 7-iron" toast.
     @State private var undoneToastTask: Task<Void, Never>?
-    // The launcher sheet's drag translation is owned by `FreshLiveRoundLauncherOffsetWrapper`
-    // (a private view declared further down). Confining the @State to that wrapper means
-    // changes during drag invalidate ONLY the wrapper's body, not the parent screen's body.
-    // That's the difference between "smooth drag" and "the entire MapContent diff fires
-    // 60 times a second" - the parent still owns the full Map (with all its polygons,
-    // distance pills, carry rings, annotations) and we don't want it to be re-evaluated
-    // while the user is just dragging the sheet.
-    /// Driven by the sequenced long-press + drag on the aim crosshair. Backed by `@GestureState`
-    /// so the value automatically resets to `false` the instant the gesture ends, cancels, or is
-    /// interrupted - we can't end up in a state where the map stays locked because the drag was
-    /// torn down without firing `onEnded`.
-    @GestureState private var isAimDragActive: Bool = false
-    /// Bumped on every map camera change so views that read screen coords from
-    /// `MapProxy.convert(_:to:)` get re-evaluated as the user pans/zooms. Without
-    /// this the gesture catcher would stay parked at its initial screen position
-    /// even while the in-Map crosshair Annotation correctly follows the map.
-    @State private var mapCameraVersion: Int = 0
+    /// True while a finger holds the target ring (map gestures pause).
+    @State private var isAimDragging = false
+    /// Camera frames for the aim overlay. Plain `@State`, not `@StateObject`:
+    /// a state object would subscribe this whole screen to every camera frame.
+    @State private var aimTicker = AimCameraTicker()
+    /// Page outline and hazard figures, kept between renders.
+    @State private var drawingCache = LiveMapDrawingCache()
     @State private var hasSeededInitialCamera = false
-    /// While true (after **View green**), the map only allows pan/zoom within
-    /// `LiveRoundState.greenInspectionPanLimits`. Reset when the camera is
-    /// re-framed to the hole (recenter, hole change, inspect toggle).
-    @State private var isGreenInspectionPanClampActive = false
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var isShowingHoleInspector = false
     @State private var isShowingShotHistory = false
     @State private var isShowingConditions = false
     @State private var isShowingCurrentHoleEditor = false
     @State private var isShowingEndRoundFlow = false
+    @State private var isShowingRoundActions = false
+    @State private var pendingRoundAction: (() -> Void)?
+    @State private var pendingEndRoundChoice: FreshLiveRoundEndRoundChoice?
+    @State private var isShowingNativeClubPicker = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
-    private let chromeMetrics = FreshLiveRoundChromeMetrics.standard
-
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
 
     var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                liveMap
-
-                VStack(spacing: 0) {
-                    topPanel(in: proxy)
-                        .padding(.top, proxy.safeAreaInsets.top + ShellTokens.Spacing.x12)
-                        .padding(.horizontal, ShellTokens.Spacing.x16)
-
-                    Spacer(minLength: 0)
-                }
-
-                // Sheet stack (carry-ring legend + launcher sheet) wrapped in
-                // a dedicated subview that owns the drag `@State`. Because the
-                // drag translation lives inside the wrapper, finger movement
-                // during a sheet drag invalidates ONLY the wrapper's body. The
-                // parent body (and the entire `liveMap` MapContent tree) stays
-                // untouched - that's the difference between smooth drag and
-                // 60 Hz MapContent diffs.
-                FreshLiveRoundLauncherOffsetWrapper(
-                    collapsedHeight: launcherCollapsedHeight(in: proxy),
-                    actionsHeight: launcherActionsHeight(in: proxy),
-                    expandedHeight: launcherExpandedHeight(in: proxy),
-                    restingHeight: launcherRestingHeight(in: proxy),
-                    currentDetent: state.launcherDetent
-                ) { dragTranslation in
-                    bottomSheetStack(in: proxy, dragTranslation: dragTranslation)
-                }
-
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        recenterButton
+            if dynamicTypeSize.isAccessibilitySize || voiceOverEnabled {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        courseRoundHeader
+                        courseDistanceInstrument
+                        courseMapStage.frame(height: 260)
+                        courseShotActions(availableWidth: proxy.size.width)
                     }
-                    .padding(.horizontal, ShellTokens.Spacing.x16)
-                    // Anchor to the resting detent height (not the live drag-
-                    // tracking height) so the recenter button stays put during
-                    // drag instead of bouncing along with the sheet. Reading
-                    // `launcherCurrentHeight` here would invalidate this
-                    // subtree's layout on every drag tick.
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom, ShellTokens.Spacing.x12) + launcherRestingHeight(in: proxy) + ShellTokens.Spacing.x16)
-                    .animation(.spring(response: 0.34, dampingFraction: 0.86), value: state.launcherDetent)
                 }
-
-                if state.isShowingClubWheel {
-                    clubWheelOverlay(in: proxy)
-                }
-
-                topBannerStack(safeAreaInsetTop: proxy.safeAreaInsets.top)
+                .background(CourseStyle.ground)
+            } else {
+                immersiveRoundContent(in: proxy)
             }
-            .background(ShellTokens.ColorRole.bgApp)
-            .ignoresSafeArea()
         }
-        .coordinateSpace(name: Self.clubWheelCoordinateSpace)
-        .onPreferenceChange(FreshLiveRoundClubLauncherFramePreferenceKey.self) { frame in
-            guard frame != .zero else { return }
-            clubLauncherFrame = frame
+        .onChange(of: dynamicTypeSize) { _, _ in state.dismissClubWheel(); playingPreviewClub = nil }
+        .onChange(of: voiceOverEnabled) { _, enabled in
+            if enabled { state.dismissClubWheel(); playingPreviewClub = nil }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -975,8 +332,12 @@ struct FreshLiveRoundScreen: View {
             if !hasSeededInitialCamera {
                 hasSeededInitialCamera = true
                 syncCameraToHoleFraming()
+                aimAtClubCarry()
             }
         }
+        .onChange(of: state.selectedClubName) { _, _ in aimAtClubCarry() }
+        .onChange(of: state.hole.number) { _, _ in aimAtClubCarry() }
+        .onChange(of: isAimDragging) { _, active in if active { hasSeenAimHint = true } }
         .onChange(of: state.locationStatus, initial: false) { _, _ in
             // Once GPS comes online we don't snap the camera (would yank the user away from
             // wherever they're looking). The first GPS-ready frame is handled by the initial
@@ -990,6 +351,7 @@ struct FreshLiveRoundScreen: View {
         }
         .onChange(of: state.shotLogConfirmationCount, initial: false) { _, newValue in
             guard newValue > 0 else { return }
+            aimAtClubCarry()
             shotLoggedToastTask?.cancel()
             withAnimation(.spring(response: 0.28, dampingFraction: 0.92)) {
                 isShowingShotLoggedToast = true
@@ -1036,13 +398,769 @@ struct FreshLiveRoundScreen: View {
         .sheet(isPresented: $isShowingCurrentHoleEditor) {
             FreshLiveRoundCurrentHoleEditorSheet(state: state)
         }
-        .sheet(isPresented: $isShowingEndRoundFlow) {
-            FreshLiveRoundEndRoundSheet(
-                onSaveAndExit: onSaveAndExitRound,
-                onDiscardRound: onDiscardRound
-            )
+        .sheet(isPresented: $isShowingEndRoundFlow, onDismiss: {
+            // Act once the sheet has gone, so the card can present in its place.
+            let choice = pendingEndRoundChoice
+            pendingEndRoundChoice = nil
+            switch choice {
+            case .signCard?, .reviewCard?: onReviewRound()
+            case .finishLater?: onSaveAndExitRound()
+            case .discard?: onDiscardRound()
+            case nil: break
+            }
+        }) {
+            FreshLiveRoundEndRoundSheet(state: state) { choice in
+                pendingEndRoundChoice = choice
+                isShowingEndRoundFlow = false
+            }
+        }
+        .sheet(isPresented: $isShowingRoundActions, onDismiss: {
+            let action = pendingRoundAction
+            pendingRoundAction = nil
+            action?()
+        }) {
+            courseRoundActionsSheet
+        }
+        .sheet(isPresented: $isShowingNativeClubPicker) {
+            courseClubPicker
+        }
+        .transaction { transaction in
+            if reduceMotion { transaction.animation = nil }
         }
         .modifier(trayActionPresentations)
+    }
+
+    // The course is the planning surface. Controls enter only at its edges;
+    // yardage belongs to the green and equipment range belongs to the shot origin.
+    private var plannerGround: Color { Book.paper }
+    private var plannerInk: Color { Book.ink }
+
+    /// Aerial imagery is the default; the drawn page is the yardage book's own
+    /// rendering of the same geometry on a quiet base map.
+    private var isDrawnMap: Bool { liveMapStyleRaw == "drawn" }
+    /// Marker ink that reads on either the aerial photo or the drawn page.
+    private var mapMarkInk: Color { isDrawnMap ? Book.ink : .white }
+
+    private func immersiveRoundContent(in proxy: GeometryProxy) -> some View {
+        Group {
+            if proxy.size.height < 420 || dynamicTypeSize >= .xxLarge {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        playingHeader
+                        courseDistanceInstrument
+                        liveMap.frame(height: 320)
+                        playingLowerControls(in: proxy)
+                    }
+                }
+                .background(plannerGround)
+            } else {
+                ZStack {
+                    liveMap.ignoresSafeArea()
+                        .overlay(alignment: .top) {
+                            plannerGround.frame(height: proxy.safeAreaInsets.top)
+                                .offset(y: -proxy.safeAreaInsets.top).allowsHitTesting(false)
+                        }
+                    VStack(spacing: 0) {
+                        playingHeader
+                            .background(alignment: .top) {
+                                // Solid paper behind every line of the header (and up
+                                // under the status bar), then a short fade onto the map
+                                // that starts only below the last line of text.
+                                VStack(spacing: 0) {
+                                    plannerGround
+                                    if !reduceTransparency {
+                                        LinearGradient(colors: [plannerGround, plannerGround.opacity(0)], startPoint: .top, endPoint: .bottom)
+                                            .frame(height: 22)
+                                    }
+                                }
+                                .padding(.top, -proxy.safeAreaInsets.top)
+                                .padding(.bottom, reduceTransparency ? 0 : -22)
+                                .allowsHitTesting(false)
+                            }
+                        Spacer(minLength: 0)
+                        playingLowerControls(in: proxy)
+                    }
+                }
+            }
+        }
+        .overlay { topBannerStack(safeAreaInsetTop: 0) }
+        .foregroundStyle(plannerInk)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: state.isShowingClubWheel)
+        .onChange(of: state.isShowingClubWheel) { _, shown in
+            playingPreviewClub = shown ? state.selectedClubName : nil
+            // Cancel puts the plan back on the club in hand; Use moves it via the club change.
+            if !shown { aimAtClubCarry() }
+        }
+        .onChange(of: playingPreviewClub) { _, name in
+            // Previewing a club shows what it leaves: the ring moves to its carry.
+            guard let name, let entry = state.clubWheelEntries.first(where: { $0.clubName == name }) else { return }
+            state.placePlanningTarget(atCarryMeters: entry.displayCarryMeters)
+        }
+    }
+
+    /// The page header: the hole's folio numeral, par and course, with page
+    /// turns at the right edge. Tapping the folio opens the hole index.
+    private var playingHeader: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 0) {
+                Button { isShowingHoleInspector = true } label: {
+                    // Lockup: the course line shares the numeral's baseline and
+                    // the par sits above it, so both stay within the numeral's height.
+                    HStack(alignment: .lastTextBaseline, spacing: 10) {
+                        Text(String(format: "%02d", state.displayedHoleNumber))
+                            .font(.system(size: 46, weight: .bold).width(.condensed))
+                            .monospacedDigit()
+                            .contentTransition(.numericText(value: Double(state.displayedHoleNumber)))
+                        VStack(alignment: .leading, spacing: 1) {
+                            HStack(spacing: 6) {
+                                Text("Par \(state.displayedHoleSession.par)")
+                                    .font(Book.Typeface.subheading)
+                                if !state.isDisplayedHoleLive {
+                                    BookNote("Inspecting", color: Book.flag)
+                                }
+                            }
+                            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                                Text(state.courseName)
+                                    .lineLimit(1)
+                                if let wind = windReading {
+                                    HStack(spacing: 3) {
+                                        Image(systemName: "location.north.fill")
+                                            .font(.system(size: 9, weight: .bold))
+                                            .rotationEffect(.degrees(wind.motion))
+                                        Text("\(wind.speed) km/h").monospacedDigit()
+                                    }
+                                    .foregroundStyle(Book.ink)
+                                    .fixedSize()
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(Book.pencil)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .accessibilityLabel("\(state.courseName). Hole \(state.displayedHoleNumber), par \(state.displayedHoleSession.par).\(windReading.map { " Wind \($0.speed) kilometres per hour, \(state.windRelativeCategory.label.lowercased())." } ?? "") Inspect holes")
+                playingIcon("chevron.left", label: "Previous hole", enabled: state.canInspectPreviousHole) { state.inspectPreviousHole() }
+                playingIcon("chevron.right", label: "Next hole", enabled: state.canInspectNextHole) { state.inspectNextHole() }
+                playingIcon("ellipsis", label: "Round actions and review") { isShowingRoundActions = true }
+            }
+            if !hasLiveDistance {
+                Button { isShowingConditions = true } label: {
+                    Label(!hasGreenReference ? "No green geometry · score this hole by hand" : state.isDisplayedHoleLive ? "GPS unavailable · reference distances from the tee" : "Inspecting · distances from the tee", systemImage: "location.slash")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(Book.pencil)
+                        .frame(minHeight: 32)
+                }
+            }
+        }
+        .padding(.horizontal, 18).padding(.top, 2).padding(.bottom, 10)
+        // The header is paper, not map: touches anywhere on it stay here.
+        .contentShape(Rectangle())
+        .buttonStyle(.plain)
+    }
+
+    /// Wind as it bears on the line of play: the arrow points where the air
+    /// is going, with up being toward the target.
+    private var windReading: (motion: Double, speed: Int)? {
+        guard state.hasUsableWindReading,
+              let motion = state.windRelativeMotionDegrees,
+              let snapshot = state.weatherSnapshot
+        else { return nil }
+        return (motion, snapshot.windSpeedKilometersPerHour)
+    }
+
+    private func playingLowerControls(in proxy: GeometryProxy) -> some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                if state.canMarkBallOnDisplayedHole {
+                    Button { state.markBall() } label: {
+                        Label(state.atBallActionTitle, systemImage: state.ballMarkStatus == .marked ? "checkmark" : "scope")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 14).frame(minHeight: 44)
+                            .background(Book.leaf, in: Capsule())
+                            .overlay(Capsule().strokeBorder(Book.rule))
+                    }
+                }
+                Spacer()
+                Button {
+                    liveMapStyleRaw = isDrawnMap ? "aerial" : "drawn"
+                } label: {
+                    Label(isDrawnMap ? "Aerial" : "Drawn", systemImage: isDrawnMap ? "globe.americas" : "pencil.and.outline")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 14).frame(minHeight: 44)
+                        .background(Book.leaf, in: Capsule())
+                        .overlay(Capsule().strokeBorder(Book.rule))
+                }
+                .accessibilityLabel(isDrawnMap ? "Show aerial photo" : "Show drawn yardage page")
+                Button { syncCameraToHoleFraming(animated: true) } label: {
+                    Image(systemName: "location.north.line").font(.body.weight(.medium)).frame(width: 44, height: 44)
+                        .background(Book.leaf, in: Circle())
+                        .overlay(Circle().strokeBorder(Book.rule))
+                }.accessibilityLabel("Frame current hole")
+            }
+            .padding(.horizontal, 16)
+
+            VStack(spacing: 6) {
+                HStack(alignment: .firstTextBaseline) {
+                    BookNote(state.isShowingClubWheel ? "\(playingEntry.carrySource == .logged ? "Bag carry" : "Estimated carry")\(hasLiveDistance ? " · arc on the map" : "")" : state.isDisplayedHoleLive ? state.topBarScoreSubtitle : "Inspecting hole \(state.displayedHoleNumber)")
+                    Spacer()
+                    Button {
+                        if state.isDisplayedHoleLive { state.presentHoleConfirmation() } else { onReviewRound() }
+                    } label: {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            BookNote("Card", color: Book.ink)
+                            Text(state.roundScoreToParDisplay)
+                                .font(Book.Typeface.smallFigure)
+                            Image(systemName: "chevron.right").font(.caption2.weight(.bold))
+                        }.frame(minHeight: 44).contentShape(Rectangle())
+                    }.accessibilityLabel("\(state.isDisplayedHoleLive ? "Hole score" : "Review scores"), round score \(state.roundScoreToParDisplay)")
+                }
+                BookHairline()
+                if state.isShowingClubWheel {
+                    plannerClubSequence
+                } else {
+                    playingDock
+                }
+                HStack(spacing: 6) {
+                    if state.isShowingClubWheel {
+                        Button { state.dismissClubWheel() } label: { Text("Cancel").font(.subheadline).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle()) }
+                        Spacer()
+                        Button {
+                            state.dismissClubWheel()
+                            isShowingNativeClubPicker = true
+                        } label: {
+                            Label("All clubs", systemImage: "list.bullet").font(.subheadline).frame(minHeight: 44).contentShape(Rectangle())
+                        }
+                        Spacer()
+                        Button("Use \(PlayingInstrumentStyle.clubLabel(playingEntry.clubName))") {
+                            state.selectClubFromWheel(named: playingEntry.clubName)
+                        }
+                        .font(.subheadline.weight(.bold))
+                        .padding(.horizontal, 16).frame(minHeight: 40)
+                        .foregroundStyle(Book.onStamp)
+                        .background(Book.stamp, in: Capsule())
+                    } else if !hasGreenReference {
+                        Image(systemName: "pencil").font(.caption)
+                        Text("No green on this hole's map · log shots and score by hand")
+                            .font(.caption).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    } else if !hasSeenAimHint && state.isDisplayedHoleLive {
+                        Image(systemName: "hand.point.up.left").font(.caption)
+                        Text("The ring is where your club lands · hold it to move it")
+                            .font(.caption).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                }
+                .foregroundStyle(state.isShowingClubWheel ? Book.ink : Book.pencil)
+            }
+            .padding(.horizontal, 20).padding(.top, 10).padding(.bottom, 10)
+            .contentShape(Rectangle())
+            .background {
+                plannerGround
+                    .padding(.top, -24)
+                    .ignoresSafeArea(edges: .bottom)
+                    .mask {
+                        if reduceTransparency { Rectangle() }
+                        else { LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .white, location: 0.14)], startPoint: .top, endPoint: .bottom) }
+                    }
+                    .allowsHitTesting(false)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var playingEntry: LiveRoundState.ClubWheelEntry {
+        state.clubWheelEntries.first { $0.clubName == playingPreviewClub } ?? state.selectedClubWheelEntry
+    }
+
+    /// Clubs as a ruled sequence, longest to shortest: the one being previewed
+    /// stands on the rule at full size and its carry draws on the map.
+    private var plannerClubSequence: some View {
+        ScrollViewReader { reader in
+            ScrollView(.horizontal) {
+                HStack(alignment: .bottom, spacing: 2) {
+                    ForEach(state.clubWheelEntries) { entry in
+                        let selected = entry.clubName == playingEntry.clubName
+                        Button { playingPreviewClub = entry.clubName } label: {
+                            VStack(spacing: 3) {
+                                Text(PlayingInstrumentStyle.clubLabel(entry.clubName))
+                                    .font(.system(size: selected ? 40 : 24, weight: selected ? .bold : .medium).width(.condensed))
+                                    .lineLimit(1).minimumScaleFactor(0.4)
+                                    .frame(height: 46, alignment: .bottom)
+                                Text(state.shortDistanceLabel(forMeters: entry.displayCarryMeters))
+                                    .font(.caption.weight(selected ? .semibold : .regular)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.8)
+                                Rectangle().fill(selected ? Book.flag : Book.rule).frame(width: selected ? 26 : 14, height: selected ? 3 : 1)
+                            }
+                            .foregroundStyle(selected ? Book.ink : Book.pencil)
+                            .frame(width: 62, height: 78)
+                            .contentShape(Rectangle())
+                        }
+                        .id(entry.clubName)
+                        .accessibilityLabel("Preview \(entry.clubName), \(state.shortDistanceLabel(forMeters: entry.displayCarryMeters)), \(entry.carrySource == .logged ? "stored bag carry" : "estimated carry")")
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+            .onAppear { reader.scrollTo(playingEntry.clubName, anchor: .center) }
+            .onChange(of: playingPreviewClub) { _, name in
+                guard let name else { return }
+                withAnimation(reduceMotion ? nil : .snappy(duration: 0.25)) { reader.scrollTo(name, anchor: .center) }
+            }
+        }
+        .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: playingPreviewClub)
+        .sensoryFeedback(.selection, trigger: playingPreviewClub)
+    }
+
+    /// The equipment line: the club in hand as a large condensed code, its
+    /// carry and where that carry comes from, and the stamp that logs a shot.
+    private var playingDock: some View {
+        HStack(spacing: 14) {
+            Button {
+                if state.isDisplayedHoleLive { state.presentClubWheel() } else { state.returnToActiveHole() }
+            } label: {
+                HStack(alignment: .center, spacing: 12) {
+                    if state.isDisplayedHoleLive {
+                        Text(PlayingInstrumentStyle.clubLabel(playingEntry.clubName))
+                            .font(.system(size: 50, weight: .bold).width(.condensed))
+                            .lineLimit(1).minimumScaleFactor(0.5)
+                            .frame(minWidth: 58, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                Text("\(state.distanceUnit.scalarValue(fromMeters: playingEntry.displayCarryMeters))")
+                                    .font(Book.Typeface.heading).monospacedDigit()
+                                Text("\(state.distanceUnit.shortSuffix) carry").font(.caption).foregroundStyle(Book.pencil)
+                            }
+                            HStack(spacing: 4) {
+                                Text(playingEntry.carrySource == .logged ? "From your bag" : "Estimated")
+                                Image(systemName: "chevron.up.chevron.down").font(.caption2)
+                            }
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Book.pencil)
+                        }
+                    } else {
+                        Label("Return to hole \(state.hole.number)", systemImage: "arrow.uturn.backward").font(.headline)
+                    }
+                }.frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .accessibilityLabel(state.isDisplayedHoleLive ? "Choose club. \(playingEntry.clubName), \(state.shortDistanceLabel(forMeters: playingEntry.displayCarryMeters)), \(playingEntry.carrySource == .logged ? "stored bag carry" : "estimated carry")" : "Return to active hole")
+            Button { state.presentShotLogger() } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "figure.golf").font(.system(size: 22, weight: .semibold))
+                    Text("Log shot").font(.caption.weight(.bold))
+                }
+                .foregroundStyle(Book.onStamp)
+                .frame(width: 78, height: 70)
+                .background(Book.stamp, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .disabled(!state.canPresentShotLogger).opacity(state.canPresentShotLogger ? 1 : 0.35)
+        }
+    }
+
+    private func playingIcon(_ symbol: String, label: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol).font(.body.weight(.semibold)).frame(width: 44, height: 44)
+                // Plain buttons hit-test only their drawn pixels; without this the
+                // 44 pt target was just the glyph and taps fell through to the map.
+                .contentShape(Rectangle())
+        }.buttonStyle(.plain).disabled(!enabled).opacity(enabled ? 1 : 0.25).accessibilityLabel(label)
+    }
+
+    /// Green readings written beside the green, joined by a fine leader.
+    @ViewBuilder
+    private var plannerGreenMarker: some View {
+        if dynamicTypeSize >= .xxLarge || voiceOverEnabled {
+            Image(systemName: "flag.fill").font(.title2).foregroundStyle(Book.flag)
+                .shadow(color: .black.opacity(0.4), radius: 2)
+                .accessibilityLabel(state.targetLabel)
+        } else {
+        HStack(spacing: 0) {
+            Circle().fill(mapMarkInk).frame(width: 6, height: 6)
+                .shadow(color: .black.opacity(isDrawnMap ? 0 : 0.5), radius: 1)
+            Rectangle().fill(mapMarkInk.opacity(0.9)).frame(width: 14, height: 1.5)
+                .shadow(color: .black.opacity(isDrawnMap ? 0 : 0.5), radius: 1)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(showsReferenceDistance ? "\(state.distanceUnit.scalarValue(fromMeters: state.displayedPinDistanceMeters))" : "—")
+                        .font(.system(size: playingDistanceSize * 1.25, weight: .bold).width(.condensed)).monospacedDigit()
+                    Text(state.distanceUnit.shortSuffix).font(.caption.weight(.semibold)).foregroundStyle(Book.pencil)
+                }
+                Text(state.targetLabel.uppercased()).font(Book.Typeface.noteSmall).tracking(0.5).foregroundStyle(Book.pencil)
+                if showsReferenceDistance {
+                    HStack(spacing: 8) {
+                        Text("F \(state.distanceUnit.scalarValue(fromMeters: state.displayedFrontDistanceMeters))")
+                        Text("B \(state.distanceUnit.scalarValue(fromMeters: state.displayedBackDistanceMeters))")
+                    }
+                    .font(.system(.caption, weight: .semibold).width(.condensed)).monospacedDigit().padding(.top, 3)
+                    if state.isDisplayedHoleLive && state.hasMeaningfulPlaysLikeDelta {
+                        Text("Plays \(state.distanceUnit.scalarValue(fromMeters: state.displayedPlaysLikeDistanceMeters))")
+                            .font(.system(.caption, weight: .bold).width(.condensed)).monospacedDigit()
+                            .foregroundStyle(Book.flag)
+                    }
+                }
+            }
+            .foregroundStyle(Book.ink)
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(Book.leaf, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Book.rule, lineWidth: 0.5))
+            .shadow(color: .black.opacity(isDrawnMap ? 0.06 : 0.3), radius: isDrawnMap ? 2 : 6, y: 2)
+        }
+        .foregroundStyle(mapMarkInk)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(state.targetLabel), \(showsReferenceDistance ? state.shortDistanceLabel(forMeters: state.displayedPinDistanceMeters) : "unavailable"). Front \(showsReferenceDistance ? state.shortDistanceLabel(forMeters: state.displayedFrontDistanceMeters) : "unavailable"), back \(showsReferenceDistance ? state.shortDistanceLabel(forMeters: state.displayedBackDistanceMeters) : "unavailable"). \(state.isDisplayedHoleLive && state.hasMeaningfulPlaysLikeDelta ? " Plays \(state.shortDistanceLabel(forMeters: state.displayedPlaysLikeDistanceMeters))." : "") \(distanceSourceText)")
+        }
+    }
+
+    // A working distance instrument gives the map its own uninterrupted stage.
+    // At larger text sizes the entire composition scrolls; the map never pins
+    // essential controls outside the reading order.
+    private var courseRoundHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(state.courseName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(CourseStyle.muted)
+                    Text("Hole \(state.displayedHoleNumber) · Par \(state.displayedHoleSession.par)")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(CourseStyle.ink)
+                }
+                Spacer(minLength: 0)
+                Button { isShowingRoundActions = true } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.headline)
+                        .frame(width: 44, height: 44)
+                        .background(CourseStyle.wash, in: Circle())
+                }
+                .accessibilityLabel("Round actions")
+            }
+            if state.isInspectingHole {
+                Button { state.returnToActiveHole() } label: {
+                    Label("Inspecting · Return to hole \(state.hole.number)", systemImage: "arrow.uturn.backward")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: 44)
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .tint(CourseStyle.action)
+    }
+
+    private var hasGreenReference: Bool {
+        state.currentHoleFeatures.contains { $0.kind == .green && !$0.coordinates.isEmpty }
+    }
+
+    private var hasLiveDistance: Bool {
+        state.isDisplayedHoleLive && hasGreenReference && state.locationStatus == .ready && state.playerLocation != nil
+    }
+
+    private var showsReferenceDistance: Bool {
+        hasGreenReference && (!state.isDisplayedHoleLive || hasLiveDistance)
+    }
+
+    private var courseDistanceInstrument: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            let layout = dynamicTypeSize >= .xxLarge
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 14))
+                : AnyLayout(HStackLayout(alignment: .center, spacing: 18))
+            layout {
+                courseDistanceValue("Front", meters: state.displayedFrontDistanceMeters, prominent: false)
+                courseDistanceValue(state.targetLabel, meters: state.displayedPinDistanceMeters, prominent: true)
+                courseDistanceValue("Back", meters: state.displayedBackDistanceMeters, prominent: false)
+            }
+            Button { isShowingConditions = true } label: {
+                Label(distanceSourceText, systemImage: hasLiveDistance ? "location.fill" : "location.slash")
+                    .font(.caption)
+                    .multilineTextAlignment(.leading)
+                    .foregroundStyle(CourseStyle.muted)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Open weather and location details")
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(CourseStyle.ground)
+    }
+
+    private var distanceSourceText: String {
+        if !hasGreenReference { return "Green geometry unavailable · manual scoring available" }
+        if !state.isDisplayedHoleLive { return "From tee · green centre is inferred from course geometry" }
+        if !hasLiveDistance { return "\(state.playerLocationStatusText) · live distances unavailable" }
+        return "\(state.playerLocationStatusText) · green centre, not surveyed pin"
+    }
+
+    private func courseDistanceValue(_ title: String, meters: Int, prominent: Bool) -> some View {
+        VStack(alignment: dynamicTypeSize >= .xxLarge ? .leading : .center, spacing: 2) {
+            Text(title)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(CourseStyle.muted)
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(showsReferenceDistance ? "\(state.distanceUnit.scalarValue(fromMeters: meters))" : "—")
+                    .font(prominent ? .largeTitle.weight(.bold) : .title2.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(CourseStyle.ink)
+                Text(state.distanceUnit.shortSuffix)
+                    .font(.caption)
+                    .foregroundStyle(CourseStyle.muted)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: dynamicTypeSize >= .xxLarge ? .leading : .center)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(showsReferenceDistance ? state.shortDistanceLabel(forMeters: meters) : "unavailable")")
+    }
+
+    private var courseMapStage: some View {
+        liveMap
+            .overlay(alignment: .topLeading) {
+                if hasGreenReference && !hasLiveDistance {
+                    Text(state.isDisplayedHoleLive ? "GPS unavailable · reference map" : "Inspecting · distances from tee")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(CourseStyle.ink)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(CourseStyle.surface, in: Capsule())
+                        .padding(12)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                Button { syncCameraToHoleFraming(animated: true) } label: {
+                    Label("Recenter", systemImage: "location.north.line")
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: 44)
+                        .background(CourseStyle.surface, in: Capsule())
+                }
+                .tint(CourseStyle.action)
+                .padding(12)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 22))
+            .padding(.horizontal, 12)
+    }
+
+    private var selectedCarrySource: String {
+        let entry = state.selectedClubWheelEntry
+        let distance = state.shortDistanceLabel(forMeters: entry.displayCarryMeters)
+        return entry.carrySource == .logged ? "\(distance) · stored bag carry" : "\(distance) · estimated baseline"
+    }
+
+    private func courseShotActions(availableWidth: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if state.isDisplayedHoleLive {
+                Button { isShowingNativeClubPicker = true } label: {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(state.selectedClubName).font(.headline)
+                            Text(selectedCarrySource).font(.caption).foregroundStyle(CourseStyle.muted)
+                        }
+                        Spacer(minLength: 0)
+                        Label("Club", systemImage: "chevron.up.chevron.down").font(.subheadline)
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                let layout = dynamicTypeSize >= .xLarge || availableWidth < 390
+                    ? AnyLayout(VStackLayout(spacing: 10))
+                    : AnyLayout(HStackLayout(spacing: 10))
+                layout {
+                    Button { state.presentShotLogger() } label: {
+                        Label("Log shot", systemImage: "plus")
+                    }
+                    .buttonStyle(BookStampButtonStyle())
+                    .disabled(!state.canPresentShotLogger)
+                    Button { state.presentHoleConfirmation() } label: {
+                        Label("Hole score", systemImage: "square.and.pencil")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, minHeight: 52)
+                            .background(CourseStyle.wash, in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else {
+                Button(action: onReviewRound) {
+                    Label("Review hole \(state.displayedHoleNumber)", systemImage: "square.and.pencil")
+                }
+                .buttonStyle(BookStampButtonStyle())
+                Button("Back to round review", action: onReviewRound)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .padding(.bottom, 20)
+        .background(CourseStyle.ground)
+        .foregroundStyle(CourseStyle.ink)
+        .tint(CourseStyle.action)
+    }
+
+    private var courseClubPicker: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Toggle("Automatic club suggestions", isOn: Binding(
+                        get: { state.isClubAutoRecommendationEnabled },
+                        set: state.setClubAutoRecommendationEnabled
+                    ))
+                } footer: {
+                    Text(state.isClubAutoRecommendationEnabled
+                         ? "Auto shows clubs relevant to the current shot. Turn off for the complete manual catalog."
+                         : "Manual shows the standard catalog and your custom bag clubs. Choosing a club does not log a shot.")
+                }
+                Section {
+                    Picker("Selected club", selection: Binding(
+                        get: { state.selectedClubName },
+                        set: { state.selectClubFromWheel(named: $0) }
+                    )) {
+                        ForEach(state.clubWheelDisplayedClubNames, id: \.self) { club in
+                            Text(club).tag(club)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } footer: {
+                    Text("Choosing a club does not log a shot. \(selectedCarrySource).")
+                }
+            }
+            .navigationTitle("Choose club")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { isShowingNativeClubPicker = false }
+                }
+            }
+            .tint(CourseStyle.action)
+        }
+    }
+
+    private func finishRoundAction(_ action: @escaping () -> Void) {
+        pendingRoundAction = action
+        isShowingRoundActions = false
+    }
+
+    private var courseRoundActionsSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(String(format: "%02d", state.hole.number))
+                            .font(.system(size: 34, weight: .bold).width(.condensed)).monospacedDigit()
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(state.courseName).font(Book.Typeface.subheading).lineLimit(1)
+                            Text("\(state.roundScoreToParDisplay) · \(state.topBarScoreSubtitle)")
+                                .font(.caption).foregroundStyle(Book.pencil)
+                        }
+                    }
+
+                    roundActionGroup("The round") {
+                        roundActionRow("Scorecard", detail: "Review and correct every hole", symbol: "tablecells") { finishRoundAction(onReviewRound) }
+                        roundActionRow("Hole index", detail: "Look ahead or back at any hole", symbol: "book.pages") { finishRoundAction { isShowingHoleInspector = true } }
+                        roundActionRow("Shot history", detail: "Every shot logged this round", symbol: "clock.arrow.circlepath") { finishRoundAction { isShowingShotHistory = true } }
+                        if state.isDisplayedHoleLive {
+                            roundActionRow("Edit hole \(state.hole.number)", detail: "Strokes, putts and penalties", symbol: "pencil") { finishRoundAction { isShowingCurrentHoleEditor = true } }
+                        }
+                    }
+
+                    if state.isDisplayedHoleLive {
+                        roundActionGroup("This shot") {
+                            roundActionRow("Undo last shot", symbol: "arrow.uturn.backward", enabled: state.canUndoLastShot) { finishRoundAction { state.presentUndoConfirmation() } }
+                            roundActionRow("Penalty", detail: "Lost, out of bounds, unplayable, water", symbol: "exclamationmark.triangle") { finishRoundAction { state.presentQuickPenaltyPicker() } }
+                            roundActionRow("Re-tee", detail: "Play again from the tee", symbol: "arrow.counterclockwise") { finishRoundAction { state.presentReteeConfirmation() } }
+                            roundActionRow(state.atBallActionTitle, detail: "Measure the next shot from here", symbol: "scope", enabled: state.canMarkBallOnDisplayedHole) {
+                                state.markBall()
+                                isShowingRoundActions = false
+                            }
+                        }
+                    }
+
+                    roundActionGroup("The map") {
+                        roundActionRow("Read the green", detail: "Close up, turned to your line", symbol: "flag", enabled: state.canInspectGreen) { finishRoundAction { syncCameraToGreenInspection(animated: true) } }
+                        roundActionRow(isDrawnMap ? "Aerial photo" : "Drawn page", detail: isDrawnMap ? "Satellite imagery under the plan" : "The hole drawn as a yardage book page", symbol: isDrawnMap ? "globe.americas" : "pencil.and.outline") {
+                            liveMapStyleRaw = isDrawnMap ? "aerial" : "drawn"
+                            isShowingRoundActions = false
+                        }
+                        roundActionRow("Conditions and GPS", detail: state.weatherSnapshot.map { "\($0.conditionDescription) · \($0.temperatureCelsius)°C" } ?? "Location, wind and plays-like", symbol: "wind") { finishRoundAction { isShowingConditions = true } }
+                    }
+
+                    BookNote("On the map")
+                    Text("The arc across the line is your club's carry from the ball; the ring is your aim, placed at that carry until you drag it. Pairs of figures by bunkers and water are the distances to reach and to carry them.")
+                        .font(.footnote).foregroundStyle(Book.pencil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, -14)
+
+                    VStack(spacing: 10) {
+                        Button { finishRoundAction(onSaveAndExitRound) } label: {
+                            Text("Save and leave the course")
+                                .font(.headline).frame(maxWidth: .infinity, minHeight: 50)
+                        }
+                        .buttonStyle(BookStampButtonStyle(prominent: true))
+                        Button { finishRoundAction { isShowingEndRoundFlow = true } } label: {
+                            Text("End round…")
+                                .font(.subheadline.weight(.semibold)).foregroundStyle(Book.warning)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 20).padding(.top, 4).padding(.bottom, 24)
+            }
+            .background(Book.paper)
+            .navigationTitle("Round")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { isShowingRoundActions = false }
+                }
+            }
+            .foregroundStyle(Book.ink)
+            .tint(Book.ink)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Book.paper)
+    }
+
+    private func roundActionGroup<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            BookNote(title)
+            VStack(spacing: 0) {
+                Group(subviews: content()) { rows in
+                    ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                        if index > 0 { BookHairline().padding(.leading, 48) }
+                        row
+                    }
+                }
+            }
+            .background(Book.leaf, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Book.rule, lineWidth: 0.5))
+        }
+    }
+
+    private func roundActionRow(_ title: String, detail: String? = nil, symbol: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: symbol)
+                    .font(.body.weight(.medium))
+                    .frame(width: 22)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.body)
+                    if let detail {
+                        Text(detail).font(.caption).foregroundStyle(Book.pencil)
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Book.pencil)
+            }
+            .padding(.horizontal, 14)
+            .frame(minHeight: 52)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(BookRowButtonStyle())
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
     }
 
     private var trayActionPresentations: some ViewModifier {
@@ -1059,7 +1177,7 @@ struct FreshLiveRoundScreen: View {
                 }
             },
             quickPenaltyPicker: { quickPenaltyPicker },
-            modalCanvas: palette.modalCanvas,
+            modalCanvas: Book.paper,
             surfaceLabel: surfaceLabel(for:)
         )
     }
@@ -1073,37 +1191,43 @@ struct FreshLiveRoundScreen: View {
         VStack {
             if isShowingShotLoggedToast {
                 shotLoggedToast
-                    .padding(.top, safeAreaInsetTop + ShellTokens.Spacing.x12)
+                    .padding(.top, safeAreaInsetTop + 12)
                     .transition(.move(edge: .top).combined(with: .opacity))
             } else if state.isShowingHoleConfirmationPill {
                 holeConfirmationPill
-                    .padding(.top, safeAreaInsetTop + ShellTokens.Spacing.x12)
+                    .padding(.top, safeAreaInsetTop + 12)
                     .transition(.move(edge: .top).combined(with: .opacity))
             } else if let undonePreview = state.lastUndoneShotPreview {
                 undoneShotToast(undonePreview)
-                    .padding(.top, safeAreaInsetTop + ShellTokens.Spacing.x12)
+                    .padding(.top, safeAreaInsetTop + 12)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, ShellTokens.Spacing.x16)
+        .padding(.horizontal, 16)
         .animation(.spring(response: 0.32, dampingFraction: 0.86), value: isShowingShotLoggedToast)
         .animation(.spring(response: 0.32, dampingFraction: 0.86), value: state.isShowingHoleConfirmationPill)
         .animation(.spring(response: 0.32, dampingFraction: 0.86), value: state.lastUndoneShotPreview)
     }
 
-    private var shotLoggedToast: some View {
-        HStack(spacing: ShellTokens.Spacing.x10) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(palette.accent)
-            Text("Shot saved")
+    /// A slip of paper laid on the course for a moment.
+    private func mapNote(symbol: String, text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Book.stamp)
+            Text(text)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
+                .foregroundStyle(Book.ink)
         }
-        .padding(.horizontal, ShellTokens.Spacing.x16)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .freshGlass(Capsule(), palette: palette, tint: palette.panelFill)
-        .shadow(color: palette.shadowColor, radius: 12, y: 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .bookLeaf(cornerRadius: 12)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var shotLoggedToast: some View {
+        mapNote(symbol: "checkmark", text: "Shot saved")
     }
 
     /// Banner that surfaces at the top of the map after a holed putt
@@ -1113,32 +1237,31 @@ struct FreshLiveRoundScreen: View {
     /// wants to keep playing the same hole.
     private var holeConfirmationPill: some View {
         let strokeCount = state.pendingHoleScore ?? state.hole.strokeCount
-        return HStack(spacing: ShellTokens.Spacing.x10) {
-            Image(systemName: "flag.checkered")
+        return HStack(spacing: 12) {
+            Image(systemName: "flag.fill")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.accentForeground)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text("Hole \(state.displayedHoleNumber) · \(strokeCount) strokes")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(palette.accentForeground)
-                Text("Tap to finish hole")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(palette.accentForeground.opacity(0.85))
+                    .font(.system(.headline, weight: .bold).width(.condensed))
+                    .monospacedDigit()
+                Text("Tap to write it on the card")
+                    .font(.caption)
+                    .opacity(0.8)
             }
 
-            Spacer(minLength: ShellTokens.Spacing.x8)
+            Spacer(minLength: 8)
 
             Button {
                 state.dismissHoleConfirmationPill()
                 isShowingCurrentHoleEditor = true
             } label: {
                 Text("Edit")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.accentForeground)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(palette.accentForeground.opacity(0.18), in: Capsule())
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Book.onStamp.opacity(0.55), lineWidth: 1))
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -1146,103 +1269,94 @@ struct FreshLiveRoundScreen: View {
                 state.dismissHoleConfirmationPill()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.accentForeground.opacity(0.85))
-                    .padding(6)
+                    .font(.caption.weight(.bold))
+                    .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Keep playing this hole")
         }
-        .padding(.horizontal, ShellTokens.Spacing.x14)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .background(palette.accent, in: Capsule())
-        .shadow(color: palette.shadowColor.opacity(0.7), radius: 14, y: 7)
+        .foregroundStyle(Book.onStamp)
+        .padding(.leading, 16)
+        .padding(.trailing, 8)
+        .padding(.vertical, 10)
+        .background(Book.stamp, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: Book.ink.opacity(0.18), radius: 10, y: 4)
         .onTapGesture {
-            state.confirmCurrentHoleFromDerivedValues()
+            let previousHoleNumber = state.hole.number
+            guard state.confirmCurrentHoleFromDerivedValues() else { return }
+            if state.hole.number == previousHoleNumber {
+                onFinishHole()
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityHint("Double tap to confirm this hole and advance")
     }
 
     private func undoneShotToast(_ preview: LiveRoundState.LoggedShotPreview) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x10) {
-            Image(systemName: "arrow.uturn.backward.circle.fill")
-                .foregroundStyle(palette.accent)
-            Text("Undid \(preview.clubName) · \(surfaceLabel(for: preview.surface))")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-        }
-        .padding(.horizontal, ShellTokens.Spacing.x16)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .freshGlass(Capsule(), palette: palette, tint: palette.panelFill)
-        .shadow(color: palette.shadowColor, radius: 12, y: 6)
+        mapNote(symbol: "arrow.uturn.backward", text: "Undid \(preview.clubName) · \(surfaceLabel(for: preview.surface))")
     }
 
     private var quickPenaltyPicker: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: ShellTokens.Spacing.x12) {
-                    Text("Pick the relief option that matches what happened. We'll log a +1 penalty stroke; your next shot is the replay.")
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Adds a one-stroke penalty. Your next shot is the replay.")
                         .font(.subheadline)
-                        .foregroundStyle(palette.secondaryTextColor)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, ShellTokens.Spacing.x4)
+                        .foregroundStyle(Book.pencil)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: ShellTokens.Spacing.x10),
-                            GridItem(.flexible(), spacing: ShellTokens.Spacing.x10)
-                        ],
-                        spacing: ShellTokens.Spacing.x10
-                    ) {
+                    BookGroup(ruleInset: 50) {
                         ForEach(LiveRoundState.QuickPenaltyType.allCases) { type in
                             quickPenaltyOptionButton(type)
                         }
                     }
                 }
-                .padding(.horizontal, ShellTokens.Spacing.x16)
-                .padding(.vertical, ShellTokens.Spacing.x12)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle("Quick penalty")
+            .bookSheetChrome()
+            .navigationTitle("Penalty")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         state.dismissQuickPenaltyPicker()
                     }
                 }
             }
         }
+        .sensoryFeedback(.warning, trigger: state.isShowingQuickPenaltyPicker)
     }
 
     private func quickPenaltyOptionButton(_ type: LiveRoundState.QuickPenaltyType) -> some View {
         Button {
             state.logQuickPenalty(type)
         } label: {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
+            HStack(spacing: 14) {
                 Image(systemName: type.iconName)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(palette.accent)
-                Text(type.label)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(palette.primaryTextColor)
-                Text(type.subtitle)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(palette.secondaryTextColor)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    .font(.body.weight(.medium))
+                    .frame(width: 22)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(type.label).font(.body)
+                    Text(type.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(Book.pencil)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+                Text("+1")
+                    .font(.system(.subheadline, weight: .bold).width(.condensed))
+                    .foregroundStyle(Book.warning)
             }
-            .frame(maxWidth: .infinity, minHeight: 122, alignment: .topLeading)
-            .padding(ShellTokens.Spacing.x14)
-            .freshGlass(
-                RoundedRectangle(cornerRadius: 22, style: .continuous),
-                palette: palette,
-                tint: palette.tertiaryFill
-            )
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(minHeight: 56)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .sensoryFeedback(.warning, trigger: state.isShowingQuickPenaltyPicker)
+        .buttonStyle(BookRowButtonStyle())
     }
 
     private func surfaceLabel(for surface: ShotEvent.Surface) -> String {
@@ -1255,277 +1369,6 @@ struct FreshLiveRoundScreen: View {
         }
     }
 
-    private var topPanelGestureShield: some View {
-        RoundedRectangle(cornerRadius: 28, style: .continuous)
-            .fill(Color.clear)
-            .contentShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .highPriorityGesture(SpatialTapGesture().onEnded { _ in })
-            .highPriorityGesture(DragGesture(minimumDistance: 0).onChanged { _ in })
-            .highPriorityGesture(MagnifyGesture().onChanged { _ in })
-            .allowsHitTesting(FreshLiveRoundHUDInteractionPolicy.usesDedicatedTopPanelGestureShield)
-            .accessibilityHidden(true)
-    }
-
-    /// Top HUD panel. Composed of two rows:
-    ///
-    /// 1. **Identity strip** — score-to-par chip, hole nav cluster, and
-    ///    the always-on shot-relative wind chip. Tells the player who
-    ///    they are on the round and which hole they're on.
-    ///
-    /// 2. **Phase-aware hero** — a big centred pin / putt distance
-    ///    flanked by the most useful satellite for the current
-    ///    `LiveRoundState.TopBarPhase`:
-    ///    - `.tee`: Front · HERO · Recommended club (tee shots care
-    ///      about reaching the fairway and what's in your hand)
-    ///    - `.approach` / `.scoring`: Front · HERO · Back (classic
-    ///      green-light wedge logic)
-    ///    - `.greenSide`: hero only, no satellites — wind / plays-like
-    ///      doesn't matter on a putt and the chrome stays clean
-    ///
-    /// Replaces the previous flat 4-card distance row (Front / Pin /
-    /// Plays / Back) which gave every metric equal visual weight and
-    /// kept the player from finding the pin distance at a glance.
-    private func topPanel(in proxy: GeometryProxy) -> some View {
-        let layout = FreshLiveRoundTopPanelLayout.resolve(containerSize: proxy.size)
-
-        return VStack(spacing: layout.rowSpacing) {
-            topPanelIdentityStrip(layout: layout)
-            topPanelPhaseHero(layout: layout)
-        }
-        .padding(.horizontal, chromeMetrics.topPanelHorizontalPadding)
-        .padding(.vertical, chromeMetrics.topPanelVerticalPadding)
-        .frame(
-            maxWidth: .infinity,
-            minHeight: layout.panelMinHeight,
-            alignment: .top
-        )
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 28, style: .continuous),
-            palette: palette,
-            tint: palette.panelFill,
-            nativeGlass: FreshLiveRoundNativeGlassPolicy.primaryChrome
-        )
-        .background {
-            if FreshLiveRoundHUDInteractionPolicy.topPanelGestureShieldUsesBackgroundSizing {
-                topPanelGestureShield
-            }
-        }
-        .shadow(color: palette.shadowColor, radius: 18, y: 8)
-        .animation(.easeInOut(duration: 0.25), value: state.topBarPhase)
-    }
-
-    private func topPanelIdentityStrip(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        HStack(alignment: .center, spacing: ShellTokens.Spacing.x10) {
-            scoreStrokeChip(width: layout.edgeMetricWidth)
-
-            holeNavigationCluster(layout: layout)
-                .frame(maxWidth: .infinity)
-
-            windHUDChip(width: layout.edgeMetricWidth)
-        }
-    }
-
-    @ViewBuilder
-    private func topPanelPhaseHero(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        HStack(alignment: .center, spacing: layout.distanceCardSpacing) {
-            leadingPhaseSatellite(layout: layout)
-            heroDistanceCard(layout: layout)
-                .frame(maxWidth: .infinity)
-            trailingPhaseSatellite(layout: layout)
-        }
-        .frame(minHeight: layout.distanceCardMinHeight)
-    }
-
-    @ViewBuilder
-    private func leadingPhaseSatellite(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        switch state.topBarPhase {
-        case .tee, .approach, .scoring:
-            satelliteDistanceChip(
-                title: "Front",
-                value: "\(state.distanceUnit.scalarValue(fromMeters: state.displayedFrontDistanceMeters))",
-                unit: state.distanceUnit.shortSuffix,
-                layout: layout
-            )
-        case .greenSide:
-            // Empty placeholder so the hero stays optically centred and
-            // the panel doesn't reflow when the player crosses the green
-            // edge.
-            Color.clear
-                .frame(width: layout.edgeMetricWidth, height: 1)
-        }
-    }
-
-    @ViewBuilder
-    private func trailingPhaseSatellite(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        switch state.topBarPhase {
-        case .tee:
-            // On the tee, "back of green" is rarely actionable — the
-            // recommended driver / 3-wood is what the player wants in
-            // hand. Fall back to Back distance if the bag hasn't loaded
-            // a recommendation yet so the slot never goes blank.
-            if let club = state.recommendedClubName {
-                satelliteTextChip(
-                    title: "Club",
-                    value: club,
-                    layout: layout
-                )
-            } else {
-                satelliteDistanceChip(
-                    title: "Back",
-                    value: "\(state.distanceUnit.scalarValue(fromMeters: state.displayedBackDistanceMeters))",
-                    unit: state.distanceUnit.shortSuffix,
-                    layout: layout
-                )
-            }
-        case .approach, .scoring:
-            satelliteDistanceChip(
-                title: "Back",
-                value: "\(state.distanceUnit.scalarValue(fromMeters: state.displayedBackDistanceMeters))",
-                unit: state.distanceUnit.shortSuffix,
-                layout: layout
-            )
-        case .greenSide:
-            Color.clear
-                .frame(width: layout.edgeMetricWidth, height: 1)
-        }
-    }
-
-    private func heroDistanceCard(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        let isPutt = state.topBarPhase == .greenSide
-        let distanceValue = state.distanceUnit.scalarValue(fromMeters: state.topBarHeroDistanceMeters)
-
-        return VStack(spacing: 2) {
-            Text(isPutt ? "PUTT" : "PIN")
-                .font(.caption2.weight(.heavy))
-                .tracking(2)
-                .foregroundStyle(palette.secondaryTextColor)
-
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text("\(distanceValue)")
-                    .font(.system(size: layout.heroValueFontSize, weight: .heavy))
-                    .monospacedDigit()
-                    .foregroundStyle(palette.primaryTextColor)
-                Text(state.distanceUnit.shortSuffix)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
-            }
-
-            if let subtitle = state.topBarHeroSubtitle {
-                Text(subtitle)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.accent)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-        }
-        .padding(.horizontal, ShellTokens.Spacing.x12)
-        .padding(.vertical, 6)
-        .frame(maxWidth: .infinity)
-        .frame(minHeight: layout.distanceCardMinHeight)
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 20, style: .continuous),
-            palette: palette,
-            tint: palette.accent.opacity(0.16)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(palette.accent.opacity(0.32), lineWidth: 1)
-        }
-        // Animate the hero number when the player walks across the
-        // course — the shift between "152" and "138" has more visual
-        // impact than a static label flick.
-        .contentTransition(.numericText())
-        .animation(.easeOut(duration: 0.25), value: distanceValue)
-    }
-
-    private func satelliteDistanceChip(
-        title: String,
-        value: String,
-        unit: String?,
-        layout: FreshLiveRoundTopPanelLayout
-    ) -> some View {
-        VStack(spacing: 2) {
-            Text(title.uppercased())
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(palette.secondaryTextColor)
-            HStack(alignment: .firstTextBaseline, spacing: 1) {
-                Text(value)
-                    .font(.system(size: layout.distanceValueFontSize, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(palette.primaryTextColor)
-                if let unit {
-                    Text(unit)
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(palette.secondaryTextColor)
-                }
-            }
-        }
-        .frame(width: layout.edgeMetricWidth)
-        .frame(minHeight: layout.distanceCardMinHeight)
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 18, style: .continuous),
-            palette: palette,
-            tint: palette.secondaryFill
-        )
-    }
-
-    private func satelliteTextChip(
-        title: String,
-        value: String,
-        layout: FreshLiveRoundTopPanelLayout
-    ) -> some View {
-        VStack(spacing: 2) {
-            Text(title.uppercased())
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(palette.secondaryTextColor)
-            Text(value)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(palette.primaryTextColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(width: layout.edgeMetricWidth)
-        .frame(minHeight: layout.distanceCardMinHeight)
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 18, style: .continuous),
-            palette: palette,
-            tint: palette.secondaryFill
-        )
-    }
-
-    /// Compact "score-to-par + stroke counter" chip for the identity
-    /// strip. Replaces the old standalone strokes card. The headline
-    /// uses `roundScoreToParDisplay` ("E" / "+1" / "-2") so the chip
-    /// only ticks over on hole confirmation; the subtitle reads
-    /// "Stk N" mid-hole or "Score N" on confirmed holes.
-    private func scoreStrokeChip(width: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(state.topBarScoreHeadline)
-                .font(.headline.weight(.heavy))
-                .monospacedDigit()
-                .foregroundStyle(scoreChipHeadlineColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text(state.topBarScoreSubtitle)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(palette.secondaryTextColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(width: width, alignment: .leading)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// Tints the score headline so the chip carries a subtle "good /
-    /// bad" cue without needing an icon: under par leans toward the
-    /// course green accent, over par leans red, even-par stays neutral.
-    private var scoreChipHeadlineColor: Color {
-        let value = state.roundScoreToPar
-        if value < 0 { return palette.accent }
-        if value > 0 { return Color(red: 0.85, green: 0.30, blue: 0.30) }
-        return palette.primaryTextColor
-    }
-
     private var liveMap: some View {
         MapReader { proxy in
             Map(
@@ -1533,126 +1376,94 @@ struct FreshLiveRoundScreen: View {
                 bounds: mapBounds,
                 interactionModes: aimMapInteractionModes
             ) {
+                // The drawn page is one hole on paper: everything beyond a
+                // margin around the hole's geometry is covered, as in a book.
+                if isDrawnMap, let page = pageMask {
+                    MapPolygon(page.sheet)
+                        .foregroundStyle(Book.paper)
+                        .mapOverlayLevel(level: .aboveLabels)
+                    MapPolygon(coordinates: page.edge)
+                        .foregroundStyle(Book.rough)
+                        .stroke(Book.rule, lineWidth: 1)
+                        .mapOverlayLevel(level: .aboveLabels)
+                }
+
                 ForEach(state.currentHoleFeatures) { feature in
                     overlay(for: feature)
                 }
 
-                if state.isDisplayedHoleLive {
-                    // Distance rings centred on the pin. Filtered to just the rings
-                    // that are useful at the player's current proximity-to-pin so the
-                    // map isn't crowded with 8 concentric circles when you're 300 m
-                    // out from a tee. See `visibleCarryRings` for the cull rule.
-                    ForEach(visibleCarryRings) { ring in
-                        MapCircle(
-                            center: state.targetCoordinate,
-                            radius: CLLocationDistance(ring.radiusMeters)
-                        )
-                        .foregroundStyle(.clear)
-                        .stroke(ring.color.opacity(0.92), lineWidth: 1.6)
+                ForEach(hazardYardages) { hazard in
+                    Annotation(hazard.kind == .water ? "Water" : "Bunker", coordinate: hazard.labelCoordinate, anchor: hazard.isRightOfLine ? .leading : .trailing) {
+                        hazardTag(hazard)
                     }
+                    .annotationTitles(.hidden)
+                }
 
-                    // Aim line + distance pills + crosshair render as MapContent when
-                    // the user is NOT actively dragging the crosshair. MapKit handles
-                    // the pan/zoom transform for free, so we get smooth map interaction
-                    // with zero per-frame SwiftUI work. During an active drag the
-                    // SwiftUI `aimVisualOverlay` below takes over for finger-perfect
-                    // tracking (Map annotations interpolate slowly and looked jittery).
-                    if !isAimDragActive {
-                        let aimCoord = state.planningTargetCoordinate.clCoordinate
-                        // `shotOriginCoordinate` is the player's GPS when
-                        // they're sensibly on the hole, and the tee box
-                        // when they're behind it / off-course. This keeps
-                        // the aim line useful even when location is stale
-                        // or set to a faraway sim coordinate.
-                        let originCoord = state.shotOriginCoordinate
-                        let carryMid = coordinateMidpoint(originCoord, aimCoord)
-                        let remainingMid = coordinateMidpoint(aimCoord, state.targetCoordinate)
+                if state.currentHoleFeatures.contains(where: { $0.kind == .tee && !$0.coordinates.isEmpty }) && !isStandingOnTee {
+                    Annotation("Tee", coordinate: state.teeCoordinate, anchor: .center) {
+                        teeMarker
+                    }
+                    .annotationTitles(.hidden)
+                }
+                if hasGreenReference {
+                    Annotation(state.targetLabel, coordinate: state.targetCoordinate, anchor: .leading) {
+                        plannerGreenMarker
+                    }
+                    .annotationTitles(.hidden)
+                }
 
-                        MapPolyline(
-                            coordinates: [originCoord, aimCoord, state.targetCoordinate]
-                        )
-                        .stroke(.white.opacity(0.95), lineWidth: 2.6)
-
-                        Annotation("Carry", coordinate: carryMid, anchor: .center) {
-                            distancePill(value: state.planningCarryDistanceMeters)
-                        }
-                        .annotationTitles(.hidden)
-
-                        Annotation("Remaining", coordinate: remainingMid, anchor: .center) {
-                            distancePill(value: state.planningRemainingDistanceMeters)
-                        }
-                        .annotationTitles(.hidden)
-
-                        Annotation("Aim", coordinate: aimCoord, anchor: .center) {
-                            aimCrosshairMarker
+                if isDrawnMap && hasGreenReference {
+                    // Distances to the green centre, written at the edge of play
+                    // with a short tick pointing at the line, as in a yardage book.
+                    ForEach(yardageRings, id: \.label) { ring in
+                        Annotation(ring.label, coordinate: ring.labelCoordinate, anchor: .trailing) {
+                            HStack(spacing: 3) {
+                                Text(ring.label)
+                                    .font(.system(size: 10, weight: .bold).width(.condensed))
+                                    .monospacedDigit()
+                                Rectangle().frame(width: 8, height: 1)
+                            }
+                            .foregroundStyle(Book.pencil)
                         }
                         .annotationTitles(.hidden)
                     }
                 }
 
-                Annotation("Tee", coordinate: state.teeCoordinate, anchor: .bottom) {
-                    teeMarker
+                if state.playerLocation != nil && state.locationStatus == .ready {
+                    Annotation("You", coordinate: state.playerCoordinate, anchor: .center) {
+                        youMarker
+                    }
+                    .annotationTitles(.hidden)
                 }
-                .annotationTitles(.hidden)
-
-                Annotation("Pin", coordinate: state.targetCoordinate, anchor: .bottom) {
-                    pinFlagMarker
-                }
-                .annotationTitles(.hidden)
-
-                Annotation("You", coordinate: state.playerCoordinate, anchor: .center) {
-                    youMarker
-                }
-                .annotationTitles(.hidden)
             }
-            .mapStyle(.imagery(elevation: .realistic))
+            .mapStyle(isDrawnMap
+                ? .standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll, showsTraffic: false)
+                : .imagery(elevation: .flat))
             // Hide MapKit's default control overlays (compass, scale, pitch toggle, user
             // location button). The screen has its own custom recenter button and tee/pin/you
             // markers, so the built-in floating widgets just clutter the imagery.
             .mapControls { }
-            // `.onEnd` frequency (NOT `.continuous`) so we only re-anchor the SwiftUI
-            // gesture catcher once the camera settles. `.continuous` fires at 60 Hz
-            // during pan/zoom and used to bomb the entire view tree with state mutations,
-            // making the map interaction visibly laggy. The catcher being briefly out of
-            // sync during an in-flight pan is fine: the user is panning, not trying to
-            // grab the crosshair, and as soon as the gesture finishes the catcher snaps
-            // back onto the visible MapAnnotation crosshair.
-            .onMapCameraChange(frequency: .onEnd) { _ in
-                mapCameraVersion &+= 1
+            // Every camera frame reprojects the aim overlay only; this view's body
+            // never reads the ticker, so panning doesn't redraw the screen.
+            .onMapCameraChange(frequency: .continuous) { _ in
+                aimTicker.advance()
             }
-            // The aim crosshair's long-press+drag gesture lives here, NOT inside the
-            // `Annotation` view above. Annotation content is hosted inside `MKAnnotationView`
-            // and `MKMapView` claims touches via its UIKit pan recogniser before SwiftUI
-            // gestures can fire, which is why the interaction was completely dead before.
-            // Keeping the gesture in the `.overlay { }` puts it above MapKit's UIKit gesture
-            // stack so SwiftUI sees the touch first.
             .overlay {
-                GeometryReader { geo in
-                    if state.isDisplayedHoleLive {
-                        ZStack {
-                            // The transparent gesture catcher is always present so the
-                            // user can long-press the crosshair anywhere it appears on
-                            // screen. It re-anchors when the camera change settles
-                            // (`mapCameraVersion` driven by `.onMapCameraChange(.onEnd)`).
-                            aimGestureCatcher(
-                                proxy: proxy,
-                                mapGlobalFrame: geo.frame(in: .global),
-                                cameraVersion: mapCameraVersion
-                            )
-
-                            // Smooth-tracking SwiftUI overlay (line + pills + crosshair)
-                            // only mounts during an active drag. The rest of the time the
-                            // exact same visuals come from MapPolyline + Annotation inside
-                            // the Map block, which are essentially free for SwiftUI.
-                            if isAimDragActive {
-                                aimVisualOverlay(
-                                    proxy: proxy,
-                                    mapFrame: geo.frame(in: .local),
-                                    mapGlobalFrame: geo.frame(in: .global)
-                                )
-                            }
-                        }
-                    }
+                if state.isDisplayedHoleLive && hasGreenReference {
+                    AimPlanOverlay(
+                        proxy: proxy,
+                        ticker: aimTicker,
+                        origin: state.shotOriginCoordinate,
+                        pin: state.targetCoordinate,
+                        committedAim: state.planningTargetCoordinate.clCoordinate,
+                        carryMetres: hasLiveDistance ? Double(playingEntry.displayCarryMeters) : 0,
+                        isDrawnMap: isDrawnMap,
+                        distanceLabel: { state.shortDistanceLabel(forMeters: $0) },
+                        clubForDistance: { state.suggestedClubName(forMeters: $0).map(PlayingInstrumentStyle.clubLabel) },
+                        clampToHole: { state.clampedPlanningTarget(for: $0) },
+                        onDraggingChange: { isAimDragging = $0 },
+                        onCommit: { state.movePlanningTarget(to: $0) }
+                    )
                 }
             }
         }
@@ -1660,597 +1471,11 @@ struct FreshLiveRoundScreen: View {
 
     /// Map gestures need to be disabled while the user is actively dragging the aim crosshair,
     /// otherwise MapKit's pan recogniser fights the SwiftUI drag and the map slides under the
-    /// finger. `isAimDragActive` is `@GestureState`, so it auto-resets to `false` on gesture
-    /// end/cancel and the map regains its full interaction set without us having to manually
-    /// clean up. We allow pitch and rotate alongside pan/zoom so power users can re-orient
+    /// finger. The overlay reports release and cancellation alike, so the map
+    /// always gets its gestures back. We allow pitch and rotate alongside pan/zoom so power users can re-orient
     /// the perspective camera if they want a different look at the hole.
     private var aimMapInteractionModes: MapInteractionModes {
-        isAimDragActive ? [] : [.pan, .zoom, .pitch, .rotate]
-    }
-
-    /// Wraps the carry-ring legend and the launcher sheet in a single offset-
-    /// driven stack. The carry-ring legend rides along with the sheet so it
-    /// always sits flush above the visible top edge, regardless of detent.
-    @ViewBuilder
-    private func bottomSheetStack(in proxy: GeometryProxy, dragTranslation: Binding<CGFloat>) -> some View {
-        VStack(spacing: 0) {
-            if state.isDisplayedHoleLive {
-                carryRingLegend
-                    .padding(.horizontal, ShellTokens.Spacing.x16)
-                    .padding(.bottom, ShellTokens.Spacing.x10)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-
-            launcherSheet(in: proxy, dragTranslation: dragTranslation)
-        }
-    }
-
-    /// Always laid out at the expanded detent height. The visible portion is
-    /// controlled by the parent's `.offset(y:)` so the sheet's frame is stable
-    /// during drag - no per-tick layout invalidation in the parent VStack.
-    private func launcherSheet(in proxy: GeometryProxy, dragTranslation: Binding<CGFloat>) -> some View {
-        let sheetHeight = launcherExpandedHeight(in: proxy)
-        let showsSupplementaryActions = state.launcherDetent != .collapsed
-        let showsFullSupplementaryActions = state.launcherDetent == .expanded
-
-        return VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            launcherHeader(in: proxy, dragTranslation: dragTranslation)
-
-            if showsSupplementaryActions {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                        Divider()
-                            .overlay(palette.border)
-
-                        if state.isDisplayedHoleLive {
-                            Text("Actions")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(palette.secondaryTextColor)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: ShellTokens.Spacing.x10),
-                                    GridItem(.flexible(), spacing: ShellTokens.Spacing.x10)
-                                ],
-                                spacing: ShellTokens.Spacing.x10
-                            ) {
-                                launcherInvokerButton(
-                                    title: "Undo last shot",
-                                    subtitle: state.canUndoLastShot
-                                        ? "Roll back the last log"
-                                        : "Nothing to undo yet",
-                                    systemImage: "arrow.uturn.backward.circle",
-                                    isEnabled: state.canUndoLastShot
-                                ) {
-                                    state.presentUndoConfirmation()
-                                }
-
-                                launcherInvokerButton(
-                                    title: "Quick penalty",
-                                    subtitle: "Lost · OB · unplayable · water",
-                                    systemImage: "exclamationmark.triangle"
-                                ) {
-                                    state.presentQuickPenaltyPicker()
-                                }
-
-                                launcherInvokerButton(
-                                    title: "View green",
-                                    subtitle: state.canInspectGreen
-                                        ? "Zoom in for an approach read"
-                                        : "No green geometry on this hole",
-                                    systemImage: "binoculars.fill",
-                                    isEnabled: state.canInspectGreen
-                                ) {
-                                    syncCameraToGreenInspection(animated: true)
-                                }
-
-                                launcherInvokerButton(
-                                    title: "Quick finish hole",
-                                    subtitle: "Picked up — log final totals",
-                                    systemImage: "flag.checkered"
-                                ) {
-                                    state.presentHoleConfirmation()
-                                }
-
-                                if showsFullSupplementaryActions {
-                                    launcherInvokerButton(
-                                        title: "Inspect Holes",
-                                        subtitle: "Jump and review scores",
-                                        systemImage: "list.bullet.rectangle"
-                                    ) {
-                                        isShowingHoleInspector = true
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "Re-tee",
-                                        subtitle: "+1 penalty, replay from tee",
-                                        systemImage: "arrow.counterclockwise"
-                                    ) {
-                                        state.presentReteeConfirmation()
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "Shot History",
-                                        subtitle: "Review this hole's shots",
-                                        systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90"
-                                    ) {
-                                        isShowingShotHistory = true
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "Conditions",
-                                        subtitle: "Wind, weather, and GPS",
-                                        systemImage: "wind"
-                                    ) {
-                                        isShowingConditions = true
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "Edit Current Hole",
-                                        subtitle: "Fix score, putts, and notes",
-                                        systemImage: "square.and.pencil"
-                                    ) {
-                                        isShowingCurrentHoleEditor = true
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "End Round",
-                                        subtitle: "Save, discard, or exit",
-                                        systemImage: "xmark.circle"
-                                    ) {
-                                        isShowingEndRoundFlow = true
-                                    }
-                                }
-                            }
-                        } else {
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: ShellTokens.Spacing.x10),
-                                    GridItem(.flexible(), spacing: ShellTokens.Spacing.x10)
-                                ],
-                                spacing: ShellTokens.Spacing.x10
-                                ) {
-                                launcherInvokerButton(
-                                    title: "Inspect Holes",
-                                    subtitle: "Jump and review scores",
-                                    systemImage: "list.bullet.rectangle"
-                                ) {
-                                    isShowingHoleInspector = true
-                                }
-
-                                launcherInvokerButton(
-                                    title: "Shot History",
-                                    subtitle: "Review this hole's shots",
-                                    systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90"
-                                ) {
-                                    isShowingShotHistory = true
-                                }
-
-                                if showsFullSupplementaryActions {
-                                    launcherInvokerButton(
-                                        title: "Conditions",
-                                        subtitle: "Wind, weather, and GPS",
-                                        systemImage: "wind"
-                                    ) {
-                                        isShowingConditions = true
-                                    }
-
-                                    launcherInvokerButton(
-                                        title: "End Round",
-                                        subtitle: "Save, discard, or exit",
-                                        systemImage: "xmark.circle"
-                                    ) {
-                                        isShowingEndRoundFlow = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.bottom, ShellTokens.Spacing.x4)
-                }
-                .scrollBounceBehavior(.basedOnSize)
-                .frame(maxHeight: .infinity, alignment: .top)
-            }
-        }
-        .padding(.horizontal, chromeMetrics.launcherContentPadding)
-        .padding(.top, ShellTokens.Spacing.x12)
-        .padding(.bottom, ShellTokens.Spacing.x14)
-        .frame(maxWidth: .infinity, minHeight: sheetHeight, maxHeight: sheetHeight, alignment: .top)
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 32, style: .continuous),
-            palette: palette,
-            tint: palette.panelFill,
-            nativeGlass: FreshLiveRoundNativeGlassPolicy.primaryChrome
-        )
-        .contentShape(Rectangle())
-        .shadow(color: palette.shadowColor, radius: 16, y: 8)
-        // Drives the show/hide of the supplementary action grid in step with
-        // the offset-wrapper's spring. Detent-driven animations only - the
-        // continuous drag is owned by `FreshLiveRoundLauncherOffsetWrapper`
-        // and we don't want a second spring layer re-interpolating the height
-        // at 60 Hz during the drag.
-        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: state.launcherDetent)
-    }
-
-    private func launcherHeader(in proxy: GeometryProxy, dragTranslation: Binding<CGFloat>) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            // The grabber owns the drag gesture (see `launcherHandle`).
-            // Keeping it scoped to the handle - rather than the whole header -
-            // is what lets the Log Shot / club chip / At Ball buttons receive
-            // their tap events: a header-wide `DragGesture(minimumDistance: 0)`
-            // would otherwise eat every touch-down before SwiftUI's button
-            // tap recognizer could fire.
-            launcherHandle(in: proxy, dragTranslation: dragTranslation)
-
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                HStack(spacing: ShellTokens.Spacing.x10) {
-                    currentClubLauncherButton
-
-                    Spacer(minLength: 0)
-
-                    statusChip(
-                        title: state.isDisplayedHoleLive ? "Current hole" : "Inspection",
-                        systemImage: state.isDisplayedHoleLive ? "location.fill" : "eye.fill"
-                    )
-                }
-
-                HStack(spacing: ShellTokens.Spacing.x12) {
-                    Button {
-                        state.presentShotLogger()
-                    } label: {
-                        Label("Log Shot", systemImage: "plus.circle.fill")
-                            .font(.headline.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                    }
-                    .modifier(FreshLiveRoundPrimaryActionButtonModifier(palette: palette))
-                    .disabled(!state.canPresentShotLogger)
-
-                    if state.canMarkBallOnDisplayedHole {
-                        Button {
-                            state.markBall()
-                        } label: {
-                            Label(state.atBallActionTitle, systemImage: state.ballMarkStatus == .marked ? "checkmark.circle.fill" : "scope")
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        .modifier(FreshLiveRoundSecondaryActionButtonModifier(palette: palette))
-                    }
-                }
-
-                if !state.isDisplayedHoleLive {
-                    Text("Finish browsing to log shots on the current hole.")
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(palette.secondaryTextColor)
-                }
-            }
-        }
-    }
-
-    private func launcherHandle(
-        in proxy: GeometryProxy,
-        dragTranslation: Binding<CGFloat>
-    ) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x12) {
-            Spacer(minLength: 0)
-
-            VStack(alignment: .center, spacing: 6) {
-                Capsule()
-                    .fill(palette.accent)
-                    .frame(width: 44, height: 5)
-            }
-
-            Spacer(minLength: 0)
-        }
-        // Generous full-width / 32pt-tall hit area so the user can grab the
-        // sheet anywhere across the top, even if their thumb misses the
-        // 44x5 capsule. The drag gesture is intentionally restricted to this
-        // handle (rather than the whole header) so the buttons below can
-        // still receive taps without being eaten by `minimumDistance: 0`.
-        .frame(maxWidth: .infinity)
-        .frame(height: 32)
-        .contentShape(Rectangle())
-        .highPriorityGesture(launcherDragGesture(in: proxy, dragTranslation: dragTranslation))
-    }
-
-    private var currentClubLauncherButton: some View {
-        Button {
-            if state.isShowingClubWheel {
-                state.dismissClubWheel()
-            } else {
-                state.presentClubWheel()
-            }
-        } label: {
-            HStack(spacing: ShellTokens.Spacing.x8) {
-                Image(systemName: "figure.golf")
-                    .font(.subheadline.weight(.semibold))
-                Text(state.currentClubLauncherTitle)
-                    .font(.subheadline.weight(.semibold))
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption.weight(.bold))
-            }
-            .foregroundStyle(palette.primaryTextColor)
-            .padding(.horizontal, ShellTokens.Spacing.x12)
-            .padding(.vertical, ShellTokens.Spacing.x10)
-            .freshGlass(Capsule(), palette: palette, tint: palette.secondaryFill)
-            .background(
-                GeometryReader { geometry in
-                    Color.clear.preference(
-                        key: FreshLiveRoundClubLauncherFramePreferenceKey.self,
-                        value: geometry.frame(in: .named(Self.clubWheelCoordinateSpace))
-                    )
-                }
-            )
-        }
-        .buttonStyle(.plain)
-        .disabled(!state.isDisplayedHoleLive)
-        .opacity(state.isDisplayedHoleLive ? 1 : 0.55)
-        .contentShape(Capsule())
-    }
-
-    private func clubWheelOverlay(in proxy: GeometryProxy) -> some View {
-        FreshLiveRoundClubWheelOverlay(
-            state: state,
-            anchorFrame: resolvedClubLauncherFrame(in: proxy),
-            safeAreaInsets: proxy.safeAreaInsets,
-            containerSize: proxy.size,
-            palette: palette
-        )
-        .zIndex(10)
-    }
-
-    private func resolvedClubLauncherFrame(in proxy: GeometryProxy) -> CGRect {
-        if clubLauncherFrame != .zero {
-            return clubLauncherFrame
-        }
-
-        let fallbackWidth: CGFloat = 132
-        let fallbackHeight: CGFloat = 44
-        // Fallback path only fires before the preference key reports the real
-        // anchor frame; using the resting (detent-only) height is fine here -
-        // the user can't be dragging the sheet and opening the club wheel at
-        // the same time, and avoiding `launcherCurrentHeight` keeps the parent
-        // body free of the drag-translation dependency.
-        let y = proxy.size.height - max(proxy.safeAreaInsets.bottom, ShellTokens.Spacing.x12) - launcherRestingHeight(in: proxy) + 54
-        return CGRect(x: ShellTokens.Spacing.x24, y: y, width: fallbackWidth, height: fallbackHeight)
-    }
-
-    private func launcherInvokerButton(
-        title: String,
-        subtitle: String,
-        systemImage: String,
-        isEnabled: Bool = true,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(isEnabled ? palette.accent : palette.secondaryTextColor.opacity(0.5))
-
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isEnabled ? palette.primaryTextColor : palette.primaryTextColor.opacity(0.5))
-
-                Text(subtitle)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(palette.secondaryTextColor.opacity(isEnabled ? 1 : 0.6))
-                    .lineLimit(2)
-            }
-            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-            .padding(ShellTokens.Spacing.x14)
-            .freshGlass(
-                RoundedRectangle(cornerRadius: 22, style: .continuous),
-                palette: palette,
-                tint: palette.tertiaryFill
-            )
-            .opacity(isEnabled ? 1 : 0.7)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-
-    private func statusChip(title: String, systemImage: String) -> some View {
-        Label(title, systemImage: systemImage)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(palette.primaryTextColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .freshGlass(Capsule(), palette: palette, tint: palette.tertiaryFill)
-    }
-
-    private func launcherCollapsedHeight(in proxy: GeometryProxy) -> CGFloat {
-        let baseHeight: CGFloat = state.canMarkBallOnDisplayedHole ? 176 : 152
-        let inspectionAdjustment: CGFloat = state.isDisplayedHoleLive ? 0 : 12
-        return min(baseHeight + inspectionAdjustment, proxy.size.height * 0.34)
-    }
-
-    private func launcherExpandedHeight(in proxy: GeometryProxy) -> CGFloat {
-        let baseHeight = state.isDisplayedHoleLive
-            ? FreshLiveRoundLauncherLayoutPolicy.liveExpandedBaseHeight
-            : FreshLiveRoundLauncherLayoutPolicy.inspectionExpandedBaseHeight
-        return min(baseHeight, proxy.size.height * FreshLiveRoundLauncherLayoutPolicy.maxExpandedHeightRatio)
-    }
-
-    private func launcherActionsHeight(in proxy: GeometryProxy) -> CGFloat {
-        let baseHeight = state.isDisplayedHoleLive
-            ? FreshLiveRoundLauncherLayoutPolicy.liveActionsBaseHeight
-            : FreshLiveRoundLauncherLayoutPolicy.inspectionActionsBaseHeight
-        return min(baseHeight, proxy.size.height * FreshLiveRoundLauncherLayoutPolicy.maxExpandedHeightRatio)
-    }
-
-    private func launcherHeight(for detent: LiveRoundState.LauncherDetent, in proxy: GeometryProxy) -> CGFloat {
-        switch detent {
-        case .collapsed:
-            return launcherCollapsedHeight(in: proxy)
-        case .actions:
-            return launcherActionsHeight(in: proxy)
-        case .expanded:
-            return launcherExpandedHeight(in: proxy)
-        }
-    }
-
-    private func launcherDetentHeights(in proxy: GeometryProxy) -> FreshLiveRoundLauncherDetentHeights {
-        FreshLiveRoundLauncherDetentHeights(
-            collapsed: launcherCollapsedHeight(in: proxy),
-            actions: launcherActionsHeight(in: proxy),
-            expanded: launcherExpandedHeight(in: proxy)
-        )
-    }
-
-    private func nearestLauncherDetent(for height: CGFloat, in proxy: GeometryProxy) -> LiveRoundState.LauncherDetent {
-        LiveRoundState.LauncherDetent.allCases.min { lhs, rhs in
-            abs(launcherHeight(for: lhs, in: proxy) - height) < abs(launcherHeight(for: rhs, in: proxy) - height)
-        } ?? .collapsed
-    }
-
-    private func launcherRestingHeight(in proxy: GeometryProxy) -> CGFloat {
-        launcherHeight(for: state.launcherDetent, in: proxy)
-    }
-
-    private func launcherVisualStateIsExpanded(in proxy: GeometryProxy) -> Bool {
-        state.launcherDetent != .collapsed
-    }
-
-    /// The drag gesture writes the live finger offset into `dragTranslation`
-    /// (a `@State` owned by `FreshLiveRoundLauncherOffsetWrapper`). On release
-    /// it both snaps the detent and zeroes the offset inside a single
-    /// `withAnimation` so the spring covers the full path back to the resting
-    /// detent height - even when the user releases mid-drag without crossing a
-    /// snap threshold.
-    private func launcherDragGesture(
-        in proxy: GeometryProxy,
-        dragTranslation: Binding<CGFloat>
-    ) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { value in
-                dragTranslation.wrappedValue = value.translation.height
-            }
-            .onEnded { value in
-                let heights = launcherDetentHeights(in: proxy)
-                let targetDetent = FreshLiveRoundLauncherSnapPolicy.targetDetent(
-                    from: self.state.launcherDetent,
-                    translation: value.translation.height,
-                    predictedEndTranslation: value.predictedEndTranslation.height,
-                    heights: heights
-                )
-                withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) {
-                    self.state.setLauncherDetent(targetDetent)
-                    dragTranslation.wrappedValue = 0
-                }
-            }
-    }
-
-    /// "Frame the active hole" button. Peeking at another hole snaps back to
-    /// the active hole first; then the camera animates to the tee perspective.
-    /// Does not reset the aim crosshair — that stays where the user left it.
-    private var recenterButton: some View {
-        Button {
-            if state.isInspectingHole {
-                state.returnToActiveHole()
-            }
-            syncCameraToHoleFraming(animated: true)
-        } label: {
-            Image(systemName: "scope")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(palette.quietIcon)
-                .frame(width: 52, height: 52)
-        }
-        .buttonStyle(.plain)
-        .freshGlass(Circle(), palette: palette, tint: palette.panelFill)
-        .contentShape(Circle())
-        .shadow(color: palette.shadowColor, radius: 12, y: 6)
-        .accessibilityLabel(
-            state.isInspectingHole ? "Return to active hole" : "Frame current hole"
-        )
-    }
-
-    /// Compact, always-on wind read in the top HUD. Replaces the old
-    /// "12 NW" text card with a shot-relative arrow + speed + category
-    /// (Tail / Head / Cross R / Cross L). Tapping the chip opens the
-    /// Conditions sheet for the full breakdown — making the chip the
-    /// discoverable entry into wind/weather details.
-    private func windHUDChip(width: CGFloat) -> some View {
-        Button {
-            isShowingConditions = true
-        } label: {
-            HStack(alignment: .center, spacing: 6) {
-                windDirectionArrow(diameter: 22, isCalm: !state.hasUsableWindReading)
-
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text(windHUDValueLabel)
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(palette.primaryTextColor)
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Text(windHUDCategoryLabel)
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(palette.secondaryTextColor)
-                        .lineLimit(1)
-                }
-            }
-            .frame(width: width, alignment: .trailing)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(windHUDAccessibilityLabel))
-        .accessibilityHint(Text("Open conditions"))
-    }
-
-    /// Small directional arrow for the HUD chip and the Conditions
-    /// hero. Always points "with the wind" relative to the player's
-    /// shot bearing — so a tail wind has the arrow pointing up the
-    /// page, head pointing down, cross-right pointing right, etc.
-    private func windDirectionArrow(diameter: CGFloat, isCalm: Bool) -> some View {
-        let rotationDegrees: Double = state.windRelativeMotionDegrees ?? 0
-
-        return ZStack {
-            Circle()
-                .fill(palette.secondaryFill)
-                .overlay {
-                    Circle().stroke(palette.border, lineWidth: 1)
-                }
-
-            if isCalm {
-                Image(systemName: "circle.dotted")
-                    .font(.system(size: diameter * 0.55, weight: .semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
-            } else {
-                // `arrow.up` points along the +Y axis; rotation is
-                // clockwise. `windRelativeMotionDegrees` already
-                // encodes "0° = with the shot", and SwiftUI's HUD frame
-                // has shot direction up the screen, so the angle maps
-                // 1:1 onto the rotation effect.
-                Image(systemName: "arrow.up")
-                    .font(.system(size: diameter * 0.6, weight: .heavy))
-                    .foregroundStyle(palette.accent)
-                    .rotationEffect(.degrees(rotationDegrees))
-            }
-        }
-        .frame(width: diameter, height: diameter)
-        .animation(.easeInOut(duration: 0.25), value: rotationDegrees)
-    }
-
-    private var windHUDValueLabel: String {
-        guard let weather = state.weatherSnapshot else {
-            return "--"
-        }
-        return "\(weather.windSpeedKilometersPerHour)"
-    }
-
-    private var windHUDCategoryLabel: String {
-        guard state.weatherSnapshot != nil else { return "Wind" }
-        if !state.hasUsableWindReading { return "Calm" }
-        return state.windRelativeCategory.label
-    }
-
-    private var windHUDAccessibilityLabel: String {
-        guard let weather = state.weatherSnapshot else {
-            return "Wind unavailable"
-        }
-        let categoryWord = state.hasUsableWindReading
-            ? state.windRelativeCategory.label
-            : "calm"
-        return "Wind \(weather.windSpeedKilometersPerHour) kilometres per hour, \(categoryWord)"
+        isAimDragging ? [] : [.pan, .zoom, .pitch, .rotate]
     }
 
     /// Bounds the camera to the whole course so the user can zoom from a tight green
@@ -2286,420 +1511,174 @@ struct FreshLiveRoundScreen: View {
         )
     }
 
+    /// The whole course is always reachable: framing a green or a hole
+    /// moves the camera but never fences it in.
     private var mapBounds: MapCameraBounds {
-        if isGreenInspectionPanClampActive,
-           let limits = state.greenInspectionPanLimits {
-            return MapCameraBounds(
-                centerCoordinateBounds: limits.paddedGreenMapRect,
-                minimumDistance: limits.minimumCameraDistance,
-                maximumDistance: limits.maximumCameraDistance
-            )
-        }
-        return courseMapCameraBounds
+        courseMapCameraBounds
     }
 
-    private func holeNavigationButton(
-        systemImage: String,
-        isEnabled: Bool,
-        size: CGFloat,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(isEnabled ? palette.primaryTextColor : palette.tertiaryTextColor)
-                .frame(width: size, height: size)
-        }
-        .buttonStyle(.plain)
-        .freshGlass(Circle(), palette: palette, tint: palette.secondaryFill)
-        .overlay {
-            Circle()
-                .stroke(isEnabled ? palette.border : palette.tertiaryFill, lineWidth: 1)
-        }
-        .disabled(!isEnabled)
-        .contentShape(Circle())
-    }
-
-    private func holeNavigationCluster(layout: FreshLiveRoundTopPanelLayout) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x8) {
-            holeNavigationButton(systemImage: "chevron.left", isEnabled: state.canInspectPreviousHole, size: layout.navButtonSize) {
-                state.inspectPreviousHole()
-            }
-
-            VStack(spacing: layout.density == .compact ? 1 : 2) {
-                Text(layout.holeTitle(for: state.displayedHoleNumber))
-                    .font(layout.density == .compact ? .headline.weight(.bold) : .title3.weight(.bold))
-                    .foregroundStyle(palette.primaryTextColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                    .allowsTightening(true)
-
-                Text(state.topPanelHoleSubtitle)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .allowsTightening(true)
-                    .truncationMode(.tail)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, layout.centerHorizontalPadding)
-
-            holeNavigationButton(systemImage: "chevron.right", isEnabled: state.canInspectNextHole, size: layout.navButtonSize) {
-                state.inspectNextHole()
-            }
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, layout.density == .compact ? 6 : 8)
-        .freshGlass(
-            RoundedRectangle(cornerRadius: 22, style: .continuous),
-            palette: palette,
-            tint: palette.secondaryFill
-        )
-    }
-
-    private var aimCrosshairMarker: some View {
-        let activeColor: Color = isAimDragActive ? Color(red: 1.0, green: 0.86, blue: 0.32) : .white
-
-        return ZStack {
-            Circle()
-                .fill(.black.opacity(0.20))
-                .frame(width: 56, height: 56)
-                .blur(radius: 4)
-
-            Circle()
-                .stroke(activeColor.opacity(0.95), lineWidth: 2)
-                .frame(width: 44, height: 44)
-
-            Rectangle()
-                .fill(activeColor.opacity(0.95))
-                .frame(width: 2, height: 32)
-
-            Rectangle()
-                .fill(activeColor.opacity(0.95))
-                .frame(width: 32, height: 2)
-
-            Circle()
-                .fill(activeColor)
-                .frame(width: 6, height: 6)
-        }
-        .frame(width: 56, height: 56)
-        .scaleEffect(isAimDragActive ? 1.1 : 1.0)
-        .animation(.easeInOut(duration: 0.18), value: isAimDragActive)
-        .sensoryFeedback(.selection, trigger: isAimDragActive)
-        // The gesture is intentionally NOT attached to this view. SwiftUI Map hosts annotation
-        // content inside `MKAnnotationView` whose touches are claimed by `MKMapView`'s own pan
-        // recogniser before SwiftUI gestures get a chance to fire. The interactive hit-target
-        // lives in `aimGestureCatcher` instead, which is added as a `.overlay { }` on the Map
-        // and therefore sits above MapKit's UIKit gesture stack.
-    }
-
-    /// SwiftUI render of the aim group (line, distance pills, crosshair) used ONLY
-    /// during an active crosshair drag. While dragging, MapKit's annotation
-    /// interpolation produces visible jitter as the planning coordinate updates
-    /// many times per second; rendering in SwiftUI screen-space sidesteps that and
-    /// gives finger-perfect tracking.
-    ///
-    /// Outside of drag, the same visuals are rendered as MapPolyline + Annotation
-    /// inside the Map block - those auto-follow pan/zoom for free, with no SwiftUI
-    /// per-frame work.
-    private func aimVisualOverlay(
-        proxy: MapProxy,
-        mapFrame: CGRect,
-        mapGlobalFrame: CGRect
-    ) -> some View {
-        let aimPoint = screenPoint(
-            for: state.planningTargetCoordinate.clCoordinate,
-            proxy: proxy,
-            mapGlobalFrame: mapGlobalFrame
-        ) ?? CGPoint(x: mapFrame.midX, y: mapFrame.midY)
-        // Mirror the MapPolyline branch: if the player has wandered
-        // behind the teebox (or the location is way off-course) the
-        // shot origin falls back to the tee so the line + carry pill
-        // stay anchored to a sensible reference rather than chasing a
-        // faraway GPS fix.
-        let originPoint = screenPoint(
-            for: state.shotOriginCoordinate,
-            proxy: proxy,
-            mapGlobalFrame: mapGlobalFrame
-        )
-        let pinPoint = screenPoint(
-            for: state.targetCoordinate,
-            proxy: proxy,
-            mapGlobalFrame: mapGlobalFrame
-        )
-
-        return ZStack(alignment: .topLeading) {
-            if let originPoint, let pinPoint {
-                Path { path in
-                    path.move(to: originPoint)
-                    path.addLine(to: aimPoint)
-                    path.addLine(to: pinPoint)
-                }
-                .stroke(
-                    .white.opacity(0.95),
-                    style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round)
-                )
-                .allowsHitTesting(false)
-
-                distancePill(value: state.planningCarryDistanceMeters)
-                    .position(midpoint(originPoint, aimPoint))
-                    .allowsHitTesting(false)
-
-                distancePill(value: state.planningRemainingDistanceMeters)
-                    .position(midpoint(aimPoint, pinPoint))
-                    .allowsHitTesting(false)
-            }
-
-            aimCrosshairMarker
-                .position(aimPoint)
-                .allowsHitTesting(false)
-        }
-    }
-
-    /// Transparent always-on hit target that owns the long-press-then-drag gesture
-    /// for the aim crosshair. Sits above MapKit's UIKit gesture stack (because it
-    /// lives in a SwiftUI `.overlay`) so the long-press fires reliably; MapKit's
-    /// own pan recogniser would otherwise claim the touch first.
-    private func aimGestureCatcher(
-        proxy: MapProxy,
-        mapGlobalFrame: CGRect,
-        cameraVersion: Int
-    ) -> some View {
-        // Reading `cameraVersion` here is what wires this view's identity to
-        // `mapCameraVersion`, so SwiftUI re-evaluates the closure (and therefore
-        // re-runs `proxy.convert`) when the camera change settles.
-        _ = cameraVersion
-
-        let aimPoint = screenPoint(
-            for: state.planningTargetCoordinate.clCoordinate,
-            proxy: proxy,
-            mapGlobalFrame: mapGlobalFrame
-        ) ?? CGPoint(x: -200, y: -200)
-
-        return Color.clear
-            .frame(width: 96, height: 96)
-            .contentShape(Circle())
-            .position(aimPoint)
-            .highPriorityGesture(aimCrosshairGesture(proxy: proxy))
-    }
-
-    /// Convenience wrapper around `MapProxy.convert(_, to: .global)` that translates the
-    /// returned screen-space point into the GeometryReader's local space (so SwiftUI's
-    /// `.position(_:)` lands the view where we expect). Returns `nil` if the proxy
-    /// hasn't laid out yet, which the caller can use to skip rendering optional elements
-    /// (line, pills) until they have valid endpoints.
-    private func screenPoint(
-        for coordinate: CLLocationCoordinate2D,
-        proxy: MapProxy,
-        mapGlobalFrame: CGRect
-    ) -> CGPoint? {
-        guard let global = proxy.convert(coordinate, to: .global) else { return nil }
-        return CGPoint(
-            x: global.x - mapGlobalFrame.minX,
-            y: global.y - mapGlobalFrame.minY
-        )
-    }
-
-    private func midpoint(_ a: CGPoint, _ b: CGPoint) -> CGPoint {
-        CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
-    }
-
-    /// Linear midpoint of two map coordinates. Lat/lon averaging is geometrically
-    /// crude over long distances but perfectly fine inside a single golf hole
-    /// (< 600 m), where the great-circle midpoint is indistinguishable from the
-    /// equirectangular midpoint at this scale.
-    private func coordinateMidpoint(
-        _ a: CLLocationCoordinate2D,
-        _ b: CLLocationCoordinate2D
-    ) -> CLLocationCoordinate2D {
-        CLLocationCoordinate2D(
-            latitude: (a.latitude + b.latitude) / 2,
-            longitude: (a.longitude + b.longitude) / 2
-        )
-    }
-
-    /// The subset of `FreshLiveRoundCarryRing.standardSet` worth drawing for the
-    /// player's current proximity to the pin. Rules:
-    ///
-    ///   - Hide rings that sit > 50 m **inside** the player's distance (you've
-    ///     already passed them - they're behind you).
-    ///   - Hide rings that sit > 50 m **outside** the player's distance (irrelevant
-    ///     for current shot planning).
-    ///   - Hide the tight 25 m-spaced "approach" rings (radii < 150 m) unless the
-    ///     player is actually on approach (within 175 m of the pin). From the tee
-    ///     these would be a tiny bullseye around the pin and just add visual noise.
-    ///   - Always anchor the outermost 250 m ring when the player is further out
-    ///     than that, so a long-yardage reference is visible from the tee.
-    private var visibleCarryRings: [FreshLiveRoundCarryRing] {
-        let pinDistance = Double(state.displayedPinDistanceMeters)
-        let onApproach = pinDistance <= 175
-
-        return FreshLiveRoundCarryRing.standardSet.filter { ring in
-            let r = Double(ring.radiusMeters)
-            if pinDistance > 250 && ring.radiusMeters == 250 {
-                return true
-            }
-            guard r >= pinDistance - 50, r <= pinDistance + 50 else { return false }
-            if r < 150 && !onApproach { return false }
-            return true
-        }
-    }
-
-
-    /// A sequenced "long-press, then drag" recognizer attached to the aim crosshair.
-    ///
-    /// The user holds the crosshair to "pick it up", then drags their finger to slide the aim
-    /// point across the satellite imagery. Drag movements are converted from on-screen points
-    /// to map coordinates via the surrounding `MapReader`'s proxy, so the aim follows the
-    /// finger faithfully even though the underlying `Annotation` view is also moving.
-    ///
-    /// `isAimDragActive` is a `@GestureState` so it self-resets the moment the gesture ends or
-    /// is interrupted - we can't get stuck in a "drag locked" UI state.
-    private func aimCrosshairGesture(proxy: MapProxy) -> some Gesture {
-        let longPress = LongPressGesture(minimumDuration: 0.18, maximumDistance: .greatestFiniteMagnitude)
-        // `.global` (screen coords) for the same reason `aimGestureCatcher` uses it for
-        // positioning - it's the only coordinate space `MapProxy.convert` works with
-        // reliably in this Xcode/iOS combo.
-        let drag = DragGesture(minimumDistance: 0, coordinateSpace: .global)
-
-        return longPress.sequenced(before: drag)
-            .updating($isAimDragActive) { value, isActive, _ in
-                switch value {
-                case .first:
-                    isActive = false
-                case .second(let longPressFulfilled, _):
-                    isActive = longPressFulfilled
-                }
-            }
-            .onChanged { value in
-                guard
-                    case .second(let longPressFulfilled, let dragValue?) = value,
-                    longPressFulfilled,
-                    let coordinate = proxy.convert(dragValue.location, from: .global)
-                else { return }
-                state.movePlanningTarget(to: coordinate)
-            }
-    }
-
-    private func distancePill(value: Int) -> some View {
-        Text("\(value)")
-            .font(.system(size: 13, weight: .bold))
-            .monospacedDigit()
-            .foregroundStyle(.black)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(.white.opacity(0.94), in: Capsule(style: .continuous))
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(.black.opacity(0.45), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.30), radius: 3, y: 1)
-    }
-
-    private var pinFlagMarker: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "flag.fill")
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(Color(red: 1.0, green: 0.83, blue: 0.20))
-                .shadow(color: .black.opacity(0.55), radius: 2, y: 1)
-
-            Capsule()
-                .fill(.white.opacity(0.85))
-                .frame(width: 2, height: 4)
-        }
-        .frame(width: 30, height: 30, alignment: .bottom)
-    }
-
+    /// The tee block, as the mark draws it.
     private var teeMarker: some View {
-        ZStack {
-            Circle()
-                .fill(.black.opacity(0.65))
-                .frame(width: 10, height: 10)
-            Circle()
-                .stroke(.white, lineWidth: 2)
-                .frame(width: 12, height: 12)
-        }
-        .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+        RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+            .fill(Book.stamp)
+            .frame(width: 16, height: 9)
+            .overlay(RoundedRectangle(cornerRadius: 2.5, style: .continuous).strokeBorder(Book.leaf, lineWidth: 1.5))
+            .shadow(color: .black.opacity(isDrawnMap ? 0.15 : 0.45), radius: 2, y: 1)
+            .accessibilityLabel("Tee")
     }
 
+    /// The ball: the one flag-red mark that is the player.
     private var youMarker: some View {
         ZStack {
-            Circle()
-                .fill(.white)
-                .frame(width: 16, height: 16)
-            Circle()
-                .fill(Color(red: 0.86, green: 0.16, blue: 0.16))
-                .frame(width: 8, height: 8)
+            Circle().fill(Book.flag.opacity(0.18)).frame(width: 30, height: 30)
+            Circle().fill(Book.leaf).frame(width: 16, height: 16)
+            Circle().fill(Book.flag).frame(width: 9, height: 9)
         }
-        .shadow(color: .black.opacity(0.55), radius: 3, y: 1)
+        .shadow(color: .black.opacity(isDrawnMap ? 0.15 : 0.4), radius: 2, y: 1)
+        .accessibilityLabel(isStandingOnTee ? "You, on the tee" : "You")
     }
 
-    private var carryRingLegend: some View {
-        // Group rings by club-zone colour so the legend stays compact even with 8
-        // rings on the map. Each entry shows both ring radii in that zone (e.g.
-        // "25 / 50" for the red chip zone).
-        HStack(spacing: ShellTokens.Spacing.x10) {
-            ForEach(FreshLiveRoundCarryRing.legendZones) { zone in
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(zone.color)
-                        .frame(width: 8, height: 8)
-                        .overlay(
-                            Circle().stroke(.black.opacity(0.35), lineWidth: 0.5)
-                        )
-
-                    Text(zone.label)
-                        .font(.system(size: 12, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(.white)
-                }
-            }
-        }
-        .padding(.horizontal, ShellTokens.Spacing.x12)
-        .padding(.vertical, 8)
-        .background(.black.opacity(0.55), in: Capsule(style: .continuous))
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(.white.opacity(0.18), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.45), radius: 8, y: 4)
+    private func overlay(for feature: SwingPalCourse.Hole.Feature) -> some MapContent {
+        featureShape(for: feature)
+            .mapOverlayLevel(level: isDrawnMap ? .aboveLabels : .aboveRoads)
     }
 
     @MapContentBuilder
-    private func overlay(for feature: SwingPalCourse.Hole.Feature) -> some MapContent {
+    private func featureShape(for feature: SwingPalCourse.Hole.Feature) -> some MapContent {
         let coordinates = feature.coordinates.map(\.clCoordinate)
+        let drawn = isDrawnMap
 
         switch feature.kind {
         case .fairway:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color(red: 0.34, green: 0.58, blue: 0.31).opacity(0.28))
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                .foregroundStyle(drawn ? Book.fairway : Color(red: 0.34, green: 0.58, blue: 0.31).opacity(0.28))
+                .stroke(drawn ? Book.fairwayEdge : Color.white.opacity(0.18), lineWidth: 1)
         case .green:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color(red: 0.63, green: 0.84, blue: 0.55).opacity(0.42))
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                .foregroundStyle(drawn ? Book.green : Color(red: 0.63, green: 0.84, blue: 0.55).opacity(0.42))
+                .stroke(drawn ? Book.greenContour : Color.white.opacity(0.22), lineWidth: 1)
         case .bunker:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color(red: 0.90, green: 0.81, blue: 0.58).opacity(0.50))
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                .foregroundStyle(drawn ? Book.sand : Color(red: 0.90, green: 0.81, blue: 0.58).opacity(0.50))
+                .stroke(drawn ? Book.sandDot : Color.white.opacity(0.22), lineWidth: 1)
         case .water:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color(red: 0.30, green: 0.62, blue: 0.92).opacity(0.45))
-                .stroke(Color.white.opacity(0.20), lineWidth: 1)
+                .foregroundStyle(drawn ? Book.water : Color(red: 0.30, green: 0.62, blue: 0.92).opacity(0.45))
+                .stroke(drawn ? Book.waterLine : Color.white.opacity(0.20), lineWidth: 1)
         case .tee:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color.white.opacity(0.18))
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                .foregroundStyle(drawn ? Book.ink.opacity(0.75) : Color.white.opacity(0.18))
+                .stroke(drawn ? Book.ink : Color.white.opacity(0.18), lineWidth: 1)
         case .layup:
             MapPolygon(coordinates: coordinates)
-                .foregroundStyle(Color.black.opacity(0.12))
-                .stroke(Color.white.opacity(0.16), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                .foregroundStyle(drawn ? Color.clear : Color.black.opacity(0.12))
+                .stroke(drawn ? Book.pencil : Color.white.opacity(0.16), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+        }
+    }
+
+    // MARK: Yardage-book annotations
+
+    /// The ball's position for measuring: the shot origin on the live hole,
+    /// the tee when looking ahead at another hole.
+    private var measuringOrigin: CLLocationCoordinate2D {
+        state.isDisplayedHoleLive ? state.shotOriginCoordinate : state.teeCoordinate
+    }
+
+    private var hazardYardages: [HoleMapGeometry.HazardYardage] {
+        guard hasGreenReference, dynamicTypeSize < .xxLarge else { return [] }
+        let origin = measuringOrigin
+        let pin = state.targetCoordinate
+        let key = String(format: "%d|%.5f,%.5f|%.5f,%.5f", state.displayedHoleNumber, origin.latitude, origin.longitude, pin.latitude, pin.longitude)
+        return drawingCache.hazards(for: key) {
+            HoleMapGeometry.hazardYardages(features: state.currentHoleFeatures, origin: origin, pin: pin)
+        }
+    }
+
+    /// Reach and carry, written beside the hazard: the near edge in pencil,
+    /// the far edge in ink.
+    private func hazardTag(_ hazard: HoleMapGeometry.HazardYardage) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Circle()
+                .fill(hazard.kind == .water ? Book.waterLine : Book.sandDot)
+                .frame(width: 6, height: 6)
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 }
+            Text("\(state.distanceUnit.scalarValue(fromMeters: hazard.reachMetres))")
+                .foregroundStyle(Book.pencil)
+            Text("\(state.distanceUnit.scalarValue(fromMeters: hazard.carryMetres))")
+                .fontWeight(.bold)
+        }
+        .font(.system(size: 12, weight: .semibold).width(.condensed))
+        .monospacedDigit()
+        .foregroundStyle(Book.ink)
+        .padding(.horizontal, 6).padding(.vertical, 2)
+        .background(Book.leaf.opacity(reduceTransparency ? 1 : 0.94), in: Capsule())
+        .overlay(Capsule().strokeBorder(Book.rule, lineWidth: 0.5))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(hazard.kind == .water ? "Water" : "Bunker"): reach \(state.shortDistanceLabel(forMeters: hazard.reachMetres)), carry \(state.shortDistanceLabel(forMeters: hazard.carryMetres))")
+    }
+
+    /// When the ball is on the tee the tee marker would sit under the
+    /// player's own mark, so only one is drawn.
+    private var isStandingOnTee: Bool {
+        hasLiveDistance && HoleMapGeometry.distance(state.playerCoordinate, state.teeCoordinate) < 25
+    }
+
+    private var pageMask: (sheet: MKPolygon, edge: [CLLocationCoordinate2D])? {
+        drawingCache.page(for: state.displayedHoleNumber) {
+            let points = state.currentHoleFeatures.flatMap { $0.coordinates.map(\.clCoordinate) }
+            guard let edge = HoleMapGeometry.pageOutline(around: points, bufferMetres: 45),
+                  let centre = HoleMapGeometry.centroid(of: points)
+            else { return nil }
+            let window = MKPolygon(coordinates: edge, count: edge.count)
+            let paper = HoleMapGeometry.sheet(around: centre, halfSizeMetres: 8_000)
+            return (MKPolygon(coordinates: paper, count: paper.count, interiorPolygons: [window]), edge)
+        }
+    }
+
+    /// Keeps the aim where the club in hand lands whenever the club, the
+    /// hole or the ball changes. Dragging the ring still overrides it.
+    private func aimAtClubCarry() {
+        guard state.isDisplayedHoleLive, hasGreenReference else { return }
+        state.placePlanningTarget(atCarryMeters: state.selectedClubWheelEntry.displayCarryMeters)
+    }
+
+    private struct YardageRing {
+        let label: String
+        let metres: CLLocationDistance
+        let labelCoordinate: CLLocationCoordinate2D
+    }
+
+    /// Distances to the green centre every 50, out to the length of the
+    /// hole, placed at the edge of play on the tee side. Drawn mode only.
+    private var yardageRings: [YardageRing] {
+        let green = state.targetCoordinate
+        let tee = state.teeCoordinate
+        let holeLength = CLLocation(latitude: green.latitude, longitude: green.longitude)
+            .distance(from: CLLocation(latitude: tee.latitude, longitude: tee.longitude))
+        guard holeLength > 60 else { return [] }
+        let unitMetres = state.distanceUnit == .yards ? 0.9144 : 1.0
+        let cosLat = cos(green.latitude * .pi / 180)
+        let east = (tee.longitude - green.longitude) * 111_320 * cosLat
+        let north = (tee.latitude - green.latitude) * 110_540
+        let axis = atan2(north, east)
+        func offset(_ metres: Double, _ angle: Double) -> CLLocationCoordinate2D {
+            CLLocationCoordinate2D(
+                latitude: green.latitude + metres * sin(angle) / 110_540,
+                longitude: green.longitude + metres * cos(angle) / (111_320 * cosLat)
+            )
+        }
+        return stride(from: 50, through: 350, by: 50).compactMap { step in
+            let metres = Double(step) * unitMetres
+            guard metres < holeLength - 15 else { return nil }
+            let spread = min(0.5, 70 / metres)
+            // Written on the side away from the green tag, which reads to the right.
+            let coordinate = offset(metres, axis - min(spread, 45 / metres))
+            return YardageRing(label: "\(step)", metres: metres, labelCoordinate: coordinate)
         }
     }
 
     private func syncCamera(to region: MKCoordinateRegion, animated: Bool = false) {
-        if animated {
+        if animated && !reduceMotion {
             withAnimation(.spring(response: 0.85, dampingFraction: 0.92)) {
                 cameraPosition = .region(region)
             }
@@ -2709,7 +1688,7 @@ struct FreshLiveRoundScreen: View {
     }
 
     private func syncCamera(to camera: MapCamera, animated: Bool = false) {
-        if animated {
+        if animated && !reduceMotion {
             withAnimation(.spring(response: 0.85, dampingFraction: 0.92)) {
                 cameraPosition = .camera(camera)
             }
@@ -2719,17 +1698,18 @@ struct FreshLiveRoundScreen: View {
     }
 
     /// Centralised hole-framing logic shared by the initial appear, hole-change,
-    /// inspect-toggle, and recenter-button code paths so they all converge on the
-    /// same 3D tee-perspective view. Keeping this in one place means tweaks to
-    /// pitch/distance/bias only need to happen in `LiveRoundState`.
+    /// inspect-toggle, and recenter-button paths. The flat playing map leaves
+    /// space above the green for yardages and below the tee for the open fan.
     private func syncCameraToHoleFraming(animated: Bool = false) {
-        isGreenInspectionPanClampActive = false
         let spec = state.teePerspectiveCameraSpec
         let camera = MapCamera(
-            centerCoordinate: spec.center,
-            distance: spec.distance,
+            centerCoordinate: CLLocationCoordinate2D(
+                latitude: state.teeCoordinate.latitude + (state.targetCoordinate.latitude - state.teeCoordinate.latitude) * 0.30,
+                longitude: state.teeCoordinate.longitude + (state.targetCoordinate.longitude - state.teeCoordinate.longitude) * 0.30
+            ),
+            distance: spec.distance * (hasLiveDistance ? 2.2 : 2.5),
             heading: spec.heading,
-            pitch: spec.pitch
+            pitch: 0
         )
         syncCamera(to: camera, animated: animated)
     }
@@ -2741,7 +1721,6 @@ struct FreshLiveRoundScreen: View {
     /// future shortcuts, watch hand-off) don't have to gate themselves.
     private func syncCameraToGreenInspection(animated: Bool = true) {
         guard let spec = state.greenInspectionCameraSpec else { return }
-        isGreenInspectionPanClampActive = state.greenInspectionPanLimits != nil
         let camera = MapCamera(
             centerCoordinate: spec.center,
             distance: spec.distance,
@@ -2749,97 +1728,6 @@ struct FreshLiveRoundScreen: View {
             pitch: spec.pitch
         )
         syncCamera(to: camera, animated: animated)
-    }
-}
-
-/// Owns the launcher sheet's drag translation and applies the offset that
-/// reveals/hides the sheet. This is intentionally split out from
-/// `FreshLiveRoundScreen` so that finger movement during a sheet drag only
-/// invalidates *this* view's body - the parent screen (which holds the
-/// `Map` and its 18-hole feature tree, distance pills, carry rings, polylines
-/// and annotations) stays untouched. With the drag `@State` on the parent
-/// the body re-evaluated 60 times a second during drag, forcing MapKit to
-/// re-diff every MapContent expression in `liveMap`, which is the actual
-/// source of the long-running "jittery sheet" bug.
-private struct FreshLiveRoundLauncherOffsetWrapper<Content: View>: View {
-    let collapsedHeight: CGFloat
-    let actionsHeight: CGFloat
-    let expandedHeight: CGFloat
-    let restingHeight: CGFloat
-    let currentDetent: LiveRoundState.LauncherDetent
-    @ViewBuilder let content: (Binding<CGFloat>) -> Content
-
-    @State private var translation: CGFloat = 0
-
-    var body: some View {
-        content($translation)
-            .frame(maxHeight: .infinity, alignment: .bottom)
-            .offset(y: expandedHeight - currentHeight)
-            .animation(
-                .spring(response: 0.34, dampingFraction: 0.86),
-                value: currentDetent
-            )
-    }
-
-    private var currentHeight: CGFloat {
-        let proposed = restingHeight - translation
-        return Self.rubberBandedHeight(
-            proposed,
-            lower: collapsedHeight,
-            upper: expandedHeight
-        )
-    }
-
-    /// Soft-clamps `raw` into `[lower, upper]`, allowing a small amount of
-    /// over-travel beyond the detent boundaries. The 0.32 resistance factor
-    /// mirrors UIKit's default rubber-band feel: pulling 100pt past a boundary
-    /// reads ~32pt on screen, so the user gets tactile feedback that they're
-    /// at the edge instead of hitting an invisible wall.
-    private static func rubberBandedHeight(
-        _ raw: CGFloat,
-        lower: CGFloat,
-        upper: CGFloat
-    ) -> CGFloat {
-        let resistance: CGFloat = 0.32
-        if raw < lower {
-            return lower - (lower - raw) * resistance
-        }
-        if raw > upper {
-            return upper + (raw - upper) * resistance
-        }
-        return raw
-    }
-}
-
-private struct FreshLiveRoundPrimaryActionButtonModifier: ViewModifier {
-    let palette: FreshLiveRoundPalette
-
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .buttonStyle(.glassProminent)
-                .tint(palette.accent)
-        } else {
-            content
-                .buttonStyle(.borderedProminent)
-                .tint(palette.accent)
-        }
-    }
-}
-
-private struct FreshLiveRoundSecondaryActionButtonModifier: ViewModifier {
-    let palette: FreshLiveRoundPalette
-
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .buttonStyle(.glass)
-                .tint(palette.accent)
-        } else {
-            content
-                .buttonStyle(.bordered)
-                .tint(palette.accent)
-        }
     }
 }
 
@@ -2855,1027 +1743,191 @@ private extension LiveRoundState.MapCoordinate {
     }
 }
 
-private struct FreshLiveRoundClubLauncherFramePreferenceKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        let next = nextValue()
-        if next != .zero {
-            value = next
-        }
-    }
-}
-
-private struct FreshLiveRoundClubWheelOverlay: View {
-    @ObservedObject var state: LiveRoundState
-    let anchorFrame: CGRect
-    let safeAreaInsets: EdgeInsets
-    let containerSize: CGSize
-    let palette: FreshLiveRoundPalette
-
-    @State private var previewClubName: String?
-    @State private var hasAnimatedIn = false
-    @State private var lastHoveredClubName: String?
-
-    private let motion = FreshLiveRoundClubWheelMotion.standard
-    private let hoverHaptics = UISelectionFeedbackGenerator()
-    private let commitHaptics = UIImpactFeedbackGenerator(style: .medium)
-    private let toggleHaptics = UIImpactFeedbackGenerator(style: .soft)
-
-    var body: some View {
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: anchorFrame,
-            safeAreaInsets: safeAreaInsets,
-            containerSize: containerSize,
-            entryCount: state.clubWheelEntries.count
-        )
-        let center = layout.center
-        let activeEntry = resolvedEntry(named: previewClubName ?? state.selectedClubName)
-        let selectedIndex = state.clubWheelEntries.firstIndex(where: { $0.clubName == state.selectedClubName }) ?? 0
-        let isPreviewing = previewClubName != nil
-        let isAutoEnabled = state.isClubAutoRecommendationEnabled
-
-        ZStack {
-            palette.scrim
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .opacity(hasAnimatedIn ? 1 : 0)
-                .animation(.easeOut(duration: 0.18), value: hasAnimatedIn)
-                .onTapGesture {
-                    state.dismissClubWheel()
-                }
-
-            // Soft radial backdrop. Sits between the flat scrim and the
-            // chrome circle so the wheel reads as a focal "puck" lifted
-            // off the rest of the canvas instead of dissolving into the
-            // dimmed map. The gradient stops are `wheelBackdrop ->
-            // half-strength -> .clear`, so the dimming is concentrated
-            // under the wheel and feathers seamlessly back into the
-            // surrounding scrim. The chrome's ultraThinMaterial reads
-            // through this darker patch to pick up extra contrast,
-            // which is what gives the wheel its "lifted" feel.
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: palette.wheelBackdrop, location: 0.0),
-                            .init(color: palette.wheelBackdrop.opacity(0.6), location: 0.55),
-                            .init(color: .clear, location: 1.0)
-                        ]),
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: layout.outerRadius * 1.65
-                    )
-                )
-                .frame(
-                    width: layout.outerRadius * 3.3,
-                    height: layout.outerRadius * 3.3
-                )
-                .position(center)
-                .allowsHitTesting(false)
-                .opacity(hasAnimatedIn ? 1 : 0)
-                .scaleEffect(hasAnimatedIn ? 1 : 0.85)
-                .animation(.easeOut(duration: 0.24), value: hasAnimatedIn)
-
-            // Auto / Manual toggle. We render this *outside* the wheel's
-            // drag-gesture container (below the chrome circle) so its tap
-            // target isn't intercepted by the radial hover-select drag,
-            // and so it visually reads as a global mode chip rather than a
-            // 13th club spoke. Pinning it below the wheel keeps the top
-            // spoke clear and gives the toggle a stable anchor that
-            // doesn't compete with the entry tiles for vertical real
-            // estate.
-            FreshLiveRoundClubWheelAutoToggle(
-                isEnabled: isAutoEnabled,
-                palette: palette
-            ) {
-                toggleHaptics.impactOccurred(intensity: 0.65)
-                state.toggleClubAutoRecommendation()
-            }
-            .position(
-                x: center.x,
-                y: min(
-                    containerSize.height - safeAreaInsets.bottom - 32,
-                    center.y + layout.outerRadius + 52
-                )
-            )
-            .opacity(hasAnimatedIn ? 1 : 0)
-            .scaleEffect(hasAnimatedIn ? 1 : 0.92)
-            .animation(.spring(response: 0.3, dampingFraction: 0.86).delay(0.02), value: hasAnimatedIn)
-            .zIndex(2)
-
-            ZStack {
-                ZStack {
-                    // Single material disc with a tinted veil and a hairline
-                    // edge. The previous design stacked a thick "plate" ring
-                    // (24pt-wide stroke at the orbit diameter) on top of the
-                    // chrome, which fought the entry tiles for visual
-                    // weight. Letting the chrome read as a clean lens lets
-                    // the spokes and the centre hub do the talking.
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                    Circle()
-                        .fill(palette.chromeTint)
-                    Circle()
-                        .stroke(palette.wheelRingStroke, lineWidth: 1)
-                    // A faint dashed orbit gives the wheel a sense of
-                    // rotation without competing with the tiles.
-                    Circle()
-                        .stroke(
-                            palette.wheelRingStroke.opacity(0.5),
-                            style: StrokeStyle(lineWidth: 0.75, dash: [2, 5])
-                        )
-                        .frame(width: layout.orbitRingDiameter, height: layout.orbitRingDiameter)
-                }
-                .frame(width: layout.chromeDiameter, height: layout.chromeDiameter)
-                .position(center)
-                .scaleEffect(hasAnimatedIn ? 1 : 0.88)
-                .opacity(hasAnimatedIn ? 1 : 0)
-                .animation(.spring(response: 0.26, dampingFraction: 0.88), value: hasAnimatedIn)
-
-                ForEach(Array(state.clubWheelEntries.enumerated()), id: \.element.id) { index, entry in
-                    let isSelected = entry.clubName == activeEntry.clubName
-                    let entryScale: CGFloat = {
-                        if isSelected && entry.isRecommended { return motion.recommendedScale }
-                        if isSelected { return motion.selectedScale }
-                        if entry.isRecommended { return motion.recommendedScale * 0.94 }
-                        return 1
-                    }()
-                    // Selected (and "REC") tiles must paint above their
-                    // neighbours: their scale-up overlaps adjacent spokes
-                    // and, without an explicit zIndex bump, MapKit's
-                    // ForEach sibling order would let the next-clockwise
-                    // tile clip the selected one's shadow / highlight.
-                    let entryZIndex: Double = {
-                        if isSelected { return 3 }
-                        if entry.isRecommended { return 2 }
-                        return 1
-                    }()
-
-                    FreshLiveRoundClubWheelEntryView(
-                        entry: entry,
-                        isSelected: isSelected,
-                        isPutterMode: state.isClubWheelInPutterMode,
-                        isAutoRecommendationEnabled: isAutoEnabled,
-                        distanceUnit: state.distanceUnit,
-                        palette: palette
-                    )
-                        .frame(width: layout.entrySize.width, height: layout.entrySize.height)
-                        .position(
-                            layout.entryPosition(
-                                for: index,
-                                count: state.clubWheelEntries.count,
-                                selectedIndex: selectedIndex,
-                                anchorFrame: anchorFrame
-                            )
-                        )
-                        .opacity(hasAnimatedIn ? 1 : 0)
-                        .scaleEffect(hasAnimatedIn ? entryScale : motion.entryBaseScale)
-                        .zIndex(entryZIndex)
-                        .animation(
-                            .spring(response: 0.32, dampingFraction: 0.84)
-                                .delay(Double(index) * motion.entryDelayStep),
-                            value: hasAnimatedIn
-                        )
-                        .animation(.spring(response: 0.22, dampingFraction: 0.86), value: isSelected)
-                        .onTapGesture {
-                            commitHaptics.impactOccurred(intensity: 0.7)
-                            state.selectClubFromWheel(named: entry.clubName)
-                        }
-                }
-
-                FreshLiveRoundClubWheelCenterView(
-                    entry: activeEntry,
-                    targetDistanceMeters: state.displayedPinDistanceMeters,
-                    playsLikeMeters: state.displayedPlaysLikeDistanceMeters,
-                    recommendedClubName: state.recommendedClubName,
-                    isPutterMode: state.isClubWheelInPutterMode,
-                    isAutoRecommendationEnabled: isAutoEnabled,
-                    isPreviewing: isPreviewing,
-                    distanceUnit: state.distanceUnit,
-                    palette: palette
-                )
-                    .frame(width: 132, height: 132)
-                    .position(center)
-                    .scaleEffect(hasAnimatedIn ? 1 : 0.9)
-                    .opacity(hasAnimatedIn ? 1 : 0)
-                    .animation(.spring(response: 0.28, dampingFraction: 0.88).delay(0.04), value: hasAnimatedIn)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0, coordinateSpace: .named("FreshLiveRoundScreenSpace"))
-                    .onChanged { value in
-                        // Hover-select only engages when the *touch started*
-                        // inside the wheel's hit ring. Drags that originate
-                        // on the scrim, the toggle pill, or any other
-                        // off-wheel area must be ignored — otherwise
-                        // sweeping a finger from the edge of the screen
-                        // into the wheel would randomly commit a club on
-                        // release.
-                        guard isPointInsideWheel(value.startLocation, center: center, layout: layout) else {
-                            return
-                        }
-                        // Pass the previously hovered club so the geometry
-                        // helper can apply angular hysteresis. Without this
-                        // an accidental drift past a sector boundary would
-                        // immediately flip the selection to the adjacent
-                        // spoke (often the previously-selected one at the
-                        // top of the rotated wheel), which felt jittery.
-                        let hovered = hoveredClubName(
-                            for: value.location,
-                            center: center,
-                            layout: layout,
-                            previousHoveredClubName: lastHoveredClubName
-                        )
-                        if hovered != lastHoveredClubName {
-                            // Only fire selection haptic when crossing INTO a
-                            // segment, not when sliding back into the dead zone.
-                            if hovered != nil {
-                                hoverHaptics.selectionChanged()
-                                hoverHaptics.prepare()
-                            }
-                            lastHoveredClubName = hovered
-                        }
-                        previewClubName = hovered
-                    }
-                    .onEnded { value in
-                        // Capture the final hovered club *before* clearing
-                        // the gesture-tracking state so the hysteresis
-                        // benefit applies on commit too — otherwise a drift
-                        // past the boundary on release could pick a
-                        // neighbour the player never visually engaged.
-                        let finalHover: String? = {
-                            guard isPointInsideWheel(value.startLocation, center: center, layout: layout) else {
-                                return nil
-                            }
-                            return hoveredClubName(
-                                for: value.location,
-                                center: center,
-                                layout: layout,
-                                previousHoveredClubName: lastHoveredClubName
-                            )
-                        }()
-
-                        previewClubName = nil
-                        lastHoveredClubName = nil
-
-                        // Off-wheel touches: if the player barely moved the
-                        // finger we treat it as a "tap to dismiss" on the
-                        // scrim. If they dragged any meaningful distance,
-                        // we silently swallow the gesture — they were
-                        // panning a finger into the wheel mid-drag, not
-                        // selecting from it.
-                        guard isPointInsideWheel(value.startLocation, center: center, layout: layout) else {
-                            let translation = hypot(value.translation.width, value.translation.height)
-                            if translation < FreshLiveRoundClubWheelOverlay.tapDismissTranslationThreshold {
-                                state.dismissClubWheel()
-                            }
-                            return
-                        }
-
-                        if let finalHover {
-                            commitHaptics.impactOccurred(intensity: 0.85)
-                            state.selectClubFromWheel(named: finalHover)
-                        } else {
-                            state.dismissClubWheel()
-                        }
-                    }
-            )
-        }
-        .onAppear {
-            hoverHaptics.prepare()
-            commitHaptics.prepare()
-            toggleHaptics.prepare()
-            hasAnimatedIn = true
-        }
-        .onDisappear {
-            previewClubName = nil
-            lastHoveredClubName = nil
-            hasAnimatedIn = false
-        }
-    }
-
-    private func hoveredClubName(
-        for location: CGPoint,
-        center: CGPoint,
-        layout: FreshLiveRoundClubWheelLayout,
-        previousHoveredClubName: String? = nil
-    ) -> String? {
-        let entries = state.clubWheelEntries
-        let selectedIndex = entries.firstIndex(where: { $0.clubName == state.selectedClubName }) ?? 0
-        return FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: location,
-            center: center,
-            clubNames: entries.map(\.clubName),
-            segmentDistance: layout.segmentDistance,
-            entrySize: layout.entrySize,
-            innerSelectionRadius: layout.innerSelectionRadius,
-            selectedIndex: selectedIndex,
-            previousHoveredClubName: previousHoveredClubName
-        )
-    }
-
-    /// Whether a touch lands inside the wheel's *visible* chrome. We
-    /// deliberately clamp to `outerRadius` (the chrome's drawn edge)
-    /// rather than the wider entry-corner envelope so drags that look
-    /// like they started "outside the wheel" do nothing — the user's
-    /// mental model is that the chrome circle is the wheel, even if the
-    /// spoke tiles overhang it slightly. Direct taps on overhanging
-    /// entry corners still work because each entry has its own
-    /// `.onTapGesture`.
-    private func isPointInsideWheel(_ location: CGPoint, center: CGPoint, layout: FreshLiveRoundClubWheelLayout) -> Bool {
-        let dx = location.x - center.x
-        let dy = location.y - center.y
-        let distance = sqrt((dx * dx) + (dy * dy))
-        return distance <= layout.outerRadius
-    }
-
-    /// Touches with translation under this threshold are treated as taps
-    /// (so a tap on the scrim still dismisses the wheel). Anything beyond
-    /// is considered a drag-from-outside which should do nothing.
-    static let tapDismissTranslationThreshold: CGFloat = 8
-
-    private func resolvedEntry(named clubName: String) -> LiveRoundState.ClubWheelEntry {
-        state.clubWheelEntries.first(where: { $0.clubName == clubName }) ?? state.selectedClubWheelEntry
-    }
-}
-
-private struct FreshLiveRoundClubWheelEntryView: View {
-    let entry: LiveRoundState.ClubWheelEntry
-    let isSelected: Bool
-    let isPutterMode: Bool
-    /// When `false` (manual mode) we never mute entries based on relevance;
-    /// the wheel becomes a flat picker so the player can grab any club
-    /// without the UI implying it's "wrong" for the shot.
-    let isAutoRecommendationEnabled: Bool
-    let distanceUnit: DistanceUnit
-    let palette: FreshLiveRoundPalette
-
-    private var isMutedRelevance: Bool {
-        guard isAutoRecommendationEnabled else { return false }
-        switch entry.relevance {
-        case .tooLong, .tooShort, .mutedByPutterMode: return true
-        case .viable: return false
-        }
-    }
-
-    private var entryOpacity: Double {
-        // Selected entries always read at full strength so the user can see
-        // exactly what they're about to confirm. The recommended one is
-        // visually loud through its ring + scale, so it's full opacity even
-        // when relevance would otherwise mute it (which only happens when
-        // there's literally no in-range option). Manual mode disables
-        // muting outright via `isMutedRelevance`.
-        if isSelected || entry.isRecommended { return 1 }
-        return isMutedRelevance ? 0.55 : 1
-    }
-
-    private var fillForBackground: Color {
-        if isSelected { return palette.accent }
-        return palette.wheelEntryFill
-    }
-
-    private var primaryTextColor: Color {
-        isSelected ? palette.accentForeground : palette.primaryTextColor
-    }
-
-    private var secondaryTextColor: Color {
-        isSelected ? palette.accentForeground.opacity(0.86) : palette.secondaryTextColor
-    }
-
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 3) {
-                Text(entry.clubName)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(primaryTextColor)
-                    .minimumScaleFactor(0.75)
-                    .lineLimit(1)
-
-                gapOrCarryLabel
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-
-            if entry.isRecommended {
-                recommendedBadge
-                    .padding(5)
-            } else if !isSelected, entry.carrySource == .logged {
-                // Only render the source dot for *logged* carries — the
-                // baseline-vs-logged distinction is the whole point of the
-                // chip, so an empty/outlined dot for baseline data
-                // doubled as visual noise without conveying anything new.
-                sourceDot
-                    .padding(.trailing, 7)
-                    .padding(.top, 7)
-            }
-        }
-        .background(
-            ZStack {
-                // Selected: solid accent. Unselected: a quiet glass tile so
-                // the chrome's material reads through. Removing the prior
-                // screen-blend gradient drops a noisy highlight that
-                // doubled up with the chrome's own glass shimmer.
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(palette.accent)
-                } else {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(palette.wheelEntryFill.opacity(0.55))
-                }
-            }
-        )
-        .overlay {
-            // The recommendation halo lives outside the fill so a
-            // simultaneously-selected-and-recommended tile reads as
-            // "filled with a halo" — a single clear "yes" signal.
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(
-                    entry.isRecommended ? palette.accent : (isSelected ? palette.accent.opacity(0.35) : palette.wheelRingStroke.opacity(0.85)),
-                    lineWidth: entry.isRecommended ? 2 : 0.75
-                )
-        }
-        .opacity(entryOpacity)
-        .shadow(color: .black.opacity(isSelected ? 0.18 : 0.06), radius: isSelected ? 14 : 6, y: isSelected ? 8 : 4)
-    }
-
-    @ViewBuilder
-    private var gapOrCarryLabel: some View {
-        if isPutterMode && entry.clubName.caseInsensitiveCompare("Putter") != .orderedSame {
-            // In auto putter mode the gap is meaningless; just keep the
-            // non-putter entries visually quiet without trying to surface a
-            // number. Manual mode never enters putter mode, so this branch
-            // is only reachable when the assist is on.
-            EmptyView()
-        } else if isAutoRecommendationEnabled,
-                  let gap = entry.gapToTargetMeters,
-                  !isPutterMode {
-            // Auto mode + gap data: show the signed delta to plays-like.
-            HStack(spacing: 2) {
-                Image(systemName: gapIconName(for: gap))
-                    .font(.system(size: 9, weight: .bold))
-                Text(formattedGap(gap))
-                    .font(.system(size: 11, weight: .semibold))
-                    .monospacedDigit()
-            }
-            .foregroundStyle(gapTextColor(for: gap))
-        } else {
-            // Manual mode (or no target distance available): show plain carry.
-            // No "gap to target" framing because in manual mode the player
-            // is making their own judgement about distance.
-            Text(distanceUnit.shortLabel(forMeters: entry.displayCarryMeters))
-                .font(.system(size: 11, weight: .semibold))
-                .monospacedDigit()
-                .foregroundStyle(secondaryTextColor)
-        }
-    }
-
-    private var recommendedBadge: some View {
-        Text("REC")
-            .font(.system(size: 9, weight: .heavy))
-            .tracking(0.7)
-            .foregroundStyle(palette.accentForeground)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2.5)
-            .background(palette.accent, in: Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(palette.accentForeground.opacity(0.18), lineWidth: 0.5)
-            )
-    }
-
-    /// A 5pt accent dot in the corner — appears only for logged carries
-    /// to silently flag "this number came from your own shots".
-    private var sourceDot: some View {
-        Circle()
-            .fill(palette.accent)
-            .frame(width: 5, height: 5)
-            .opacity(0.85)
-            .accessibilityHidden(true)
-    }
-
-    private func gapIconName(for gap: Int) -> String {
-        if abs(gap) <= 2 { return "checkmark" }
-        return gap > 0 ? "arrow.up" : "arrow.down"
-    }
-
-    private func formattedGap(_ gapMeters: Int) -> String {
-        if abs(gapMeters) <= 2 { return "On" }
-        let absMeters = abs(gapMeters)
-        let n = distanceUnit.scalarValue(fromMeters: absMeters)
-        let suffix = distanceUnit.shortSuffix
-        return gapMeters > 0 ? "+\(n)\(suffix)" : "-\(n)\(suffix)"
-    }
-
-    private func gapTextColor(for gap: Int) -> Color {
-        if isSelected { return palette.accentForeground.opacity(0.92) }
-        if abs(gap) <= 2 { return palette.accent }
-        // We don't try to use semantic system colors here so the wheel reads
-        // consistently against satellite imagery; we rely on the muted
-        // opacity + arrow direction to convey "long" vs "short".
-        return palette.secondaryTextColor
-    }
-}
-
-private struct FreshLiveRoundClubWheelCenterView: View {
-    let entry: LiveRoundState.ClubWheelEntry
-    let targetDistanceMeters: Int
-    let playsLikeMeters: Int
-    let recommendedClubName: String?
-    let isPutterMode: Bool
-    /// When `false` we drop the REC chip and the auto putter-mode content
-    /// in favour of a quiet "manual" hint, since both are recommendations
-    /// and the user has explicitly opted out of being told what to hit.
-    let isAutoRecommendationEnabled: Bool
-    /// True while the user is dragging and previewing a different club. We
-    /// dim the recommendation row slightly in that mode so the eye stays on
-    /// the entry chip the finger is hovering over.
-    let isPreviewing: Bool
-    let distanceUnit: DistanceUnit
-    let palette: FreshLiveRoundPalette
-
-    private var hasPlaysLikeAdjustment: Bool {
-        playsLikeMeters > 0 && playsLikeMeters != targetDistanceMeters
-    }
-
-    var body: some View {
-        VStack(spacing: 4) {
-            if isPutterMode {
-                putterModeContent
-            } else {
-                liveContent
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 6)
-        .freshGlass(Circle(), palette: palette, tint: palette.wheelCenterFill)
-        .shadow(color: palette.shadowColor, radius: 14, y: 8)
-    }
-
-    @ViewBuilder
-    private var liveContent: some View {
-        Text("PIN")
-            .font(.system(size: 10, weight: .heavy))
-            .tracking(0.8)
-            .foregroundStyle(palette.secondaryTextColor)
-
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text("\(distanceUnit.scalarValue(fromMeters: targetDistanceMeters))")
-                .font(.system(size: 32, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(palette.primaryTextColor)
-            Text(distanceUnit.shortSuffix)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(palette.secondaryTextColor)
-        }
-
-        if hasPlaysLikeAdjustment {
-            Text("Plays \(distanceUnit.shortLabel(forMeters: playsLikeMeters))")
-                .font(.caption2.weight(.semibold))
-                .monospacedDigit()
-                .foregroundStyle(palette.tertiaryTextColor)
-        }
-
-        if isPreviewing {
-            previewingChip
-                .padding(.top, 2)
-        } else if isAutoRecommendationEnabled, let recommendedClubName {
-            recommendationChip(clubName: recommendedClubName)
-                .padding(.top, 2)
-        } else if !isAutoRecommendationEnabled {
-            manualHintChip
-                .padding(.top, 2)
-        }
-    }
-
-    @ViewBuilder
-    private var putterModeContent: some View {
-        Image(systemName: "flag.checkered")
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(palette.accent)
-
-        Text("On the Green")
-            .font(.subheadline.weight(.bold))
-            .foregroundStyle(palette.primaryTextColor)
-
-        Text("Putter recommended")
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(palette.secondaryTextColor)
-            .multilineTextAlignment(.center)
-    }
-
-    private func recommendationChip(clubName: String) -> some View {
-        HStack(spacing: 4) {
-            Text("REC")
-                .font(.system(size: 9, weight: .heavy))
-                .tracking(0.6)
-                .foregroundStyle(palette.accentForeground)
-                .padding(.horizontal, 4)
-                .padding(.vertical, 1)
-                .background(palette.accent, in: Capsule())
-
-            Text(clubName)
-                .font(.caption.weight(.bold))
-                .foregroundStyle(palette.primaryTextColor)
-        }
-    }
-
-    /// Quiet "you're driving" indicator surfaced inside the hub when the
-    /// user has manual mode on. Mirrors the `recommendationChip` slot so
-    /// the layout doesn't bounce when the user toggles the assist.
-    private var manualHintChip: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "hand.tap.fill")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(palette.tertiaryTextColor)
-            Text("Pick any club")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(palette.secondaryTextColor)
-        }
-    }
-
-    private var previewingChip: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "hand.point.up.left.fill")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(palette.tertiaryTextColor)
-            Text(entry.clubName)
-                .font(.caption.weight(.bold))
-                .foregroundStyle(palette.primaryTextColor)
-        }
-    }
-}
-
-/// Top-of-wheel chip that flips between auto-recommendation and manual
-/// modes. Lives outside the wheel's drag-gesture container so it can
-/// receive its own taps without competing with the radial hover-select.
-private struct FreshLiveRoundClubWheelAutoToggle: View {
-    let isEnabled: Bool
-    let palette: FreshLiveRoundPalette
-    let onToggle: () -> Void
-
-    var body: some View {
-        Button(action: onToggle) {
-            HStack(spacing: 8) {
-                Image(systemName: isEnabled ? "sparkles" : "hand.tap.fill")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(isEnabled ? palette.accentForeground : palette.primaryTextColor)
-                Text(isEnabled ? "Auto Club" : "Manual")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isEnabled ? palette.accentForeground : palette.primaryTextColor)
-                    .tracking(0.3)
-                Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(isEnabled ? palette.accentForeground.opacity(0.92) : palette.tertiaryTextColor)
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 11)
-            .background(
-                Group {
-                    if isEnabled {
-                        Capsule().fill(palette.accent)
-                    } else {
-                        Capsule()
-                            .fill(.ultraThinMaterial)
-                            .overlay(Capsule().fill(palette.wheelEntryFill))
-                    }
-                }
-            )
-            .overlay(
-                Capsule()
-                    .stroke(isEnabled ? palette.accent.opacity(0.4) : palette.border, lineWidth: 1)
-            )
-            .shadow(color: palette.shadowColor, radius: 8, y: 5)
-        }
-        .buttonStyle(.plain)
-        .contentShape(Capsule())
-        .accessibilityLabel(isEnabled ? "Auto club selection on" : "Manual club selection")
-        .accessibilityHint("Double tap to switch between auto-recommended and manual club selection.")
-    }
-}
-
+/// The hole index: every hole of the course as a page to look ahead or back at.
+/// Every hole of the round on one page: the running totals, then each hole
+/// with its par, what's on the card and how it was played.
 private struct FreshLiveRoundHoleInspectorSheet: View {
     @ObservedObject var state: LiveRoundState
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
 
     var body: some View {
         NavigationStack {
-            List {
-                if state.roundConfirmedHoleCount > 0 {
-                    Section {
-                        roundTotalsStrip
-                            .listRowBackground(palette.secondaryFill)
-                            .listRowSeparator(.hidden)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    if state.roundConfirmedHoleCount > 0 {
+                        roundTotals
                     }
-                }
-
-                Section {
-                    ForEach(state.holeInspectionEntries) { entry in
-                        Button {
-                            if let entryIndex = state.holeInspectionEntries.firstIndex(where: { $0.id == entry.id }) {
-                                state.inspectHole(at: entryIndex)
-                            }
-                        } label: {
-                            holeInspectionRow(for: entry)
+                    BookGroup("Holes") {
+                        ForEach(Array(state.holeInspectionEntries.enumerated()), id: \.element.id) { index, entry in
+                            Button { state.inspectHole(at: index) } label: { row(for: entry) }
+                                .buttonStyle(BookRowButtonStyle())
+                                .accessibilityHint("Shows this hole on the map")
                         }
-                        .buttonStyle(.plain)
-                        .listRowBackground(palette.secondaryFill)
-                        .listRowSeparatorTint(palette.border)
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
-            .freshRoundListChrome(palette: palette)
-            .navigationTitle("Inspect Holes")
+            .bookSheetChrome()
+            .navigationTitle("Hole index")
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
+        .presentationBackground(Book.paper)
     }
 
-    private var roundTotalsStrip: some View {
+    private var roundTotals: some View {
         let firs = state.roundFairwaysInRegulation
         let girs = state.roundGreensInRegulation
-        return HStack(spacing: ShellTokens.Spacing.x12) {
-            roundTotalsCell(label: "Score", value: state.roundScoreToParDisplay)
-            roundTotalsDivider
-            roundTotalsCell(
-                label: "FIR",
-                value: firs.applicable > 0 ? "\(firs.hit)/\(firs.applicable)" : "--"
-            )
-            roundTotalsDivider
-            roundTotalsCell(
-                label: "GIR",
-                value: girs.applicable > 0 ? "\(girs.hit)/\(girs.applicable)" : "--"
-            )
-            roundTotalsDivider
-            roundTotalsCell(label: "Putts", value: "\(state.roundTotalPutts)")
+        return HStack(spacing: 0) {
+            figure(state.roundScoreToParDisplay, label: "To par")
+            divider
+            figure(firs.applicable > 0 ? "\(firs.hit)/\(firs.applicable)" : "–", label: "Fairways")
+            divider
+            figure(girs.applicable > 0 ? "\(girs.hit)/\(girs.applicable)" : "–", label: "Greens")
+            divider
+            figure("\(state.roundTotalPutts)", label: "Putts")
         }
-        .padding(.vertical, ShellTokens.Spacing.x4)
+        .padding(.vertical, 12)
+        .background(Book.leaf, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Book.rule, lineWidth: 0.5))
     }
 
-    private func roundTotalsCell(label: String, value: String) -> some View {
+    private func figure(_ value: String, label: String) -> some View {
         VStack(spacing: 2) {
-            Text(value)
-                .font(.headline.weight(.semibold))
-                .monospacedDigit()
-                .foregroundStyle(palette.primaryTextColor)
-            Text(label.uppercased())
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(palette.secondaryTextColor)
+            Text(value).font(Book.Typeface.figure)
+            Text(label.uppercased()).font(Book.Typeface.noteSmall).foregroundStyle(Book.pencil)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
-    private var roundTotalsDivider: some View {
-        Rectangle()
-            .fill(palette.border)
-            .frame(width: 1, height: 28)
-            .opacity(0.7)
+    private var divider: some View {
+        Rectangle().fill(Book.rule).frame(width: 1, height: 34).accessibilityHidden(true)
     }
 
-    private func holeInspectionRow(for entry: LiveRoundState.HoleInspectionEntry) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x12) {
-            VStack(alignment: .leading, spacing: 4) {
+    private func row(for entry: LiveRoundState.HoleInspectionEntry) -> some View {
+        HStack(spacing: 14) {
+            Text(String(format: "%02d", entry.number))
+                .font(.system(size: 26, weight: .bold).width(.condensed))
+                .monospacedDigit()
+                .frame(width: 36, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
-                    Text("Hole \(entry.number)")
-                        .font(.headline.weight(.semibold))
-                    Text("Par \(entry.par)")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(palette.secondaryTextColor)
-                    if let scoreToPar = scoreToParBadge(for: entry) {
-                        Text(scoreToPar.label)
-                            .font(.caption.weight(.bold))
-                            .monospacedDigit()
-                            .foregroundStyle(scoreToPar.foreground)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(scoreToPar.background, in: Capsule(style: .continuous))
+                    Text("Par \(entry.par)").font(.body.weight(.medium))
+                    if entry.isActive {
+                        Text("PLAYING").font(Book.Typeface.noteSmall).foregroundStyle(Book.stamp)
+                    } else if entry.isDisplayed {
+                        Text("ON THE MAP").font(Book.Typeface.noteSmall).foregroundStyle(Book.stamp)
                     }
                 }
-
-                Text(scoreSubtitle(for: entry))
-                    .font(.subheadline)
-                    .foregroundStyle(palette.secondaryTextColor)
-
-                if entry.score != nil || entry.putts != nil
-                    || entry.fairwayHit != nil || entry.greenInRegulation != nil {
-                    statRowChips(for: entry)
-                }
+                Text(detail(for: entry)).font(.caption).foregroundStyle(Book.pencil)
             }
-
-            Spacer()
-
-            if entry.isDisplayed {
-                Image(systemName: entry.isActive ? "location.fill" : "eye.fill")
-                    .foregroundStyle(palette.accent)
-            }
+            Spacer(minLength: 8)
+            ScoreMark(score: entry.score, par: entry.par, size: 32)
+                .opacity(entry.isConfirmed || entry.score == nil ? 1 : 0.55)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 14)
+        .frame(minHeight: 58)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 
-    private func statRowChips(for entry: LiveRoundState.HoleInspectionEntry) -> some View {
-        HStack(spacing: 6) {
-            if let fir = entry.fairwayHit {
-                statChip(
-                    title: "FIR",
-                    systemImage: fir ? "checkmark" : "xmark",
-                    isHit: fir
-                )
-            }
-            if let gir = entry.greenInRegulation {
-                statChip(
-                    title: "GIR",
-                    systemImage: gir ? "checkmark" : "xmark",
-                    isHit: gir
-                )
-            }
-            if let putts = entry.putts {
-                statChip(
-                    title: "Putts \(putts)",
-                    systemImage: "circle.fill",
-                    isHit: nil
-                )
-            }
+    private func detail(for entry: LiveRoundState.HoleInspectionEntry) -> String {
+        guard entry.score != nil else {
+            return entry.isActive ? "Your hole now" : "Not played yet"
         }
-        .padding(.top, 2)
-    }
-
-    /// `isHit` semantics: `true` -> hit (green tint), `false` -> miss (subtle
-    /// red tint), `nil` -> neutral count chip (e.g. putts).
-    private func statChip(title: String, systemImage: String, isHit: Bool?) -> some View {
-        let foreground: Color
-        let background: Color
-        switch isHit {
-        case true?:
-            foreground = palette.accent
-            background = palette.accent.opacity(0.18)
-        case false?:
-            foreground = Color(red: 0.86, green: 0.42, blue: 0.42)
-            background = Color(red: 0.86, green: 0.42, blue: 0.42).opacity(0.18)
-        case nil:
-            foreground = palette.primaryTextColor
-            background = palette.tertiaryFill
+        var parts: [String] = []
+        if let fairway = entry.fairwayHit { parts.append(fairway ? "Fairway" : "Missed fairway") }
+        if let green = entry.greenInRegulation { parts.append(green ? "Green in reg." : "Missed green") }
+        if let putts = entry.putts { parts.append("\(putts) putt\(putts == 1 ? "" : "s")") }
+        if entry.wasEditedAfterConfirmation {
+            parts.append("Corrected")
+        } else if !entry.isConfirmed {
+            parts.append("Not on the card yet")
         }
-        return HStack(spacing: 4) {
-            Image(systemName: systemImage)
-                .font(.caption2.weight(.bold))
-            Text(title)
-                .font(.caption.weight(.semibold))
-        }
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
-        .foregroundStyle(foreground)
-        .background(background, in: Capsule(style: .continuous))
-    }
-
-    private func scoreToParBadge(for entry: LiveRoundState.HoleInspectionEntry) -> (label: String, foreground: Color, background: Color)? {
-        guard let score = entry.score else { return nil }
-        let delta = score - entry.par
-        let label: String
-        if delta == 0 { label = "E" }
-        else if delta > 0 { label = "+\(delta)" }
-        else { label = "\(delta)" }
-
-        let foreground: Color
-        let background: Color
-        if delta < 0 {
-            foreground = Color(red: 0.18, green: 0.58, blue: 0.32)
-            background = foreground.opacity(0.18)
-        } else if delta > 0 {
-            foreground = Color(red: 0.86, green: 0.42, blue: 0.42)
-            background = foreground.opacity(0.18)
-        } else {
-            foreground = palette.primaryTextColor
-            background = palette.tertiaryFill
-        }
-        return (label, foreground, background)
-    }
-
-    private func scoreSubtitle(for entry: LiveRoundState.HoleInspectionEntry) -> String {
-        if let score = entry.score {
-            if entry.wasEditedAfterConfirmation {
-                return "Score \(score) • edited after confirmation"
-            }
-            return entry.isConfirmed ? "Score \(score) • confirmed" : "Score \(score)"
-        }
-
-        if entry.isActive {
-            return "Current live hole"
-        }
-
-        return "No score recorded yet"
+        return parts.isEmpty ? "On the card" : parts.joined(separator: " · ")
     }
 }
 
+/// Correcting the record for the hole on the map, without leaving the round.
 private struct FreshLiveRoundCurrentHoleEditorSheet: View {
     @ObservedObject var state: LiveRoundState
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     @State private var draft: LiveRoundState.CurrentHoleEditDraft
-
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
 
     init(state: LiveRoundState) {
         self.state = state
         _draft = State(initialValue: state.makeCurrentHoleEditDraft())
     }
 
+    private var par: Int { state.displayedHoleSession.par }
+    /// The hole being played and not yet on the card: the count is a running tally, not a score.
+    private var isHoleInPlay: Bool { state.isDisplayedHoleLive && !state.displayedHoleSession.isConfirmed }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                        Text("Hole \(state.displayedHoleNumber) • Par \(state.displayedHoleSession.par)")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(palette.accent)
-                        Text("Edit Current Hole")
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(palette.primaryTextColor)
-                        Text("Correct score, putts, penalties, drops, and notes without leaving the live round.")
-                            .font(.subheadline)
-                            .foregroundStyle(palette.secondaryTextColor)
+                VStack(alignment: .leading, spacing: 24) {
+                    HStack(alignment: .center, spacing: 14) {
+                        Text(String(format: "%02d", state.displayedHoleNumber))
+                            .font(Book.Typeface.folio)
+                            .monospacedDigit()
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Par \(par)").font(Book.Typeface.heading)
+                            if isHoleInPlay {
+                                Text("\(draft.score) so far · still in play")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Book.pencil)
+                            } else {
+                                Text(ScoreMark.spoken(score: draft.score, par: par).components(separatedBy: ", ").last?.capitalized ?? "")
+                                    .font(.subheadline)
+                                    .foregroundStyle(draft.score < par ? Book.flag : Book.pencil)
+                            }
+                        }
+                        Spacer()
+                        if !isHoleInPlay {
+                            ScoreMark(score: draft.score, par: par, size: 56)
+                                .animation(.snappy(duration: 0.2), value: draft.score)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+
+                    VStack(spacing: 0) {
+                        BookHairline()
+                        BookCounter(title: "Strokes", detail: "Includes putts and penalties", value: draft.score, range: 1...20, prominent: true) { draft.score = $0 }
+                        BookHairline()
+                        BookCounter(title: "Putts", value: draft.putts, range: 0...10) { draft.putts = $0 }
+                        BookHairline()
+                        BookCounter(title: "Penalties", value: draft.penaltyCount, range: 0...10) { draft.penaltyCount = $0 }
+                        BookHairline()
+                        BookCounter(title: "Drops", value: draft.dropCount, range: 0...10) { draft.dropCount = $0 }
+                        BookHairline()
                     }
 
-                    editorStepperRow(
-                        title: "Score",
-                        value: draft.score,
-                        range: 1...20,
-                        setValue: { draft.score = $0 }
-                    )
-
-                    editorStepperRow(
-                        title: "Putts",
-                        value: draft.putts,
-                        range: 0...10,
-                        setValue: { draft.putts = $0 }
-                    )
-
-                    HStack(spacing: ShellTokens.Spacing.x12) {
-                        editorStepperRow(
-                            title: "Penalties",
-                            value: draft.penaltyCount,
-                            range: 0...10,
-                            setValue: { draft.penaltyCount = $0 }
-                        )
-
-                        editorStepperRow(
-                            title: "Drops",
-                            value: draft.dropCount,
-                            range: 0...10,
-                            setValue: { draft.dropCount = $0 }
-                        )
-                    }
-
-                    editorTextField(
-                        title: "Shot Outcomes",
-                        prompt: "Outcome summary for this hole",
-                        text: Binding(
-                            get: { draft.shotOutcomeSummary },
-                            set: { draft.shotOutcomeSummary = $0 }
-                        )
-                    )
-
-                    editorTextField(
-                        title: "Club Corrections",
-                        prompt: "Correct clubs used if needed",
-                        text: Binding(
-                            get: { draft.clubCorrectionSummary },
-                            set: { draft.clubCorrectionSummary = $0 }
-                        )
-                    )
-
-                    editorTextField(
-                        title: "Notes",
-                        prompt: "Optional notes for this hole",
-                        text: Binding(
-                            get: { draft.notes },
-                            set: { draft.notes = $0 }
-                        )
-                    )
+                    noteLine("How it played", prompt: "Where the shots finished", text: Binding(
+                        get: { draft.shotOutcomeSummary },
+                        set: { draft.shotOutcomeSummary = $0 }
+                    ))
+                    noteLine("Club corrections", prompt: "Any club logged wrongly", text: Binding(
+                        get: { draft.clubCorrectionSummary },
+                        set: { draft.clubCorrectionSummary = $0 }
+                    ))
+                    noteLine("Notes", prompt: "Anything worth remembering", text: Binding(
+                        get: { draft.notes },
+                        set: { draft.notes = $0 }
+                    ))
                 }
-                .padding(ShellTokens.Spacing.x20)
-                .padding(.bottom, ShellTokens.Spacing.x24)
+                .padding(20)
+                .padding(.bottom, 16)
             }
-            .navigationTitle("Edit Current Hole")
+            .bookSheetChrome()
+            .navigationTitle("Edit hole \(state.displayedHoleNumber)")
             .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
-
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         state.applyCurrentHoleEditDraft(draft)
@@ -3885,420 +1937,230 @@ private struct FreshLiveRoundCurrentHoleEditorSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
+        .presentationDetents([.large])
+        .presentationBackground(Book.paper)
     }
 
-    private func editorStepperButton(
-        systemImage: String,
-        isEnabled: Bool,
-        isProminent: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.headline.weight(.semibold))
-                .frame(width: 42, height: 42)
-                .background(isProminent ? palette.accent : palette.tertiaryFill, in: Circle())
-                .foregroundStyle(isProminent ? palette.accentForeground : (isEnabled ? palette.primaryTextColor : palette.tertiaryTextColor))
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-
-    private func editorStepperRow(
-        title: String,
-        value: Int,
-        range: ClosedRange<Int>,
-        setValue: @escaping (Int) -> Void
-    ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                editorStepperButton(systemImage: "minus", isEnabled: value > range.lowerBound) {
-                    setValue(max(range.lowerBound, value - 1))
-                }
-
-                Text("\(value)")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(palette.primaryTextColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, ShellTokens.Spacing.x12)
-                    .background(palette.secondaryFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                editorStepperButton(systemImage: "plus", isEnabled: value < range.upperBound, isProminent: true) {
-                    setValue(min(range.upperBound, value + 1))
-                }
-            }
-        }
-    }
-
-    private func editorTextField(
-        title: String,
-        prompt: String,
-        text: Binding<String>
-    ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
+    private func noteLine(_ title: String, prompt: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            BookNote(title)
             TextField(prompt, text: text, axis: .vertical)
-                .lineLimit(3, reservesSpace: true)
-                .freshRoundInputFieldStyle(palette: palette)
+                .lineLimit(1...4)
+                .bookRuledField()
         }
     }
 }
 
+/// The hole's shots, newest first, as written in the margin of the page.
 private struct FreshLiveRoundShotHistorySheet: View {
     @ObservedObject var state: LiveRoundState
-    @Environment(\.colorScheme) private var colorScheme
 
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
-
-    var body: some View {
-        NavigationStack {
-            Group {
-                if state.displayedHoleSession.shots.isEmpty {
-                    ContentUnavailableView(
-                        "No Shots Yet",
-                        systemImage: "figure.golf",
-                        description: Text("Log a shot on this hole to build the shot history.")
-                    )
-                } else {
-                    List {
-                        Section("Hole \(state.displayedHoleNumber) • Par \(state.displayedHoleSession.par)") {
-                            ForEach(state.displayedHoleSession.shots.reversed()) { shot in
-                                shotHistoryRow(for: shot)
-                                    .padding(.vertical, 4)
-                                    .listRowBackground(palette.secondaryFill)
-                                    .listRowSeparatorTint(palette.border)
-                            }
-                        }
-                    }
-                    .freshRoundListChrome(palette: palette)
-                }
-            }
-            .navigationTitle("Shot History")
-            .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
-        }
-        .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
-    }
-
-    @ViewBuilder
-    private func shotHistoryRow(for shot: ShotEvent) -> some View {
-        let kind = state.shotHistoryEntryKind(for: shot)
-
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: ShellTokens.Spacing.x8) {
-                Text("Stroke \(shot.strokeNumber)")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-
-                Spacer(minLength: 0)
-
-                shotHistoryTrailingTag(for: shot, kind: kind)
-            }
-
-            Text(state.shotHistorySubtitle(for: shot))
-                .font(.subheadline)
-                .foregroundStyle(palette.secondaryTextColor)
-
-            if let detail = state.shotHistoryDetail(for: shot) {
-                Text(detail)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(palette.tertiaryTextColor)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func shotHistoryTrailingTag(
-        for shot: ShotEvent,
-        kind: LiveRoundState.ShotHistoryEntryKind
-    ) -> some View {
-        switch kind {
-        case .penalty:
-            HStack(spacing: 4) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.caption.weight(.semibold))
-                Text("Penalty")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .foregroundStyle(palette.accent)
-        case .putt, .shot:
-            Text(shot.clubName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.accent)
-        }
-    }
-}
-
-private struct FreshLiveRoundConditionsSheet: View {
-    @ObservedObject var state: LiveRoundState
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
+    private var shots: [ShotEvent] { state.displayedHoleSession.shots.reversed() }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                    windHeroCard
-                    temperatureCard
-                    skyCard
-                    gpsCard
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(String(format: "%02d", state.displayedHoleNumber))
+                            .font(.system(size: 34, weight: .bold).width(.condensed))
+                            .monospacedDigit()
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Par \(state.displayedHoleSession.par)").font(Book.Typeface.subheading)
+                            Text(shots.isEmpty ? "No shots logged" : "\(shots.count) shot\(shots.count == 1 ? "" : "s") logged · newest first")
+                                .font(.caption)
+                                .foregroundStyle(Book.pencil)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
 
-                    if let attribution = state.weatherAttributionText {
-                        attributionCard(attribution)
+                    if shots.isEmpty {
+                        Text("Log a shot on this hole and it's written here, with the club, where it went and what's left.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        BookGroup(ruleInset: 56) {
+                            ForEach(shots) { shot in row(for: shot) }
+                        }
                     }
                 }
-                .padding(ShellTokens.Spacing.x20)
-                .padding(.bottom, ShellTokens.Spacing.x24)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
-            .navigationTitle("Conditions")
+            .bookSheetChrome()
+            .navigationTitle("Shot history")
             .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
+        .presentationBackground(Book.paper)
     }
 
-    /// Hero card for wind. Replaces the old "Wind 12 km/h NW" list row
-    /// with a glanceable read of the components that actually matter
-    /// on course: a directional arrow rotated relative to the shot
-    /// bearing, the speed in km/h, the head/cross breakdown, and the
-    /// plays-like delta the calculator is currently applying.
-    private var windHeroCard: some View {
+    private func row(for shot: ShotEvent) -> some View {
+        let isPenalty = state.shotHistoryEntryKind(for: shot) == .penalty
+        return HStack(alignment: .top, spacing: 14) {
+            Text("\(shot.strokeNumber)")
+                .font(.system(size: 24, weight: .bold).width(.condensed))
+                .monospacedDigit()
+                .frame(width: 28, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    if isPenalty {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Book.warning)
+                    }
+                    Text(isPenalty ? "Penalty" : shot.clubName).font(.body.weight(.semibold))
+                }
+                Text(state.shotHistorySubtitle(for: shot))
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
+                if let detail = state.shotHistoryDetail(for: shot) {
+                    Text(detail).font(.caption).foregroundStyle(Book.pencil)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The day's conditions as the book notes them: wind first, then what else
+/// changes how the ball flies, and where the GPS thinks you are.
+private struct FreshLiveRoundConditionsSheet: View {
+    @ObservedObject var state: LiveRoundState
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    wind
+
+                    BookGroup("On the course", ruleInset: 50) {
+                        conditionRow(
+                            symbol: "thermometer.medium",
+                            title: "Temperature",
+                            value: state.weatherSnapshot != nil ? state.temperatureSummaryText : "Not loaded",
+                            note: state.weatherSnapshot != nil && state.playsLikeTemperatureDeltaMeters != 0
+                                ? playsLikeDeltaText(meters: state.playsLikeTemperatureDeltaMeters, suffix: " from temperature")
+                                : nil
+                        )
+                        conditionRow(symbol: state.weatherSnapshot?.symbolName ?? "cloud", title: "Sky", value: state.weatherConditionText, note: nil)
+                        conditionRow(symbol: "location", title: "GPS", value: state.playerLocationStatusText, note: nil)
+                    }
+
+                    if let attribution = state.weatherAttributionText {
+                        Text(attribution)
+                            .font(.footnote)
+                            .foregroundStyle(Book.pencil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
+            }
+            .bookSheetChrome()
+            .navigationTitle("Conditions")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Book.paper)
+    }
+
+    // MARK: Wind
+
+    private var wind: some View {
         let hasWeather = state.weatherSnapshot != nil
         let isCalm = !state.hasUsableWindReading
+        let breakdown = hasWeather ? state.windComponentBreakdownText : nil
+        let playsLike = hasWeather && state.playsLikeWindDeltaMeters != 0 ? playsLikeDeltaText(meters: state.playsLikeWindDeltaMeters) : nil
 
-        return VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            HStack(alignment: .center, spacing: ShellTokens.Spacing.x16) {
-                heroWindArrow(diameter: 88, isCalm: !hasWeather || isCalm)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(hasWeather ? "Wind" : "Wind unavailable")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(palette.secondaryTextColor)
-                        .textCase(.uppercase)
-
-                    if hasWeather {
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .center, spacing: 18) {
+                dial(diameter: 92, isCalm: !hasWeather || isCalm)
+                VStack(alignment: .leading, spacing: 2) {
+                    BookNote(hasWeather ? "Wind" : "Wind unavailable")
+                    if let weather = state.weatherSnapshot {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text(windHeroSpeedValue)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundStyle(palette.primaryTextColor)
+                            Text("\(weather.windSpeedKilometersPerHour)")
+                                .font(.system(size: 48, weight: .bold).width(.condensed))
                                 .monospacedDigit()
-                            Text("km/h")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(palette.secondaryTextColor)
+                            Text("km/h").font(.subheadline.weight(.semibold)).foregroundStyle(Book.pencil)
                         }
-
-                        Text(isCalm ? "Calm" : state.windRelativeCategory.label)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(palette.accent)
+                        Text(isCalm ? "Calm" : state.windRelativeCategory.label).font(Book.Typeface.subheading)
                     } else {
                         Text("Live conditions haven't loaded yet.")
                             .font(.subheadline)
-                            .foregroundStyle(palette.secondaryTextColor)
+                            .foregroundStyle(Book.pencil)
                     }
                 }
             }
+            .accessibilityElement(children: .combine)
 
-            if hasWeather, let breakdown = state.windComponentBreakdownText {
-                conditionsCallout(
-                    systemImage: "scope",
-                    title: "Components",
-                    body: breakdown
-                )
-            }
-
-            if hasWeather, state.playsLikeWindDeltaMeters != 0 {
-                conditionsCallout(
-                    systemImage: "ruler",
-                    title: "Plays-like wind",
-                    body: playsLikeDeltaText(meters: state.playsLikeWindDeltaMeters)
-                )
-            }
-        }
-        .padding(ShellTokens.Spacing.x16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(palette.secondaryFill)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(palette.border, lineWidth: 1)
-        }
-    }
-
-    private var temperatureCard: some View {
-        let hasWeather = state.weatherSnapshot != nil
-        let tempDelta = state.playsLikeTemperatureDeltaMeters
-
-        return conditionsMetricCard(
-            iconSystemName: "thermometer.medium",
-            title: "Temperature",
-            value: hasWeather ? state.temperatureSummaryText : "--",
-            footer: hasWeather && tempDelta != 0 ? playsLikeDeltaText(meters: tempDelta, suffix: " from temp") : nil
-        )
-    }
-
-    private var skyCard: some View {
-        let snapshot = state.weatherSnapshot
-        return conditionsMetricCard(
-            iconSystemName: snapshot?.symbolName ?? "cloud",
-            title: "Sky",
-            value: state.weatherConditionText,
-            footer: nil
-        )
-    }
-
-    private var gpsCard: some View {
-        conditionsMetricCard(
-            iconSystemName: "location.fill",
-            title: "GPS",
-            value: state.playerLocationStatusText,
-            footer: nil
-        )
-    }
-
-    private func attributionCard(_ attribution: String) -> some View {
-        Text(attribution)
-            .font(.footnote)
-            .foregroundStyle(palette.tertiaryTextColor)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(ShellTokens.Spacing.x14)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(palette.tertiaryFill)
-            )
-    }
-
-    private func heroWindArrow(diameter: CGFloat, isCalm: Bool) -> some View {
-        let rotationDegrees: Double = state.windRelativeMotionDegrees ?? 0
-
-        return ZStack {
-            Circle()
-                .fill(palette.tertiaryFill)
-                .overlay {
-                    Circle().stroke(palette.border, lineWidth: 1)
+            if breakdown != nil || playsLike != nil {
+                BookGroup(ruleInset: 50) {
+                    if let breakdown {
+                        conditionRow(symbol: "scope", title: "Along and across your line", value: breakdown, note: nil)
+                    }
+                    if let playsLike {
+                        conditionRow(symbol: "ruler", title: "Plays like", value: playsLike, note: nil)
+                    }
                 }
-
-            // Compass tick marks (N/E/S/W positions on the dial) so the
-            // arrow has a frame of reference and the player can read
-            // the angle quickly even before parsing the category label.
-            ForEach(0..<4, id: \.self) { index in
-                Rectangle()
-                    .fill(palette.border)
-                    .frame(width: 1.5, height: 6)
-                    .offset(y: -(diameter / 2) + 4)
-                    .rotationEffect(.degrees(Double(index) * 90))
             }
+        }
+    }
 
+    /// A compass rose drawn in pencil, the arrow showing where the wind
+    /// carries the ball relative to your line (up = straight down it).
+    private func dial(diameter: CGFloat, isCalm: Bool) -> some View {
+        let rotation = state.windRelativeMotionDegrees ?? 0
+        return ZStack {
+            Circle().fill(Book.leaf)
+            Circle().strokeBorder(Book.rule, lineWidth: 1)
+            ForEach(0..<12, id: \.self) { index in
+                Rectangle()
+                    .fill(index % 3 == 0 ? Book.ink.opacity(0.7) : Book.rule)
+                    .frame(width: index % 3 == 0 ? 1.5 : 1, height: index % 3 == 0 ? 8 : 5)
+                    .offset(y: -(diameter / 2) + (index % 3 == 0 ? 6 : 5))
+                    .rotationEffect(.degrees(Double(index) * 30))
+            }
             if isCalm {
-                Image(systemName: "circle.dotted")
-                    .font(.system(size: diameter * 0.36, weight: .semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
+                Circle().stroke(Book.pencil, style: StrokeStyle(lineWidth: 1.5, dash: [2, 3])).frame(width: diameter * 0.3)
             } else {
                 Image(systemName: "arrow.up")
-                    .font(.system(size: diameter * 0.42, weight: .heavy))
-                    .foregroundStyle(palette.accent)
-                    .rotationEffect(.degrees(rotationDegrees))
+                    .font(.system(size: diameter * 0.4, weight: .bold))
+                    .foregroundStyle(Book.ink)
+                    .rotationEffect(.degrees(rotation))
             }
         }
         .frame(width: diameter, height: diameter)
-        .animation(.easeInOut(duration: 0.3), value: rotationDegrees)
+        .animation(.easeInOut(duration: 0.3), value: rotation)
+        .accessibilityHidden(true)
     }
 
-    private func conditionsMetricCard(
-        iconSystemName: String,
-        title: String,
-        value: String,
-        footer: String?
-    ) -> some View {
-        HStack(alignment: .center, spacing: ShellTokens.Spacing.x14) {
-            Image(systemName: iconSystemName)
-                .font(.title2.weight(.semibold))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(palette.accent)
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle().fill(palette.tertiaryFill)
-                )
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title.uppercased())
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(palette.secondaryTextColor)
-                Text(value)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-                if let footer {
-                    Text(footer)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(palette.accent)
+    private func conditionRow(symbol: String, title: String, value: String, note: String?) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: symbol)
+                .font(.body.weight(.medium))
+                .foregroundStyle(Book.pencil)
+                .frame(width: 22)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.caption).foregroundStyle(Book.pencil)
+                Text(value).font(.body.weight(.medium))
+                if let note {
+                    Text(note).font(.caption.weight(.medium)).foregroundStyle(Book.stamp)
                 }
             }
-
             Spacer(minLength: 0)
         }
-        .padding(ShellTokens.Spacing.x14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(palette.secondaryFill)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(palette.border, lineWidth: 1)
-        }
-    }
-
-    private func conditionsCallout(
-        systemImage: String,
-        title: String,
-        body: String
-    ) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.accent)
-                .frame(width: 22, height: 22)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
-                Text(body)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, ShellTokens.Spacing.x12)
-        .padding(.vertical, ShellTokens.Spacing.x10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(palette.tertiaryFill)
-        )
-    }
-
-    private var windHeroSpeedValue: String {
-        guard let weather = state.weatherSnapshot else { return "--" }
-        return "\(weather.windSpeedKilometersPerHour)"
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .accessibilityElement(children: .combine)
     }
 
     private func playsLikeDeltaText(meters: Int, suffix: String = "") -> String {
@@ -4314,230 +2176,228 @@ private struct FreshLiveRoundConditionsSheet: View {
     }
 }
 
-private struct FreshLiveRoundEndRoundSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
-    let onSaveAndExit: () -> Void
-    let onDiscardRound: () -> Void
+/// What the player chose on the end-round sheet. The screen acts on it once
+/// the sheet has gone, so the next sheet (the card) can present cleanly.
+enum FreshLiveRoundEndRoundChoice {
+    case signCard
+    case reviewCard
+    case finishLater
+    case discard
+}
 
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
+/// Leaving the course: the card so far, then sign it, keep it for later, or
+/// throw it away.
+private struct FreshLiveRoundEndRoundSheet: View {
+    @ObservedObject var state: LiveRoundState
+    /// `nil` means keep playing.
+    let onChoose: (FreshLiveRoundEndRoundChoice?) -> Void
+
+    @State private var isConfirmingDiscard = false
+    @State private var contentHeight: CGFloat = 460
+
+    private var entries: [LiveRoundState.HoleInspectionEntry] { state.holeInspectionEntries }
+    private var confirmed: [LiveRoundState.HoleInspectionEntry] { entries.filter { $0.isConfirmed && $0.score != nil } }
+    private var strokes: Int { confirmed.compactMap(\.score).reduce(0, +) }
+    private var isCardComplete: Bool { state.canCompleteRound }
+
+    private var headline: String {
+        if confirmed.isEmpty { return "Nothing on the card yet" }
+        if confirmed.count == entries.count { return "All \(entries.count) holes on the card" }
+        return "Thru \(confirmed.count) of \(entries.count)"
+    }
+
+    private var summary: String {
+        guard !confirmed.isEmpty else { return state.courseName }
+        return "\(state.courseName) · \(state.roundScoreToParDisplay) · \(strokes) strokes"
+    }
+
+    private var discardMessage: String {
+        let holes = confirmed.count
+        let scores = holes == 0 ? "Every shot you've logged" : "Your scores for \(holes) hole\(holes == 1 ? "" : "s") and every shot logged"
+        return "\(scores) will be deleted. This can't be undone."
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x24) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                        HStack(alignment: .top, spacing: ShellTokens.Spacing.x12) {
-                            ZStack {
-                                Circle()
-                                    .fill(palette.accent.opacity(0.14))
-                                    .frame(width: 44, height: 44)
-
-                                Image(systemName: "flag.checkered.2.crossed")
-                                    .font(.headline.weight(.semibold))
-                                    .foregroundStyle(palette.accent)
-                            }
-
-                            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x6) {
-                                Text("ROUND STATUS")
-                                    .font(ShellTokens.Typography.microEyebrow)
-                                    .tracking(1.2)
-                                    .foregroundStyle(palette.secondaryTextColor)
-
-                                Text("Pause here or leave cleanly")
-                                    .font(ShellTokens.Typography.sectionTitle)
-                                    .foregroundStyle(palette.primaryTextColor)
-                                    .fixedSize(horizontal: false, vertical: true)
-
-                                Text("Save this unfinished round so you can resume it later, or discard it completely if you're done with it.")
-                                    .font(ShellTokens.Typography.body)
-                                    .foregroundStyle(palette.secondaryTextColor)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-
-                        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                            sheetSupportRow(
-                                title: "Save & Exit",
-                                detail: "Keep your current progress and reopen the round later."
-                            )
-                            sheetSupportRow(
-                                title: "Discard Round",
-                                detail: "Remove this unfinished round from the device completely."
-                            )
-                        }
-                        .padding(ShellTokens.Spacing.x16)
-                        .background(palette.secondaryFill, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous)
-                                .stroke(palette.border.opacity(0.78), lineWidth: 1)
-                        }
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(headline)
+                            .font(Book.Typeface.heading)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(summary)
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
+                            .lineLimit(2)
                     }
 
-                    VStack(spacing: ShellTokens.Spacing.x12) {
-                        sheetActionButton(
-                            title: "Save & Exit",
-                            subtitle: "Resume this round later",
-                            isProminent: true
-                        ) {
-                            dismiss()
-                            onSaveAndExit()
+                    card
+
+                    VStack(spacing: 10) {
+                        if isCardComplete {
+                            choiceButton("Sign and save the card", symbol: "signature", prominent: true, choice: .signCard)
+                            Text("You'll check every hole before it's filed with your scorecards.")
+                                .font(.footnote).foregroundStyle(Book.pencil)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.bottom, 6)
+                            choiceButton("Save and finish later", symbol: "bookmark", prominent: false, choice: .finishLater)
+                        } else {
+                            choiceButton("Save and finish later", symbol: "bookmark", prominent: true, choice: .finishLater)
+                            Text("Pick up at hole \(state.hole.number) from Home. A round is filed with your scorecards once every hole is on the card.")
+                                .font(.footnote).foregroundStyle(Book.pencil)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.bottom, 6)
+                            if !confirmed.isEmpty {
+                                choiceButton("Check the card", symbol: "tablecells", prominent: false, choice: .reviewCard)
+                            }
                         }
 
-                        sheetActionButton(
-                            title: "Keep Playing",
-                            subtitle: "Close this sheet and continue the round",
-                            isProminent: false
-                        ) {
-                            dismiss()
-                        }
-
-                        Button(role: .destructive) {
-                            dismiss()
-                            onDiscardRound()
-                        } label: {
-                            Text("Discard Round")
+                        Button { isConfirmingDiscard = true } label: {
+                            Text("Discard round")
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.red)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.vertical, ShellTokens.Spacing.x8)
+                                .foregroundStyle(Book.warning)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(ShellTokens.Spacing.x20)
-                .padding(.bottom, ShellTokens.Spacing.x12)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 20)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
             }
-            .navigationTitle("End Round")
+            .scrollBounceBehavior(.basedOnSize)
+            .background(Book.paper)
+            .navigationTitle("End round")
             .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { onChoose(nil) } label: {
+                        Image(systemName: "xmark").font(.body.weight(.semibold))
+                    }
+                    .accessibilityLabel("Keep playing")
+                }
+            }
+            .foregroundStyle(Book.ink)
+            .tint(Book.ink)
+            .confirmationDialog("Discard this round?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {
+                Button("Discard round", role: .destructive) { onChoose(.discard) }
+                Button("Keep it", role: .cancel) {}
+            } message: {
+                Text(discardMessage)
+            }
         }
-        .presentationDetents([.medium, .large])
+        // Sized to the page so the choices sit together near the thumb.
+        .presentationDetents([.height(contentHeight + 64), .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(palette.modalCanvas)
+        .presentationBackground(Book.paper)
     }
 
-    private func sheetSupportRow(title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(ShellTokens.Typography.microEyebrow)
-                .tracking(0.8)
-                .foregroundStyle(palette.primaryTextColor)
-
-            Text(detail)
-                .font(ShellTokens.Typography.body)
-                .foregroundStyle(palette.secondaryTextColor)
-                .fixedSize(horizontal: false, vertical: true)
+    private func choiceButton(_ title: String, symbol: String, prominent: Bool, choice: FreshLiveRoundEndRoundChoice) -> some View {
+        Button { onChoose(choice) } label: {
+            HStack {
+                Text(title)
+                Spacer(minLength: 12)
+                Image(systemName: symbol).font(.body.weight(.semibold))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(BookStampButtonStyle(prominent: prominent))
     }
 
-    private func sheetActionButton(
-        title: String,
-        subtitle: String,
-        isProminent: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack(alignment: .center, spacing: ShellTokens.Spacing.x12) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(isProminent ? palette.accentForeground : palette.primaryTextColor)
+    // MARK: The card so far
 
-                    Text(subtitle)
-                        .font(ShellTokens.Typography.body)
-                        .foregroundStyle(isProminent ? palette.accentForeground.opacity(0.88) : palette.secondaryTextColor)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+    private var nines: [[LiveRoundState.HoleInspectionEntry]] {
+        entries.count > 9 ? [Array(entries.prefix(9)), Array(entries.dropFirst(9))] : [entries]
+    }
 
-                Spacer(minLength: 0)
-
-                Image(systemName: isProminent ? "arrow.right" : "pause.fill")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isProminent ? palette.accentForeground : palette.primaryTextColor)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, ShellTokens.Spacing.x18)
-            .padding(.vertical, ShellTokens.Spacing.x16)
-            .background(
-                isProminent ? palette.accent : palette.secondaryFill,
-                in: RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous)
-            )
-            .overlay {
-                if !isProminent {
-                    RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous)
-                        .stroke(palette.border.opacity(0.82), lineWidth: 1)
-                }
+    private var card: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(nines.enumerated()), id: \.offset) { index, nine in
+                if index > 0 { BookHairline() }
+                nineRow(nine, label: nines.count == 1 ? "Tot" : (index == 0 ? "Out" : "In"))
             }
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 8)
+        .background(Book.leaf, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Book.rule, lineWidth: 0.5))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(cardAccessibilityLabel)
+    }
+
+    private func nineRow(_ nine: [LiveRoundState.HoleInspectionEntry], label: String) -> some View {
+        let scores = nine.compactMap { $0.isConfirmed ? $0.score : nil }
+        return HStack(spacing: 0) {
+            ForEach(nine) { entry in
+                VStack(spacing: 3) {
+                    Text("\(entry.number)")
+                        .font(.system(size: 11, weight: entry.isActive ? .heavy : .semibold).width(.condensed))
+                        .foregroundStyle(entry.isActive ? Book.ink : Book.pencil)
+                    ScoreMark(score: entry.isConfirmed ? entry.score : nil, par: entry.par, size: 24)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            VStack(spacing: 3) {
+                Text(label.uppercased())
+                    .font(.system(size: 11, weight: .semibold).width(.condensed))
+                    .foregroundStyle(Book.pencil)
+                Text(scores.isEmpty ? "–" : "\(scores.reduce(0, +))")
+                    .font(.system(size: 16, weight: .bold).width(.condensed))
+                    .monospacedDigit()
+                    .foregroundStyle(scores.count == nine.count ? Book.ink : Book.pencil)
+                    .frame(height: 24)
+            }
+            .frame(width: 38)
+        }
+        .padding(.vertical, 10)
+    }
+
+    private var cardAccessibilityLabel: String {
+        guard !confirmed.isEmpty else { return "No holes on the card yet" }
+        return "\(confirmed.count) of \(entries.count) holes on the card, \(strokes) strokes, \(state.roundScoreToParDisplay) to par"
     }
 }
 
+/// Writing the score on the card: the hole's par sets the scale, the score is
+/// picked by its golf name or counted, and the mark it will earn on the card is
+/// shown before it is committed.
 private struct FreshLiveRoundHoleConfirmationSheet: View {
     @ObservedObject var state: LiveRoundState
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let onRoundFinished: () -> Void
 
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
+    private var par: Int { state.displayedHoleSession.par }
+    private var score: Int { min(max(state.pendingHoleScore ?? par, 1), 20) }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
-                    summaryHeader
-
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                        summaryStepperRow(
-                            title: "Score",
-                            value: state.pendingHoleScore,
-                            range: 1...20,
-                            setValue: state.setPendingHoleScore
-                        )
-
-                        summaryStepperRow(
-                            title: "Putts",
-                            value: state.pendingHolePutts,
-                            range: 0...10,
-                            setValue: state.setPendingHolePutts
-                        )
-
-                        summaryStepperRow(
-                            title: "Penalties",
-                            value: state.pendingHolePenaltyCount,
-                            range: 0...10,
-                            setValue: state.setPendingHolePenaltyCount
-                        )
-
-                        summaryStepperRow(
-                            title: "Drops",
-                            value: state.pendingHoleDropCount,
-                            range: 0...10,
-                            setValue: state.setPendingHoleDropCount
-                        )
+                VStack(alignment: .leading, spacing: 24) {
+                    header
+                    quickNames
+                    VStack(spacing: 0) {
+                        BookHairline()
+                        BookCounter(title: "Strokes", detail: "Includes putts and penalties", value: score, range: 1...20, prominent: true) { state.setPendingHoleScore($0) }
+                        BookHairline()
+                        BookCounter(title: "Putts", value: min(max(state.pendingHolePutts ?? 0, 0), 10), range: 0...10) { state.setPendingHolePutts($0) }
+                        BookHairline()
+                        BookCounter(title: "Penalties", value: min(max(state.pendingHolePenaltyCount ?? 0, 0), 10), range: 0...10) { state.setPendingHolePenaltyCount($0) }
+                        BookHairline()
+                        BookCounter(title: "Drops", value: min(max(state.pendingHoleDropCount ?? 0, 0), 10), range: 0...10) { state.setPendingHoleDropCount($0) }
+                        BookHairline()
                     }
-
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                        Text("Hole Notes")
-                            .font(.headline.weight(.semibold))
-
-                        TextField(
-                            "Optional notes for this hole",
-                            text: Binding(
-                                get: { state.pendingHoleNotes ?? "" },
-                                set: { state.setPendingHoleNotes($0) }
-                            ),
-                            axis: .vertical
-                        )
-                        .lineLimit(3, reservesSpace: true)
-                        .freshRoundInputFieldStyle(palette: palette)
+                    VStack(alignment: .leading, spacing: 6) {
+                        BookNote("Notes")
+                        TextField("Anything worth remembering", text: Binding(
+                            get: { state.pendingHoleNotes ?? "" },
+                            set: { state.setPendingHoleNotes($0) }
+                        ), axis: .vertical)
+                        .lineLimit(2, reservesSpace: true)
+                        .padding(.vertical, 6)
+                        .overlay(alignment: .bottom) { Rectangle().fill(Book.ink.opacity(0.6)).frame(height: 1) }
                     }
-
                     Button {
                         let previousHoleNumber = state.hole.number
                         guard state.confirmCurrentHole() else { return }
@@ -4545,122 +2405,105 @@ private struct FreshLiveRoundHoleConfirmationSheet: View {
                             onRoundFinished()
                         }
                     } label: {
-                        Text(state.canInspectNextHole ? "Confirm & Next Hole" : "Confirm & Finish Round")
-                            .font(.headline.weight(.semibold))
-                            .frame(maxWidth: .infinity)
+                        HStack {
+                            Text(state.canInspectNextHole ? "Write it on the card" : "Write it and finish")
+                            Spacer()
+                            Text(state.canInspectNextHole ? "Hole \(state.displayedHoleNumber + 1)" : "Card")
+                                .opacity(0.75)
+                            Image(systemName: "arrow.right")
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(palette.accent)
+                    .buttonStyle(BookStampButtonStyle())
                     .disabled(!state.canConfirmHoleSummary)
+                    .sensoryFeedback(.success, trigger: state.hole.number)
                 }
-                .padding(ShellTokens.Spacing.x20)
-                .padding(.bottom, ShellTokens.Spacing.x24)
+                .padding(20)
+                .padding(.bottom, 16)
             }
-            .navigationTitle("Quick finish hole")
+            .background(Book.paper.ignoresSafeArea())
+            .foregroundStyle(Book.ink)
+            .tint(Book.stamp)
+            .navigationTitle("Hole score")
             .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close") {
-                        state.dismissHoleConfirmation()
+                    Button("Close") { state.dismissHoleConfirmation() }
+                }
+            }
+        }
+        .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.large])
+        .presentationBackground(Book.paper)
+    }
+
+    private var header: some View {
+        HStack(alignment: .center, spacing: 14) {
+            Text(String(format: "%02d", state.displayedHoleNumber))
+                .font(Book.Typeface.folio)
+                .monospacedDigit()
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Par \(par)").font(Book.Typeface.heading)
+                Text(ScoreMark.spoken(score: score, par: par).components(separatedBy: ", ").last?.capitalized ?? "")
+                    .font(.subheadline)
+                    .foregroundStyle(score < par ? Book.flag : Book.pencil)
+                    .contentTransition(.opacity)
+            }
+            Spacer()
+            ScoreMark(score: score, par: par, size: 64)
+                .animation(.snappy(duration: 0.2), value: score)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var quickNames: some View {
+        let options: [(String, Int)] = [("Eagle", -2), ("Birdie", -1), ("Par", 0), ("Bogey", 1), ("Double", 2), ("Triple", 3)]
+        return ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(options.filter { par + $0.1 >= 1 }, id: \.0) { option in
+                    let value = par + option.1
+                    let selected = value == score
+                    Button { state.setPendingHoleScore(value) } label: {
+                        VStack(spacing: 4) {
+                            ScoreMark(score: value, par: par, size: 30)
+                            Text(option.0).font(.caption.weight(selected ? .bold : .regular))
+                        }
+                        .frame(width: 62, height: 70)
+                        .background(selected ? Book.leaf : Color.clear, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(selected ? Book.ink : Book.rule, lineWidth: selected ? 1.25 : 1))
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(option.0), \(value)")
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
+        .scrollIndicators(.hidden)
+        .sensoryFeedback(.selection, trigger: score)
     }
-
-    private var summaryHeader: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-            Text("Hole \(state.displayedHoleNumber) • Par \(state.displayedHoleSession.par)")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(palette.accent)
-            Text("Picking up? Log the totals.")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-            Text("Pre-filled from your logged shots. Adjust the score and we'll move you to the next hole.")
-                .font(.subheadline)
-                .foregroundStyle(palette.secondaryTextColor)
-        }
-    }
-
-    private func summaryStepperRow(
-        title: String,
-        value: Int?,
-        range: ClosedRange<Int>,
-        setValue: @escaping (Int?) -> Void
-    ) -> some View {
-        let resolvedValue = min(max(value ?? range.lowerBound, range.lowerBound), range.upperBound)
-
-        return VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                Button {
-                    setValue(max(range.lowerBound, resolvedValue - 1))
-                } label: {
-                    Image(systemName: "minus")
-                        .font(.headline.weight(.semibold))
-                        .frame(width: 42, height: 42)
-                        .background(palette.tertiaryFill, in: Circle())
-                        .foregroundStyle(resolvedValue > range.lowerBound ? palette.primaryTextColor : palette.tertiaryTextColor)
-                }
-                .buttonStyle(.plain)
-                .disabled(resolvedValue <= range.lowerBound)
-
-                Text("\(resolvedValue)")
-                    .font(.title3.weight(.bold))
-                    .monospacedDigit()
-                    .foregroundStyle(palette.primaryTextColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, ShellTokens.Spacing.x12)
-                    .background(palette.secondaryFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                Button {
-                    setValue(min(range.upperBound, resolvedValue + 1))
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.headline.weight(.semibold))
-                        .frame(width: 42, height: 42)
-                        .background(palette.accent, in: Circle())
-                        .foregroundStyle(palette.accentForeground)
-                }
-                .buttonStyle(.plain)
-                .disabled(resolvedValue >= range.upperBound)
-            }
-            .padding(.horizontal, ShellTokens.Spacing.x14)
-            .padding(.vertical, ShellTokens.Spacing.x12)
-            .background(palette.tertiaryFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(palette.border, lineWidth: 1)
-            }
-        }
-    }
-
 }
 
 private struct FreshLiveRoundShotLoggerSheet: View {
     @ObservedObject var state: LiveRoundState
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State var shotOutcomeIntensity: FreshLiveRoundShotOutcomeIntensity = .normal
     @State private var isLiePickerExpanded: Bool = false
 
-    private let columns = [GridItem(.adaptive(minimum: 108), spacing: ShellTokens.Spacing.x12)]
-
-    private var palette: FreshLiveRoundPalette {
-        FreshLiveRoundPalette.forColorScheme(colorScheme)
-    }
+    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 8)]
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x18) {
-                    inferredLieBanner
+                VStack(alignment: .leading, spacing: 20) {
                     contextHeader
+
+                    if prefersStandardControls {
+                        Picker("Lie", selection: Binding(get: { state.pendingShotSurface }, set: state.selectShotSurface)) {
+                            ForEach(state.availableShotSurfaces, id: \.self) { surface in
+                                Text(surfaceLabel(for: surface)).tag(surface)
+                            }
+                        }
+                    }
 
                     Group {
                         switch state.currentShotLoggerContext {
@@ -4677,13 +2520,13 @@ private struct FreshLiveRoundShotLoggerSheet: View {
 
                     primaryCTA
                 }
-                .padding(.horizontal, ShellTokens.Spacing.x20)
-                .padding(.top, ShellTokens.Spacing.x16)
-                .padding(.bottom, ShellTokens.Spacing.x24)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
-            .navigationTitle(state.shotLoggingTitle)
+            .bookSheetChrome()
+            .navigationTitle("Log shot")
             .navigationBarTitleDisplayMode(.inline)
-            .freshRoundSheetCanvas(palette: palette)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Close") {
@@ -4693,62 +2536,148 @@ private struct FreshLiveRoundShotLoggerSheet: View {
             }
         }
         .modifier(FreshLiveRoundShotLoggerPresentationBackgroundModifier())
-        .presentationDetents([.medium, .large])
-        .presentationBackground(palette.modalCanvas)
+        .presentationDetents(prefersStandardControls ? [.large] : [.medium, .large])
+        .transaction { if reduceMotion { $0.animation = nil } }
+        .presentationBackground(Book.paper)
         .onAppear {
             shotOutcomeIntensity = (state.pendingShotDirection == .farLeft || state.pendingShotDirection == .farRight) ? .far : .normal
         }
     }
 
-    // MARK: - Top chrome
+    private var prefersStandardControls: Bool { dynamicTypeSize.isAccessibilitySize || voiceOverEnabled }
 
-    private var inferredLieBanner: some View {
-        let surface = state.pendingShotSurface
-
-        return VStack(spacing: ShellTokens.Spacing.x10) {
-            Button {
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
-                    isLiePickerExpanded.toggle()
-                }
-            } label: {
-                HStack(spacing: ShellTokens.Spacing.x12) {
-                    surfaceIconBadge(for: surface)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(state.pendingShotLieBannerTitle)
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(palette.primaryTextColor)
-                        Text(state.pendingShotLieBannerSubtitle)
-                            .font(.caption)
-                            .foregroundStyle(palette.secondaryTextColor)
-                            .lineLimit(1)
-                    }
-                    Spacer(minLength: 8)
-                    Image(systemName: "chevron.down")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(palette.tertiaryTextColor)
-                        .rotationEffect(.degrees(isLiePickerExpanded ? -180 : 0))
-                }
-                .padding(.horizontal, ShellTokens.Spacing.x14)
-                .padding(.vertical, ShellTokens.Spacing.x12)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(palette.secondaryFill)
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(palette.border, lineWidth: 1)
+    private var standardShotOutcome: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Picker("Direction", selection: Binding(get: { state.pendingShotDirection }, set: { if let value = $0 { state.selectShotDirection(value) } })) {
+                Text("Choose direction").tag(ShotEvent.DirectionResult?.none)
+                ForEach(ShotEvent.DirectionResult.allCases, id: \.self) { value in
+                    Text(directionLabel(for: value)).tag(Optional(value))
                 }
             }
-            .buttonStyle(.plain)
+            Picker("Distance outcome", selection: Binding(get: { state.pendingShotDistance }, set: { if let value = $0 { state.selectShotDistance(value) } })) {
+                Text("Choose outcome").tag(ShotEvent.DistanceResult?.none)
+                ForEach(ShotEvent.DistanceResult.allCases, id: \.self) { value in
+                    Text(distanceLabel(for: value)).tag(Optional(value))
+                }
+            }
+        }
+        .pickerStyle(.menu)
+    }
 
-            if isLiePickerExpanded {
+    private var standardPuttMissOutcome: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Picker("Miss direction", selection: Binding(get: { state.pendingShotPuttMissDirection }, set: state.setPendingShotPuttMissDirection)) {
+                Text("Not recorded").tag(ShotEvent.DirectionResult?.none)
+                ForEach(ShotEvent.DirectionResult.allCases, id: \.self) { value in
+                    Text(directionLabel(for: value)).tag(Optional(value))
+                }
+            }
+            Picker("Miss distance outcome", selection: Binding(get: { state.pendingShotPuttMissDistance }, set: state.setPendingShotPuttMissDistance)) {
+                Text("Not recorded").tag(ShotEvent.DistanceResult?.none)
+                ForEach(ShotEvent.DistanceResult.allCases, id: \.self) { value in
+                    Text(distanceLabel(for: value)).tag(Optional(value))
+                }
+            }
+        }
+        .pickerStyle(.menu)
+    }
+
+    // MARK: - Top of the page
+
+    /// The shot in one line, as the book would write it: club, from and to,
+    /// and the distance it had to go.
+    private var contextHeader: some View {
+        let layout = prefersStandardControls
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+            : AnyLayout(HStackLayout(alignment: .lastTextBaseline, spacing: 10))
+        return layout {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Stroke \(state.pendingShotStrokeNumber)")
+                    .font(Book.Typeface.heading)
+                Text("\(state.pendingShotOriginLabel.lowercased(with: .current)) → \(state.pendingShotTargetLabel.lowercased(with: .current))")
+                    .font(.caption)
+                    .foregroundStyle(Book.pencil)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(state.targetLabel == "Target unavailable" ? "—" : state.pendingShotDistanceLabel)
+                    .font(Book.Typeface.figure)
+                Text(state.targetLabel.uppercased())
+                    .font(Book.Typeface.noteSmall)
+                    .foregroundStyle(Book.pencil)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// The club and the lie, ruled like the top lines of a page. The lie is
+    /// inferred from where the ball is; tap it to correct.
+    private func clubAndLie(showsClub: Bool = true) -> some View {
+        VStack(spacing: 8) {
+            BookGroup(ruleInset: 50) {
+                if showsClub {
+                Menu {
+                    ForEach(state.availableClubNames, id: \.self) { clubName in
+                        Button(clubName) {
+                            state.overridePendingShotClubName(clubName)
+                        }
+                    }
+                } label: {
+                    pageLine(symbol: "figure.golf", title: "Club", value: state.pendingShotClubName, trailingSymbol: "chevron.up.chevron.down", rotation: 0)
+                }
+                .buttonStyle(BookRowButtonStyle())
+                }
+
+                if !prefersStandardControls {
+                    Button {
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                            isLiePickerExpanded.toggle()
+                        }
+                    } label: {
+                        pageLine(
+                            symbol: surfaceIconName(for: state.pendingShotSurface),
+                            title: state.pendingShotLieBannerSubtitle,
+                            value: state.pendingShotLieBannerTitle,
+                            trailingSymbol: "chevron.down",
+                            rotation: isLiePickerExpanded ? -180 : 0
+                        )
+                    }
+                    .buttonStyle(BookRowButtonStyle())
+                }
+            }
+
+            if isLiePickerExpanded && !prefersStandardControls {
                 liePickerStrip
             }
         }
     }
 
+    private func pageLine(symbol: String, title: String, value: String, trailingSymbol: String, rotation: Double) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.body.weight(.medium))
+                .foregroundStyle(Book.pencil)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(Book.pencil)
+                    .lineLimit(1)
+                Text(value).font(.body.weight(.semibold))
+            }
+            Spacer(minLength: 8)
+            Image(systemName: trailingSymbol)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Book.pencil)
+                .rotationEffect(.degrees(rotation))
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 54)
+        .contentShape(Rectangle())
+    }
+
     private var liePickerStrip: some View {
-        HStack(spacing: ShellTokens.Spacing.x8) {
+        HStack(spacing: 8) {
             ForEach(state.availableShotSurfaces, id: \.self) { surface in
                 let isSelected = state.pendingShotSurface == surface
                 Button {
@@ -4761,34 +2690,16 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                         Image(systemName: surfaceIconName(for: surface))
                             .font(.subheadline.weight(.semibold))
                         Text(surfaceLabel(for: surface))
-                            .font(.caption2.weight(.semibold))
+                            .font(.caption.weight(.semibold))
                     }
-                    .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
-                    .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(isSelected ? palette.accent : palette.loggerOptionFill)
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(isSelected ? palette.accent.opacity(0.92) : palette.border, lineWidth: 1)
-                    }
+                    .frame(maxWidth: .infinity, minHeight: 54)
+                    .bookChoice(isSelected: isSelected)
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
         .transition(.move(edge: .top).combined(with: .opacity))
-    }
-
-    private func surfaceIconBadge(for surface: ShotEvent.Surface) -> some View {
-        ZStack {
-            Circle()
-                .fill(palette.accent.opacity(0.16))
-            Image(systemName: surfaceIconName(for: surface))
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(palette.accent)
-        }
-        .frame(width: 36, height: 36)
     }
 
     private func surfaceIconName(for surface: ShotEvent.Surface) -> String {
@@ -4801,35 +2712,13 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         }
     }
 
-    private var contextHeader: some View {
-        HStack(alignment: .firstTextBaseline, spacing: ShellTokens.Spacing.x10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(state.pendingShotClubName)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(palette.primaryTextColor)
-                Text("\(state.pendingShotOriginLabel.lowercased(with: .current)) → \(state.pendingShotTargetLabel.lowercased(with: .current))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.secondaryTextColor)
-            }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(state.pendingShotDistanceLabel)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(palette.accent)
-                Text("to pin")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(palette.tertiaryTextColor)
-            }
-        }
-    }
-
     // MARK: - Context sections
 
     private var teeContextSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x14) {
-            clubField
+        VStack(alignment: .leading, spacing: 20) {
+            clubAndLie()
 
-            shotOutcomeSection
+            if prefersStandardControls { standardShotOutcome } else { shotOutcomeSection }
 
             if state.availableShotTypes.contains(.provisionalBall) {
                 provisionalChip
@@ -4838,14 +2727,17 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private var shotContextSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x14) {
-            clubField
-            shotOutcomeSection
+        VStack(alignment: .leading, spacing: 20) {
+            clubAndLie()
+            if prefersStandardControls { standardShotOutcome } else { shotOutcomeSection }
         }
     }
 
     private var puttContextSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
+        VStack(alignment: .leading, spacing: 20) {
+            if !prefersStandardControls {
+                clubAndLie(showsClub: false)
+            }
             puttHoledMissedRow
             if state.pendingShotPuttHoled == false {
                 puttMissPanel
@@ -4856,24 +2748,13 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private var puttHoledMissedRow: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            sectionHeading(
-                title: "How did the putt finish?",
-                subtitle: "Tap holed or missed — required."
-            )
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                puttOutcomeChoice(
-                    title: "Holed",
-                    icon: "flag.checkered",
-                    isSelected: state.pendingShotPuttHoled == true
-                ) {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeading(title: "How did the putt finish?")
+            HStack(spacing: 10) {
+                puttOutcomeChoice(title: "Holed", icon: "flag.fill", isSelected: state.pendingShotPuttHoled == true) {
                     state.setPendingShotPuttHoled(true)
                 }
-                puttOutcomeChoice(
-                    title: "Missed",
-                    icon: "xmark.circle",
-                    isSelected: state.pendingShotPuttHoled == false
-                ) {
+                puttOutcomeChoice(title: "Missed", icon: "xmark", isSelected: state.pendingShotPuttHoled == false) {
                     state.setPendingShotPuttHoled(false)
                 }
             }
@@ -4887,44 +2768,33 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.title2.weight(.semibold))
-                    .symbolRenderingMode(.hierarchical)
+                    .font(.headline.weight(.semibold))
                 Text(title)
-                    .font(.headline.weight(.bold))
+                    .font(.system(.title3, weight: .bold).width(.condensed))
             }
-            .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
-            .frame(maxWidth: .infinity, minHeight: 88)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(isSelected ? palette.accent : palette.loggerOptionFill)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(isSelected ? palette.accent.opacity(0.95) : palette.border, lineWidth: 1)
-            }
-            .shadow(color: isSelected ? palette.shadowColor.opacity(0.5) : .clear, radius: 12, y: 6)
-            .scaleEffect(isSelected ? 1.02 : 1)
-            .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isSelected)
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .bookChoice(isSelected: isSelected, cornerRadius: 14)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 
     private var puttMissPanel: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x14) {
+        VStack(alignment: .leading, spacing: 14) {
             sectionHeading(
                 title: "Where did it finish?",
-                subtitle: "Tap the zone the ball came to rest in. Optional."
+                subtitle: "Tap where the ball stopped. Optional."
             )
 
-            puttMissOutcomeDial
+            if prefersStandardControls { standardPuttMissOutcome } else { puttMissOutcomeDial }
 
-            optionalMetricStepperRow(
+            optionalCounter(
                 title: "Miss distance",
                 value: state.pendingShotPuttMissDistanceMeters,
-                unsetLabel: "Add miss distance",
+                unsetLabel: "Add how far it finished",
                 suffix: "m",
                 range: 0...30,
                 setValue: { state.setPendingShotPuttMissDistanceMeters($0) }
@@ -4935,30 +2805,12 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     private var puttMissOutcomeDial: some View {
         let layout = FreshLiveRoundShotOutcomeLayout.puttMiss
 
-        return VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
+        return VStack(alignment: .leading, spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                palette.tertiaryFill.opacity(0.92),
-                                palette.panelFill.opacity(0.84)
-                            ],
-                            center: .center,
-                            startRadius: 14,
-                            endRadius: layout.ringDiameter / 2
-                        )
-                    )
+                    .fill(Book.leaf)
                     .frame(width: layout.ringDiameter, height: layout.ringDiameter)
-                    .overlay {
-                        Circle()
-                            .stroke(palette.border.opacity(0.9), lineWidth: 1)
-                    }
-                    .shadow(color: palette.shadowColor.opacity(0.6), radius: 14, y: 8)
-
-                Circle()
-                    .stroke(palette.border.opacity(0.22), lineWidth: 1)
-                    .frame(width: layout.ringDiameter + 18, height: layout.ringDiameter + 18)
+                    .overlay { Circle().strokeBorder(Book.rule, lineWidth: 1) }
 
                 ForEach(FreshLiveRoundShotOutcomeNode.allCases, id: \.self) { node in
                     puttMissOutcomeSegmentButton(node: node, layout: layout)
@@ -4969,8 +2821,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
             .frame(width: layout.canvasSize.width, height: layout.canvasSize.height, alignment: .center)
             .frame(maxWidth: .infinity)
 
-            puttMissSelectionChip
-                .frame(maxWidth: .infinity)
+            selectionLine(text: puttMissChipLabel, isEmpty: state.pendingShotPuttMissDirection == nil && state.pendingShotPuttMissDistance == nil)
         }
         .sensoryFeedback(.selection, trigger: puttMissSelectionToken)
         .animation(.spring(response: 0.32, dampingFraction: 0.78), value: state.pendingShotPuttMissDirection)
@@ -5020,70 +2871,11 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         layout: FreshLiveRoundShotOutcomeLayout
     ) -> some View {
         let isSelected = isPuttMissOutcomeNodeSelected(node)
-        let segmentShape = FreshLiveRoundAnnularSegmentShape(
-            startAngleDegrees: layout.startAngleDegrees(for: node),
-            endAngleDegrees: layout.endAngleDegrees(for: node),
-            innerRadiusRatio: layout.ringInnerRadiusRatio
-        )
-        let ringDiameter = layout.ringDiameter
-        let labelPosition = layout.labelPosition(for: node)
-
-        return Button {
+        return ringSegment(node: node, layout: layout, isSelected: isSelected) {
+            segmentLabel(icon: outcomeSegmentIcon(for: node), text: puttMissSegmentLabelText(for: node), width: 60)
+        } action: {
             selectPuttMissOutcomeNode(node)
-        } label: {
-            ZStack {
-                segmentShape
-                    .fill(
-                        LinearGradient(
-                            colors: isSelected
-                            ? [
-                                palette.accent.opacity(0.96),
-                                palette.accent
-                            ]
-                            : [
-                                palette.loggerOptionFill.opacity(0.96),
-                                palette.secondaryFill.opacity(0.86)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: ringDiameter, height: ringDiameter)
-                    .overlay {
-                        segmentShape
-                            .stroke(isSelected ? palette.accent.opacity(0.92) : palette.border, lineWidth: 1)
-                            .frame(width: ringDiameter, height: ringDiameter)
-                    }
-                    .overlay {
-                        segmentShape
-                            .stroke(Color.white.opacity(isSelected ? 0.18 : 0.06), lineWidth: 0.75)
-                            .blur(radius: 0.2)
-                            .frame(width: ringDiameter, height: ringDiameter)
-                    }
-                    .shadow(color: isSelected ? palette.shadowColor.opacity(0.7) : .clear, radius: 10, y: 5)
-
-                puttMissSegmentLabel(node: node)
-                    .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
-                    .position(labelPosition)
-            }
-            .frame(width: ringDiameter, height: ringDiameter)
         }
-        .buttonStyle(.plain)
-        .contentShape(segmentShape)
-    }
-
-    private func puttMissSegmentLabel(node: FreshLiveRoundShotOutcomeNode) -> some View {
-        VStack(spacing: 3) {
-            Image(systemName: outcomeSegmentIcon(for: node))
-                .font(.subheadline.weight(.semibold))
-                .symbolRenderingMode(.hierarchical)
-            Text(puttMissSegmentLabelText(for: node))
-                .font(.caption2.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-        }
-        .frame(width: 60)
     }
 
     private func puttMissSegmentLabelText(for node: FreshLiveRoundShotOutcomeNode) -> String {
@@ -5101,54 +2893,15 @@ private struct FreshLiveRoundShotLoggerSheet: View {
 
     private func puttMissOutcomeCenter(size: CGSize) -> some View {
         VStack(spacing: 2) {
-            Image(systemName: "scope")
-                .font(.title3.weight(.semibold))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(palette.secondaryTextColor)
-            Text("Cup")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(palette.secondaryTextColor)
+            Circle().fill(Book.ink).frame(width: 8, height: 8)
+            Text("CUP")
+                .font(Book.Typeface.noteSmall)
+                .foregroundStyle(Book.pencil)
         }
         .frame(width: size.width, height: size.height)
-        .background(
-            Circle()
-                .fill(palette.secondaryFill)
-        )
-        .overlay {
-            Circle()
-                .stroke(palette.border, lineWidth: 1)
-        }
-        .overlay {
-            Circle()
-                .stroke(palette.accent.opacity(0.42), style: StrokeStyle(lineWidth: 1.2, dash: [3, 3]))
-                .padding(6)
-        }
-        .shadow(color: palette.shadowColor.opacity(0.5), radius: 10, y: 5)
+        .background(Circle().fill(Book.paper))
+        .overlay { Circle().strokeBorder(Book.rule, lineWidth: 1) }
         .accessibilityHidden(true)
-    }
-
-    private var puttMissSelectionChip: some View {
-        let label = puttMissChipLabel
-        let isEmpty = state.pendingShotPuttMissDirection == nil
-            && state.pendingShotPuttMissDistance == nil
-
-        return HStack(spacing: 8) {
-            Image(systemName: isEmpty ? "hand.tap" : "scope")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(isEmpty ? palette.secondaryTextColor : palette.primaryTextColor)
-            Text(label)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isEmpty ? palette.secondaryTextColor : palette.primaryTextColor)
-                .contentTransition(.interpolate)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            Capsule().fill(palette.secondaryFill)
-        )
-        .overlay {
-            Capsule().stroke(palette.border, lineWidth: 1)
-        }
     }
 
     private var puttMissChipLabel: String {
@@ -5156,7 +2909,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         let distance = state.pendingShotPuttMissDistance
 
         if direction == nil && distance == nil {
-            return "Tap a zone to log the miss"
+            return "Tap where it finished"
         }
 
         let directionPart: String? = (direction != nil && direction != .hit) ? direction.map(puttMissDirectionLabel(for:)) : nil
@@ -5188,75 +2941,45 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         }
     }
 
-    private var clubField: some View {
-        loggerMenuField(
-            title: "Club",
-            selectionTitle: state.pendingShotClubName
-        ) {
-            ForEach(state.availableClubNames, id: \.self) { clubName in
-                Button(clubName) {
-                    state.overridePendingShotClubName(clubName)
-                }
-            }
-        }
-    }
-
     private var provisionalChip: some View {
         let isSelected = state.pendingShotType == .provisionalBall
         return Button {
             state.setPendingShotType(isSelected ? nil : .provisionalBall)
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: isSelected ? "flag.2.crossed.fill" : "flag.2.crossed")
-                    .font(.subheadline.weight(.semibold))
+            HStack(spacing: 10) {
+                Image(systemName: isSelected ? "checkmark.square.fill" : "square")
+                    .font(.body.weight(.medium))
                 Text("Hit a provisional ball")
                     .font(.subheadline.weight(.semibold))
                 Spacer(minLength: 0)
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.subheadline.weight(.semibold))
             }
-            .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
-            .padding(.horizontal, ShellTokens.Spacing.x14)
-            .padding(.vertical, ShellTokens.Spacing.x12)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected ? palette.accent : palette.loggerOptionFill)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? palette.accent.opacity(0.92) : palette.border, lineWidth: 1)
-            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, minHeight: 48)
+            .bookChoice(isSelected: isSelected)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    // MARK: - Add detail disclosure
+    // MARK: - More detail
 
     private var addDetailDisclosure: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x14) {
+        VStack(alignment: .leading, spacing: 12) {
             Button {
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
                     state.toggleShotLoggerAddDetailVisibility()
                 }
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.subheadline.weight(.semibold))
-                    Text(state.isShowingShotLoggerAddDetail ? "Hide detail" : "Add detail")
-                        .font(.subheadline.weight(.semibold))
-                    Spacer(minLength: 0)
+                    BookNote(state.isShowingShotLoggerAddDetail ? "Less detail" : "More detail")
+                    Rectangle().fill(Book.rule).frame(height: 1)
                     Image(systemName: "chevron.down")
                         .font(.caption.weight(.bold))
+                        .foregroundStyle(Book.pencil)
                         .rotationEffect(.degrees(state.isShowingShotLoggerAddDetail ? -180 : 0))
                 }
-                .foregroundStyle(palette.secondaryTextColor)
-                .padding(.horizontal, ShellTokens.Spacing.x14)
-                .padding(.vertical, ShellTokens.Spacing.x12)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(palette.tertiaryFill.opacity(0.55))
-                )
+                .frame(minHeight: 36)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -5271,68 +2994,53 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     private var addDetailContent: some View {
         switch state.currentShotLoggerContext {
         case .tee, .shot:
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                HStack(spacing: ShellTokens.Spacing.x12) {
-                    metricStepperRow(
-                        title: "Penalties",
-                        value: state.pendingShotPenaltyCount,
-                        range: 0...10,
-                        setValue: state.setPendingShotPenaltyCount
-                    )
-                    metricStepperRow(
-                        title: "Drops",
-                        value: state.pendingShotDropCount,
-                        range: 0...10,
-                        setValue: state.setPendingShotDropCount
-                    )
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(spacing: 0) {
+                    BookCounter(title: "Penalties", value: state.pendingShotPenaltyCount, range: 0...10, onChange: state.setPendingShotPenaltyCount)
+                    BookHairline()
+                    BookCounter(title: "Drops", value: state.pendingShotDropCount, range: 0...10, onChange: state.setPendingShotDropCount)
+                    BookHairline()
+                    BookCounter(title: "Stroke number", value: state.pendingShotStrokeNumber, range: 1...20, onChange: state.setPendingShotStrokeNumber)
+                    BookHairline()
                 }
 
-                metricStepperRow(
-                    title: "Stroke number",
-                    value: state.pendingShotStrokeNumber,
-                    range: 1...20,
-                    setValue: state.setPendingShotStrokeNumber
-                )
-
                 optionSection(
-                    title: "Strike quality",
+                    title: "Strike",
+                    subtitle: "Tap again to clear.",
                     options: ShotEvent.StrikeResult.allCases,
                     selection: state.pendingShotStrike,
                     label: strikeLabel(for:),
                     action: { option in
                         state.setPendingShotStrike(state.pendingShotStrike == option ? nil : option)
-                    },
-                    allowsDeselection: true
+                    }
                 )
 
                 noteField
             }
 
         case .putt:
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                optionalMetricStepperRow(
-                    title: "Putt count override",
-                    value: state.pendingShotPuttCount,
-                    unsetLabel: "Auto (\(max(1, state.currentPlayerTotalPutts + 1)))",
-                    range: 1...4,
-                    setValue: { state.setPendingShotPuttCount($0) }
-                )
-
-                optionalMetricStepperRow(
-                    title: "First putt distance",
-                    value: state.pendingShotFirstPuttDistanceMeters,
-                    unsetLabel: "Add starting distance",
-                    suffix: "m",
-                    range: 0...60,
-                    setValue: { state.setPendingShotFirstPuttDistanceMeters($0) }
-                )
-
-                metricStepperRow(
-                    title: "Penalties",
-                    value: state.pendingShotPenaltyCount,
-                    range: 0...10,
-                    setValue: state.setPendingShotPenaltyCount
-                )
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(spacing: 0) {
+                    optionalCounter(
+                        title: "Putts",
+                        value: state.pendingShotPuttCount,
+                        unsetLabel: "Counted for you (\(max(1, state.currentPlayerTotalPutts + 1)))",
+                        range: 1...4,
+                        setValue: { state.setPendingShotPuttCount($0) }
+                    )
+                    BookHairline()
+                    optionalCounter(
+                        title: "First putt",
+                        value: state.pendingShotFirstPuttDistanceMeters,
+                        unsetLabel: "Add how long it was",
+                        suffix: "m",
+                        range: 0...60,
+                        setValue: { state.setPendingShotFirstPuttDistanceMeters($0) }
+                    )
+                    BookHairline()
+                    BookCounter(title: "Penalties", value: state.pendingShotPenaltyCount, range: 0...10, onChange: state.setPendingShotPenaltyCount)
+                    BookHairline()
+                }
 
                 noteField
             }
@@ -5340,75 +3048,62 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private var noteField: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text("Note")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
+        VStack(alignment: .leading, spacing: 6) {
+            BookNote("Note")
             TextField(
-                "Optional context for this shot",
+                "Anything worth remembering",
                 text: Binding(
                     get: { state.pendingShotNote ?? "" },
                     set: { state.setPendingShotNote($0) }
                 ),
                 axis: .vertical
             )
-            .lineLimit(3, reservesSpace: true)
-            .freshRoundInputFieldStyle(palette: palette)
+            .lineLimit(1...4)
+            .bookRuledField()
         }
     }
 
-    // MARK: - CTA
+    // MARK: - Save
 
     private var primaryCTA: some View {
         Button {
             state.confirmPendingShot()
         } label: {
-            Text(state.pendingShotConfirmCTAText)
-                .font(.title3.weight(.bold))
-                .frame(maxWidth: .infinity, minHeight: 56)
+            HStack {
+                Text(state.pendingShotConfirmCTAText)
+                Spacer(minLength: 12)
+                Image(systemName: "checkmark")
+            }
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .tint(palette.accent)
+        .buttonStyle(BookStampButtonStyle())
         .disabled(!state.canConfirmPendingShot)
-        .padding(.top, ShellTokens.Spacing.x4)
+        .padding(.top, 4)
     }
 
     private func sectionHeading(title: String, subtitle: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(palette.primaryTextColor)
+                .font(Book.Typeface.subheading)
+                .accessibilityAddTraits(.isHeader)
             if let subtitle {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(palette.secondaryTextColor)
+                    .foregroundStyle(Book.pencil)
             }
         }
     }
 
     private func optionSection<Option: Hashable>(
         title: String,
+        subtitle: String? = nil,
         options: [Option],
         selection: Option?,
         label: @escaping (Option) -> String,
-        action: @escaping (Option) -> Void,
-        allowsDeselection: Bool = false
+        action: @escaping (Option) -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x4) {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-                if allowsDeselection {
-                    Text("Tap the active choice again to clear it.")
-                        .font(.caption)
-                        .foregroundStyle(palette.secondaryTextColor)
-                }
-            }
-
-            LazyVGrid(columns: columns, spacing: ShellTokens.Spacing.x12) {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeading(title: title, subtitle: subtitle)
+            LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(options, id: \.self) { option in
                     let isSelected = selection == option
                     Button {
@@ -5416,60 +3111,34 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                     } label: {
                         Text(label(option))
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
-                            .frame(maxWidth: .infinity, minHeight: 56)
-                            .background(
-                                isSelected ? palette.accent : palette.loggerOptionFill,
-                                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(isSelected ? palette.accent.opacity(0.92) : palette.border, lineWidth: 1)
-                            }
+                            .frame(maxWidth: .infinity, minHeight: 46)
+                            .bookChoice(isSelected: isSelected)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }
         }
     }
 
+    // MARK: - Where it landed
+
     private var shotOutcomeSection: some View {
         let layout = FreshLiveRoundShotOutcomeLayout.standard
         let intensity = shotOutcomeIntensity
+        let isEmpty = state.pendingShotDirection == nil && state.pendingShotDistance == nil
 
-        return VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x4) {
-                Text("Where did it land?")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-                Text("Tap a zone — diagonals log distance and direction in one tap.")
-                    .font(.caption)
-                    .foregroundStyle(palette.secondaryTextColor)
-            }
+        return VStack(alignment: .leading, spacing: 12) {
+            sectionHeading(
+                title: "Where did it finish?",
+                subtitle: "The corners log distance and direction in one tap."
+            )
 
             ZStack {
                 Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                palette.tertiaryFill.opacity(0.92),
-                                palette.panelFill.opacity(0.84)
-                            ],
-                            center: .center,
-                            startRadius: 18,
-                            endRadius: layout.ringDiameter / 2
-                        )
-                    )
+                    .fill(Book.leaf)
                     .frame(width: layout.ringDiameter, height: layout.ringDiameter)
-                    .overlay {
-                        Circle()
-                            .stroke(palette.border.opacity(0.9), lineWidth: 1)
-                    }
-                    .shadow(color: palette.shadowColor.opacity(0.6), radius: 14, y: 8)
-
-                Circle()
-                    .stroke(palette.border.opacity(0.22), lineWidth: 1)
-                    .frame(width: layout.ringDiameter + 20, height: layout.ringDiameter + 20)
+                    .overlay { Circle().strokeBorder(Book.rule, lineWidth: 1) }
 
                 ForEach(FreshLiveRoundShotOutcomeNode.allCases, id: \.self) { node in
                     outcomeRingSegmentButton(node: node, layout: layout, intensity: intensity)
@@ -5480,15 +3149,24 @@ private struct FreshLiveRoundShotLoggerSheet: View {
             .frame(width: layout.canvasSize.width, height: layout.canvasSize.height, alignment: .center)
             .frame(maxWidth: .infinity)
 
-            outcomeIntensitySelector
+            selectionLine(text: shotOutcomeChipLabel, isEmpty: isEmpty)
 
-            shotOutcomeSelectionChip
-                .frame(maxWidth: .infinity)
+            outcomeIntensitySelector
         }
         .sensoryFeedback(.selection, trigger: shotOutcomeSelectionToken)
         .animation(.spring(response: 0.32, dampingFraction: 0.78), value: state.pendingShotDirection)
         .animation(.spring(response: 0.32, dampingFraction: 0.78), value: state.pendingShotDistance)
         .animation(.easeInOut(duration: 0.18), value: shotOutcomeIntensity)
+    }
+
+    /// What's been picked, written under the dial in pencil until there's
+    /// something to record, then in ink.
+    private func selectionLine(text: String, isEmpty: Bool) -> some View {
+        Text(text)
+            .font(.system(.headline, weight: .semibold).width(.condensed))
+            .foregroundStyle(isEmpty ? Book.pencil : Book.ink)
+            .contentTransition(.interpolate)
+            .frame(maxWidth: .infinity)
     }
 
     private func isShotOutcomeNodeSelected(_ node: FreshLiveRoundShotOutcomeNode) -> Bool {
@@ -5521,13 +3199,10 @@ private struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private var outcomeIntensitySelector: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "scope")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(palette.secondaryTextColor)
-            Text("Miss intensity")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(palette.secondaryTextColor)
+        HStack(spacing: 10) {
+            Text("How far offline")
+                .font(.footnote)
+                .foregroundStyle(Book.pencil)
 
             Spacer(minLength: 8)
 
@@ -5539,25 +3214,18 @@ private struct FreshLiveRoundShotLoggerSheet: View {
                     } label: {
                         Text(option.label)
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(isActive ? palette.accentForeground : palette.primaryTextColor)
-                            .frame(minWidth: 60)
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 12)
-                            .background(
-                                Capsule()
-                                    .fill(isActive ? palette.accent : Color.clear)
-                            )
+                            .foregroundStyle(isActive ? Book.onStamp : Book.ink)
+                            .frame(minWidth: 64, minHeight: 32)
+                            .background(isActive ? Book.stamp : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
                 }
             }
             .padding(3)
-            .background(
-                Capsule().fill(palette.secondaryFill)
-            )
-            .overlay {
-                Capsule().stroke(palette.border, lineWidth: 1)
-            }
+            .background(Book.leaf, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Book.rule, lineWidth: 1))
         }
         .frame(maxWidth: .infinity)
     }
@@ -5569,77 +3237,23 @@ private struct FreshLiveRoundShotLoggerSheet: View {
             state.selectShotDirection(.hit)
             state.selectShotDistance(.onNumber)
         } label: {
-            VStack(spacing: 2) {
-                Image(systemName: "target")
-                    .font(.title2.weight(.semibold))
-                    .symbolRenderingMode(.hierarchical)
-                Text("Hit")
-                    .font(.footnote.weight(.bold))
+            VStack(spacing: 1) {
+                Image(systemName: "scope")
+                    .font(.title3.weight(.semibold))
+                Text("On line")
+                    .font(.caption.weight(.bold))
             }
-            .foregroundStyle(isCleanStrike ? palette.accentForeground : palette.accent)
+            .foregroundStyle(isCleanStrike ? Book.onStamp : Book.ink)
             .frame(width: size.width, height: size.height)
-            .background(
-                ZStack {
-                    Circle()
-                        .fill(isCleanStrike ? palette.accent : palette.secondaryFill)
-                    Circle()
-                        .stroke(
-                            palette.accent.opacity(isCleanStrike ? 0 : 0.42),
-                            style: StrokeStyle(lineWidth: 1.2, dash: [3, 3])
-                        )
-                        .padding(7)
-                }
-            )
+            .background(Circle().fill(isCleanStrike ? Book.stamp : Book.paper))
             .overlay {
-                Circle()
-                    .stroke(
-                        isCleanStrike ? palette.accent.opacity(0.92) : palette.border,
-                        lineWidth: 1
-                    )
+                Circle().strokeBorder(isCleanStrike ? Color.clear : Book.rule, lineWidth: 1)
             }
-            .shadow(color: palette.shadowColor.opacity(isCleanStrike ? 0.7 : 0.5), radius: 12, y: 6)
-            .scaleEffect(isCleanStrike ? 1.04 : 1)
         }
         .buttonStyle(.plain)
         .contentShape(Circle())
-    }
-
-    private var shotOutcomeSelectionChip: some View {
-        let label = shotOutcomeChipLabel
-        let isCleanStrike = state.pendingShotDirection == .hit && state.pendingShotDistance == .onNumber
-        let isEmpty = state.pendingShotDirection == nil && state.pendingShotDistance == nil
-
-        return HStack(spacing: 8) {
-            Image(systemName: chipIconName(isCleanStrike: isCleanStrike, isEmpty: isEmpty))
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(
-                    isCleanStrike
-                    ? palette.accent
-                    : (isEmpty ? palette.secondaryTextColor : palette.primaryTextColor)
-                )
-            Text(label)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isEmpty ? palette.secondaryTextColor : palette.primaryTextColor)
-                .contentTransition(.interpolate)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            Capsule().fill(palette.secondaryFill)
-        )
-        .overlay {
-            Capsule()
-                .stroke(
-                    isCleanStrike ? palette.accent.opacity(0.55) : palette.border,
-                    lineWidth: 1
-                )
-        }
-    }
-
-    private func chipIconName(isCleanStrike: Bool, isEmpty: Bool) -> String {
-        if isEmpty { return "hand.tap" }
-        if isCleanStrike { return "checkmark.circle.fill" }
-        return "scope"
+        .accessibilityLabel("On line and on the number")
+        .accessibilityAddTraits(isCleanStrike ? .isSelected : [])
     }
 
     private var shotOutcomeChipLabel: String {
@@ -5647,10 +3261,10 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         let distance = state.pendingShotDistance
 
         if direction == nil && distance == nil {
-            return "Tap a zone to log the shot"
+            return "Tap where it finished"
         }
         if direction == .hit && distance == .onNumber {
-            return "Clean strike"
+            return "On line, on the number"
         }
 
         let directionPart: String? = (direction != nil && direction != .hit) ? direction.map(directionLabel(for:)) : nil
@@ -5664,7 +3278,7 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         case let (nil, dir?):
             return dir
         case (nil, nil):
-            return "Clean strike"
+            return "On line, on the number"
         }
     }
 
@@ -5679,7 +3293,22 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         layout: FreshLiveRoundShotOutcomeLayout,
         intensity: FreshLiveRoundShotOutcomeIntensity
     ) -> some View {
-        let isSelected = isShotOutcomeNodeSelected(node)
+        let isFar = intensity == .far && node.lateralLean != .none
+        return ringSegment(node: node, layout: layout, isSelected: isShotOutcomeNodeSelected(node)) {
+            segmentLabel(icon: outcomeSegmentIcon(for: node), text: outcomeSegmentLabelText(for: node, isFar: isFar), width: 64)
+        } action: {
+            selectShotOutcomeNode(node)
+        }
+    }
+
+    /// One sector of the dial: paper, or stamped when chosen.
+    private func ringSegment<Label: View>(
+        node: FreshLiveRoundShotOutcomeNode,
+        layout: FreshLiveRoundShotOutcomeLayout,
+        isSelected: Bool,
+        @ViewBuilder label: () -> Label,
+        action: @escaping () -> Void
+    ) -> some View {
         let segmentShape = FreshLiveRoundAnnularSegmentShape(
             startAngleDegrees: layout.startAngleDegrees(for: node),
             endAngleDegrees: layout.endAngleDegrees(for: node),
@@ -5688,67 +3317,39 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         let ringDiameter = layout.ringDiameter
         let labelPosition = layout.labelPosition(for: node)
 
-        return Button {
-            selectShotOutcomeNode(node)
-        } label: {
+        return Button(action: action) {
             ZStack {
                 segmentShape
-                    .fill(
-                        LinearGradient(
-                            colors: isSelected
-                            ? [
-                                palette.accent.opacity(0.96),
-                                palette.accent
-                            ]
-                            : [
-                                palette.loggerOptionFill.opacity(0.96),
-                                palette.secondaryFill.opacity(0.86)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(isSelected ? Book.stamp : Book.leaf)
                     .frame(width: ringDiameter, height: ringDiameter)
                     .overlay {
                         segmentShape
-                            .stroke(isSelected ? palette.accent.opacity(0.92) : palette.border, lineWidth: 1)
+                            .stroke(Book.rule, lineWidth: 1)
                             .frame(width: ringDiameter, height: ringDiameter)
                     }
-                    .overlay {
-                        segmentShape
-                            .stroke(Color.white.opacity(isSelected ? 0.18 : 0.06), lineWidth: 0.75)
-                            .blur(radius: 0.2)
-                            .frame(width: ringDiameter, height: ringDiameter)
-                    }
-                    .shadow(color: isSelected ? palette.shadowColor.opacity(0.7) : .clear, radius: 10, y: 5)
 
-                outcomeSegmentLabel(node: node, intensity: intensity)
-                    .foregroundStyle(isSelected ? palette.accentForeground : palette.primaryTextColor)
+                label()
+                    .foregroundStyle(isSelected ? Book.onStamp : Book.ink)
                     .position(labelPosition)
             }
             .frame(width: ringDiameter, height: ringDiameter)
         }
         .buttonStyle(.plain)
         .contentShape(segmentShape)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private func outcomeSegmentLabel(
-        node: FreshLiveRoundShotOutcomeNode,
-        intensity: FreshLiveRoundShotOutcomeIntensity
-    ) -> some View {
-        let isFar = intensity == .far && node.lateralLean != .none
-
-        return VStack(spacing: 3) {
-            Image(systemName: outcomeSegmentIcon(for: node))
+    private func segmentLabel(icon: String, text: String, width: CGFloat) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon)
                 .font(.subheadline.weight(.semibold))
-                .symbolRenderingMode(.hierarchical)
-            Text(outcomeSegmentLabelText(for: node, isFar: isFar))
+            Text(text)
                 .font(.caption2.weight(.semibold))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
         }
-        .frame(width: 64)
+        .frame(width: width)
     }
 
     private func outcomeSegmentIcon(for node: FreshLiveRoundShotOutcomeNode) -> String {
@@ -5778,73 +3379,10 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         }
     }
 
-    private func loggerMenuField<Content: View>(
-        title: String,
-        selectionTitle: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
-            Menu {
-                content()
-            } label: {
-                HStack {
-                    Text(selectionTitle)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.primaryTextColor)
-                    Spacer()
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(palette.secondaryTextColor)
-                }
-                .padding(.horizontal, ShellTokens.Spacing.x14)
-                .padding(.vertical, ShellTokens.Spacing.x14)
-                .background(palette.loggerOptionFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(palette.border, lineWidth: 1)
-                }
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func metricStepperRow(
-        title: String,
-        value: Int,
-        suffix: String = "",
-        range: ClosedRange<Int>,
-        setValue: @escaping (Int) -> Void
-    ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(palette.primaryTextColor)
-
-            HStack(spacing: ShellTokens.Spacing.x12) {
-                stepperButton(systemImage: "minus", isEnabled: value > range.lowerBound) {
-                    setValue(max(range.lowerBound, value - 1))
-                }
-
-                Text("\(value)\(suffix)")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, ShellTokens.Spacing.x12)
-                    .background(palette.loggerOptionFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                stepperButton(systemImage: "plus", isEnabled: value < range.upperBound) {
-                    setValue(min(range.upperBound, value + 1))
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func optionalMetricStepperRow(
+    /// A tally that can be left blank: "Add…" until a value is set, then a
+    /// counter with a way to clear it.
+    @ViewBuilder
+    private func optionalCounter(
         title: String,
         value: Int?,
         unsetLabel: String,
@@ -5852,72 +3390,34 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         range: ClosedRange<Int>,
         setValue: @escaping (Int?) -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-            HStack {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(palette.primaryTextColor)
-                Spacer()
-                if value != nil {
-                    Button("Clear") {
-                        setValue(nil)
-                    }
+        if let value {
+            VStack(alignment: .trailing, spacing: 0) {
+                BookCounter(title: title, value: value, range: range, suffix: suffix) { setValue($0) }
+                Button("Clear") { setValue(nil) }
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.accent)
-                }
+                    .foregroundStyle(Book.pencil)
+                    .padding(.bottom, 6)
             }
-
-            if let value {
-                HStack(spacing: ShellTokens.Spacing.x12) {
-                    stepperButton(systemImage: "minus", isEnabled: value > range.lowerBound) {
-                        setValue(max(range.lowerBound, value - 1))
+        } else {
+            Button {
+                setValue(range.lowerBound)
+            } label: {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title).font(.body)
+                        Text(unsetLabel).font(.caption).foregroundStyle(Book.pencil)
                     }
-
-                    Text("\(value)\(suffix)")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(palette.primaryTextColor)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ShellTokens.Spacing.x12)
-                        .background(palette.loggerOptionFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                    stepperButton(systemImage: "plus", isEnabled: value < range.upperBound) {
-                        setValue(min(range.upperBound, value + 1))
-                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "plus")
+                        .font(.body.weight(.semibold))
+                        .frame(width: 44, height: 44)
+                        .background(Circle().strokeBorder(Book.ink.opacity(0.6), lineWidth: 1))
                 }
-            } else {
-                Button {
-                    setValue(range.lowerBound)
-                } label: {
-                    HStack {
-                        Text(unsetLabel)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(palette.secondaryTextColor)
-                        Spacer()
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(palette.accent)
-                    }
-                    .padding(.horizontal, ShellTokens.Spacing.x14)
-                    .padding(.vertical, ShellTokens.Spacing.x14)
-                    .background(palette.loggerOptionFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         }
-    }
-
-    private func stepperButton(systemImage: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.headline.weight(.semibold))
-                .frame(width: 42, height: 42)
-                .background(
-                    (isEnabled ? palette.accent : palette.loggerOptionFill),
-                    in: Circle()
-                )
-                .foregroundStyle(isEnabled ? palette.accentForeground : palette.tertiaryTextColor)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 
     private func directionLabel(for result: ShotEvent.DirectionResult) -> String {
@@ -5959,17 +3459,56 @@ private struct FreshLiveRoundShotLoggerSheet: View {
         }
     }
 
-    private func shotTypeLabel(for shotType: ShotEvent.ShotType) -> String {
-        switch shotType {
-        case .teeShot: return "Tee Shot"
-        case .provisionalBall: return "Provisional Ball"
-        case .approach: return "Approach"
-        case .layup: return "Layup"
-        case .recovery: return "Recovery"
-        case .chip: return "Chip"
-        case .pitch: return "Pitch"
-        case .bunkerShot: return "Bunker"
-        case .putt: return "Putt"
+}
+
+/// Local floating materials preserve the course as the primary surface.
+/// Reduce Transparency substitutes an opaque surface with the same boundary.
+private enum PlayingInstrumentStyle {
+    static let surface = Color(red: 0.055, green: 0.105, blue: 0.095)
+    static let text = Color(red: 0.96, green: 0.98, blue: 0.95)
+    static let secondary = Color(red: 0.72, green: 0.79, blue: 0.75)
+    static let accent = Color(red: 0.83, green: 0.94, blue: 0.64)
+    static let actionFill = Color(red: 0.95, green: 0.97, blue: 0.91)
+    static let edge = Color(red: 0.30, green: 0.39, blue: 0.35)
+
+    static func clubLabel(_ name: String) -> String {
+        switch name.lowercased() {
+        case "driver": return "Dr"
+        case "putter": return "Pt"
+        case "pitching wedge": return "PW"
+        case "gap wedge", "approach wedge": return "GW"
+        case "sand wedge": return "SW"
+        case "lob wedge": return "LW"
+        default:
+            return name.replacingOccurrences(of: "-iron", with: "i", options: .caseInsensitive)
+                .replacingOccurrences(of: " Iron", with: "i", options: .caseInsensitive)
+                .replacingOccurrences(of: "-wood", with: "w", options: .caseInsensitive)
+                .replacingOccurrences(of: "-hybrid", with: "h", options: .caseInsensitive)
         }
+    }
+}
+
+/// Map drawings that only change with the hole (the page) or the ball (hazard
+/// figures), kept between renders so location ticks and taps don't rebuild them.
+final class LiveMapDrawingCache {
+    private var pageHole: Int?
+    private var pageValue: (sheet: MKPolygon, edge: [CLLocationCoordinate2D])?
+    private var hazardKey: String?
+    private var hazardValue: [HoleMapGeometry.HazardYardage] = []
+
+    func page(for hole: Int, make: () -> (sheet: MKPolygon, edge: [CLLocationCoordinate2D])?) -> (sheet: MKPolygon, edge: [CLLocationCoordinate2D])? {
+        if pageHole != hole {
+            pageValue = make()
+            pageHole = hole
+        }
+        return pageValue
+    }
+
+    func hazards(for key: String, make: () -> [HoleMapGeometry.HazardYardage]) -> [HoleMapGeometry.HazardYardage] {
+        if hazardKey != key {
+            hazardValue = make()
+            hazardKey = key
+        }
+        return hazardValue
     }
 }

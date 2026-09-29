@@ -20,11 +20,17 @@ enum DeterministicCourseValidator {
     static let holeParRange: ClosedRange<Int> = 3...5
     static let holeLengthRangeMeters: ClosedRange<Double> = 50...700
 
-    /// Two greens are considered duplicates if any pair of vertices sits
-    /// within this many metres. Catches the kind of duplicate-green data we
-    /// already had to clean out of `medway.json` and
-    /// `royal-melbourne-west.json`.
+    /// Two vertices this close are the same point.
     static let duplicateGreenVertexThresholdMeters: Double = 1.0
+    /// Two greens on different holes are the same green drawn twice when at
+    /// least this share of the smaller one's vertices coincide with the
+    /// other's (or their centres coincide). Catches the kind of duplicate
+    /// data we had to clean out of `medway.json` and
+    /// `royal-melbourne-west.json`, while greens that merely touch (sharing
+    /// a node or two on a common edge) pass, as do the two halves of a
+    /// double green.
+    static let duplicateGreenSharedVertexFraction: Double = 0.6
+    static let duplicateGreenCentreThresholdMeters: Double = 2.0
 
     /// Runs every gate and returns either `[]` (approved) or the list of
     /// failure reasons. Reasons are user-readable so they can be surfaced
@@ -107,32 +113,63 @@ enum DeterministicCourseValidator {
         let greens = course.holes.flatMap { hole in
             hole.features
                 .filter { $0.kind == .green }
-                .map { (holeNumber: hole.number, coordinates: $0.coordinates) }
+                .map { (holeNumber: hole.number, feature: $0) }
         }
-        if duplicateGreenSharing(greens: greens) {
-            failures.append("Two greens share a coordinate within 1 m — duplicate geometry detected.")
+        if let pair = duplicateGreens(greens) {
+            failures.append("Holes \(pair.0) and \(pair.1) have the same green drawn twice — duplicate geometry detected.")
         }
 
         return failures
     }
 
-    private static func duplicateGreenSharing(
-        greens: [(holeNumber: Int, coordinates: [SwingPalCourse.Coordinate])]
-    ) -> Bool {
-        guard greens.count >= 2 else { return false }
+    /// The first pair of holes whose greens are the same green drawn twice.
+    static func duplicateGreens(
+        _ greens: [(holeNumber: Int, feature: SwingPalCourse.Hole.Feature)]
+    ) -> (Int, Int)? {
+        guard greens.count >= 2 else { return nil }
         for i in 0..<(greens.count - 1) {
             for j in (i + 1)..<greens.count {
-                for ci in greens[i].coordinates {
-                    for cj in greens[j].coordinates {
-                        let distance = RuntimeOSMCourseConverter.haversineMeters(
-                            CLLocationCoordinate2D(latitude: ci.latitude, longitude: ci.longitude),
-                            CLLocationCoordinate2D(latitude: cj.latitude, longitude: cj.longitude)
-                        )
-                        if distance < duplicateGreenVertexThresholdMeters { return true }
-                    }
+                let a = greens[i], b = greens[j]
+                guard a.holeNumber != b.holeNumber else { continue }
+                // The two halves of a double green, split between the flags.
+                if RuntimeOSMCourseConverter.sharedGreenPartner(of: a.feature) == b.holeNumber,
+                   RuntimeOSMCourseConverter.sharedGreenPartner(of: b.feature) == a.holeNumber {
+                    continue
+                }
+                if isSameGreen(a.feature.coordinates, b.feature.coordinates) {
+                    return (a.holeNumber, b.holeNumber)
                 }
             }
         }
-        return false
+        return nil
+    }
+
+    private static func isSameGreen(
+        _ a: [SwingPalCourse.Coordinate],
+        _ b: [SwingPalCourse.Coordinate]
+    ) -> Bool {
+        func metres(_ p: SwingPalCourse.Coordinate, _ q: SwingPalCourse.Coordinate) -> Double {
+            RuntimeOSMCourseConverter.haversineMeters(
+                CLLocationCoordinate2D(latitude: p.latitude, longitude: p.longitude),
+                CLLocationCoordinate2D(latitude: q.latitude, longitude: q.longitude)
+            )
+        }
+        func distinct(_ ring: [SwingPalCourse.Coordinate]) -> [SwingPalCourse.Coordinate] {
+            ring.count > 1 && ring.first == ring.last ? Array(ring.dropLast()) : ring
+        }
+        let ringA = distinct(a), ringB = distinct(b)
+        guard !ringA.isEmpty, !ringB.isEmpty else { return false }
+
+        if let centreA = RuntimeOSMCourseConverter.centroid(of: ringA),
+           let centreB = RuntimeOSMCourseConverter.centroid(of: ringB),
+           metres(centreA, centreB) < duplicateGreenCentreThresholdMeters {
+            return true
+        }
+
+        let (smaller, larger) = ringA.count <= ringB.count ? (ringA, ringB) : (ringB, ringA)
+        let coinciding = smaller.filter { vertex in
+            larger.contains { metres(vertex, $0) < duplicateGreenVertexThresholdMeters }
+        }.count
+        return Double(coinciding) >= Double(smaller.count) * duplicateGreenSharedVertexFraction
     }
 }

@@ -139,11 +139,11 @@ struct WatchRoundHomeView: View {
             .shadow(color: .black.opacity(0.34), radius: 18, y: 6)
 
             Text(model.clubLabel)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 11, weight: .bold).width(.condensed))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.blue.opacity(0.88), in: Capsule())
+                .background(Color(red: 1.0, green: 0.455, blue: 0.322), in: Capsule())
                 .padding(.top, topInset + 6)
                 .padding(.trailing, 6)
         }
@@ -251,12 +251,12 @@ struct WatchRoundHomeView: View {
     private func mapMetricLabel(_ title: String, value: String, emphasized: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .bold).width(.condensed))
                 .foregroundStyle(.white.opacity(0.74))
             Text(value)
-                .font(.system(size: emphasized ? 34 : 21, weight: .bold, design: .rounded))
+                .font(.system(size: emphasized ? 34 : 21, weight: .bold).width(.condensed))
                 .monospacedDigit()
-                .foregroundStyle(emphasized ? Color(red: 0.64, green: 0.98, blue: 0.33) : .white)
+                .foregroundStyle(emphasized ? Color(red: 1.0, green: 0.455, blue: 0.322) : .white)
         }
     }
 
@@ -338,9 +338,10 @@ struct WatchRoundHomeView: View {
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.bold))
                     }
+                    .foregroundStyle(Color(red: 0.075, green: 0.141, blue: 0.11))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
-                    .background(.green.opacity(0.24), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .background(Color(red: 0.81, green: 0.89, blue: 0.77), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
 
@@ -381,54 +382,18 @@ struct WatchRoundHomeView: View {
         .background(Color.black.ignoresSafeArea())
     }
 
-    private var ballMarker: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white)
-                .frame(width: 14, height: 14)
-                .shadow(color: .white.opacity(0.24), radius: 6)
-
-            Circle()
-                .stroke(Color.black.opacity(0.35), lineWidth: 1)
-                .frame(width: 14, height: 14)
-        }
-        .overlay(alignment: .top) {
-            Text(model.clubLabel)
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(.ultraThinMaterial, in: Capsule())
-                .offset(y: -20)
-        }
-    }
-
     private func targetMarker(value: String) -> some View {
         VStack(spacing: 3) {
             Image(systemName: "flag.fill")
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(.white)
             Text(value)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .bold).width(.condensed))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
-                .background(Color.green.opacity(0.28), in: Capsule())
+                .background(Color.black.opacity(0.6), in: Capsule())
         }
-    }
-
-    private func markerBadge(title: String, value: String) -> some View {
-        VStack(spacing: 1) {
-            Text(title)
-                .font(.system(size: 8, weight: .bold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.68))
-            Text(value)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
-        .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func actionTile(title: String, subtitle: String, systemImage: String) -> some View {

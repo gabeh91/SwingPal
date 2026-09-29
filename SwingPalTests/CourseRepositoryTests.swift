@@ -2,7 +2,7 @@ import XCTest
 @testable import SwingPal
 
 final class CourseRepositoryTests: XCTestCase {
-    func testSeededRepositoryReturnsCoursesSortedByDistance() {
+    func testSeededRepositoryReturnsCoursesInNameOrderWithoutLocation() {
         let repository = SeededCourseRepository()
 
         let courses = repository.nearbyCourses()
@@ -11,6 +11,14 @@ final class CourseRepositoryTests: XCTestCase {
             "Medway Golf Club",
             "Royal Melbourne"
         ])
+    }
+
+    func testBundledCoursesDoNotClaimDistanceWithoutUserLocation() {
+        let courses = SeededCourseRepository().nearbyCourses()
+        XCTAssertFalse(courses.isEmpty)
+        for course in courses {
+            XCTAssertNil(course.distanceKilometers, "A bundled course cannot know the current user's location")
+        }
     }
 
     func testSeededRepositoryProvidesNormalizedCourseDetailsForRoyalMelbourne() throws {
@@ -68,33 +76,6 @@ final class CourseRepositoryTests: XCTestCase {
                 XCTAssertGreaterThanOrEqual(only.coordinates.count, 4, "Royal Melbourne H\(hole.number) green polygon must have ≥4 vertices to be usable")
             }
         }
-    }
-
-    func testMedwayHole13InspectionFrontPinBackBracketTightlyAroundPin() throws {
-        // Real-bug guard: H13 reported Front=0m / Pin=225m / Back=236m
-        // in the simulator while inspecting the hole. Front=0 implied
-        // a wildly negative offset, which only happens when the green
-        // polygon contains stray vertices far from the actual surface.
-        // After cleaning the JSON we expect Front to land within ~30m
-        // of Pin and the front/pin/back trio to be strictly ordered.
-        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
-            courseName: "Medway Golf Club",
-            holeNumber: 13
-        )
-    }
-
-    func testMedwayHole10InspectionFrontPinBackBracketTightlyAroundPin() throws {
-        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
-            courseName: "Medway Golf Club",
-            holeNumber: 10
-        )
-    }
-
-    func testRoyalMelbourneHole1InspectionFrontPinBackBracketTightlyAroundPin() throws {
-        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
-            courseName: "Royal Melbourne",
-            holeNumber: 1
-        )
     }
 
     private func assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
@@ -173,61 +154,6 @@ final class CourseRepositoryTests: XCTestCase {
         XCTAssertEqual(course.coordinate.longitude, 145.029, accuracy: 0.005)
     }
 
-    func testCourseDiscoveryBuildsFeaturedHeroFromNearestCourse() {
-        let repository = SeededCourseRepository()
-
-        let model = CourseDiscoveryViewModel(courses: repository.nearbyCourses())
-
-        XCTAssertEqual(model.heroEyebrow, "Near Brighton, VIC")
-        XCTAssertEqual(model.heroTitle, "Pick your opening tee shot")
-        XCTAssertEqual(model.featuredCourse?.name, "Medway Golf Club")
-        XCTAssertEqual(model.featuredDistanceLabel, "2.6 km away")
-        XCTAssertEqual(model.featuredDeck, "Closest first, then move straight into tee and player setup.")
-        XCTAssertEqual(model.collectionEyebrow, "Ranked nearby")
-        XCTAssertEqual(model.stagePresentation, .stackedShowcase)
-        XCTAssertEqual(model.stageAssetName, "RoundDiscoveryStage")
-    }
-
-    func testCourseDiscoveryUsesFallbackMessagingWhenNoCoursesExist() {
-        let model = CourseDiscoveryViewModel(courses: [])
-
-        XCTAssertNil(model.featuredCourse)
-        XCTAssertEqual(model.featuredDistanceLabel, "No course loaded")
-        XCTAssertEqual(model.collectionTitle, "Nearby Courses")
-        XCTAssertEqual(model.collectionEyebrow, "Ranked nearby")
-        XCTAssertEqual(model.stagePresentation, .stackedShowcase)
-        XCTAssertEqual(model.stageAssetName, "RoundDiscoveryStage")
-    }
-
-    func testCourseDetailBuildsPrimaryCommitmentPresentation() throws {
-        let repository = SeededCourseRepository()
-        let course = try XCTUnwrap(repository.nearbyCourses().first(where: { $0.name == "Royal Melbourne" }))
-        let selectedTee = try XCTUnwrap(course.tees.first(where: { $0.name == "Member" }))
-
-        let model = CourseDetailViewModel(course: course, selectedTee: selectedTee, distanceUnit: .meters)
-
-        XCTAssertEqual(model.heroEyebrow, "Course Lock")
-        XCTAssertEqual(model.heroTitle, "Royal Melbourne")
-        XCTAssertEqual(model.heroDistanceLabel, "3.2 km away")
-        let memberTeeMeters = Int((Double(selectedTee.yards) * 0.9144).rounded())
-        XCTAssertEqual(model.teeBadgeText, "Member • \(memberTeeMeters)m")
-        XCTAssertEqual(model.briefingEyebrow, "Course briefing")
-        XCTAssertEqual(model.selectionDeck, "Pick the tee that matches today’s round and move straight into players.")
-        XCTAssertEqual(model.stagePresentation, .stackedShowcase)
-        XCTAssertEqual(model.stageAssetName, "CourseDetailStage")
-    }
-
-    func testCourseDetailBuildsSecondaryDataDisclosure() throws {
-        let repository = SeededCourseRepository()
-        let course = try XCTUnwrap(repository.nearbyCourses().first(where: { $0.name == "Royal Melbourne" }))
-
-        let model = CourseDetailViewModel(course: course, selectedTee: nil)
-
-        XCTAssertEqual(model.dataDisclosureTitle, "Course data and community")
-        XCTAssertEqual(model.reportActionTitle, "Report course data")
-        XCTAssertEqual(model.expectations.count, 3)
-    }
-
     func testCorrectionDraftBuildsSubmissionSummaryFromHoleAndKind() {
         let course = SwingPalCourse.test(name: "Royal Melbourne", distanceKilometers: 3.2)
         let draft = CourseCorrectionDraft(
@@ -245,5 +171,32 @@ final class CourseRepositoryTests: XCTestCase {
         XCTAssertEqual(draft.summaryTitle, "Hole 4 bunker update")
         XCTAssertEqual(draft.summaryCaption, "1 piece of evidence attached")
         XCTAssertTrue(draft.canSubmit)
+    }
+
+    func testMedwayHole13InspectionFrontPinBackBracketTightlyAroundPin() throws {
+        // Real-bug guard: H13 reported Front=0m / Pin=225m / Back=236m
+        // in the simulator while inspecting the hole. Front=0 implied
+        // a wildly negative offset, which only happens when the green
+        // polygon contains stray vertices far from the actual surface.
+        // After cleaning the JSON we expect Front to land within ~30m
+        // of Pin and the front/pin/back trio to be strictly ordered.
+        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
+            courseName: "Medway Golf Club",
+            holeNumber: 13
+        )
+    }
+
+    func testMedwayHole10InspectionFrontPinBackBracketTightlyAroundPin() throws {
+        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
+            courseName: "Medway Golf Club",
+            holeNumber: 10
+        )
+    }
+
+    func testRoyalMelbourneHole1InspectionFrontPinBackBracketTightlyAroundPin() throws {
+        try assertInspectionFrontPinBackBracketsArePhysicallyPlausible(
+            courseName: "Royal Melbourne",
+            holeNumber: 1
+        )
     }
 }

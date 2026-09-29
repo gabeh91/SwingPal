@@ -3,14 +3,6 @@ enum AuthState: Equatable {
     case authenticated
 }
 
-enum SwingPalRootPresentation: Equatable {
-    case appShell
-
-    static func resolve(authState: AuthState) -> SwingPalRootPresentation {
-        .appShell
-    }
-}
-
 enum AuthModalPresentation: Equatable {
     case authFlow
     case premiumGate

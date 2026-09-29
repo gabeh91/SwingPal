@@ -59,7 +59,7 @@ struct WatchHoleFinishView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .background(.green.opacity(0.24), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(Color(red: 0.81, green: 0.89, blue: 0.77).opacity(0.28), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(!model.canFinishHole || !model.canSendCriticalActions)

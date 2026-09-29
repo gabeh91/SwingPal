@@ -16,7 +16,7 @@ Open `SwingPal.xcodeproj` in Xcode. Resolve Swift Package dependencies when prom
 
 ## Configure Supabase (optional for local UI)
 
-If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are not set, the app uses a **mock auth** path so you can run and preview much of the UI without a backend.
+If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are not set, the app remains usable as a guest. Sign-in reports missing configuration; it does not grant a mock authenticated session. `MockAuthService` is available for tests and previews.
 
 For a real project, add those keys to the SwingPal target’s **Info** (or use an `.xcconfig` as described in the Supabase guide), register the **`swingpal`** URL scheme for `swingpal://auth-callback`, and follow the full checklist:
 
@@ -45,3 +45,7 @@ xcodebuild test -project SwingPal.xcodeproj -scheme SwingPal -destination 'platf
 ```
 
 Use a simulator name from the first command’s output.
+
+## Club catalog
+
+Add Club downloads a manufacturer-sourced catalog from Supabase with a local cache and bundled offline fallback. A daily Supabase job publishes validated updates from supported manufacturer feeds. See [catalog coverage, deployment and maintenance](docs/data/club-catalog.md).

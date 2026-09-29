@@ -1,7 +1,7 @@
 {
   "id": "a672bfce-4b78-58bb-bf75-db3da0afdbd0",
   "name": "Medway Golf Club",
-  "distanceKilometers": 2.6,
+  "distanceKilometers": null,
   "coordinate": {
     "latitude": -37.77607936077184,
     "longitude": 144.86771335992367

@@ -1,0 +1,820 @@
+{
+  "cobra": {
+    "products": [
+      {
+        "title": "OPTM MAX-K Driver",
+        "handle": "optm-max-k-driver",
+        "vendor": "Cobra Golf",
+        "product_type": "FF--Driver",
+        "options": [
+          {
+            "name": "Hand//Loft",
+            "position": 1,
+            "values": [
+              "Right//9.0",
+              "Right//10.5",
+              "Right//12.0",
+              "Left//9.0",
+              "Left//10.5",
+              "Left//12.0"
+            ]
+          },
+          {
+            "name": "Shaft Flex",
+            "position": 2,
+            "values": [
+              "Graphite Lite",
+              "Graphite Regular",
+              "Graphite Stiff",
+              "Graphite X-Stiff"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 3,
+            "values": [
+              "Custom Shaft",
+              "Project X Denali Blue 60 Frost CB 60",
+              "MCA Kai'li Dark Waves Blue 60",
+              "MCA Kai'li Dark Waves White 60",
+              "MCA Kai'li Dark Waves Red 50"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "OPTM X Fairway",
+        "handle": "optm-x-fairway",
+        "vendor": "Cobra Golf",
+        "product_type": "FF--Fairway",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Left",
+              "Right"
+            ]
+          },
+          {
+            "name": "Loft",
+            "position": 2,
+            "values": [
+              "3",
+              "3HF",
+              "5",
+              "7",
+              "9"
+            ]
+          },
+          {
+            "name": "Shaft Flex",
+            "position": 3,
+            "values": [
+              "Graphite Lite",
+              "Graphite Regular",
+              "Graphite Stiff",
+              "Graphite X-Stiff"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "KING Irons",
+        "handle": "king-irons",
+        "vendor": "Cobra Golf",
+        "product_type": "Irons",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Left",
+              "Right"
+            ]
+          },
+          {
+            "name": "Shaft Flex",
+            "position": 2,
+            "values": [
+              "Steel Regular",
+              "Steel Stiff",
+              "Steel X-Stiff",
+              "Graphite Lite",
+              "Graphite Regular",
+              "Graphite Stiff",
+              "Graphite X-Stiff"
+            ]
+          },
+          {
+            "name": "Set Comp",
+            "position": 3,
+            "values": [
+              "4-PW",
+              "5-GW",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "G",
+              "P",
+              "S"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "MIM Nova Putter",
+        "handle": "mim-nova-putter",
+        "vendor": "Cobra Golf",
+        "product_type": "SB--Putter",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Left",
+              "Right"
+            ]
+          },
+          {
+            "name": "Length",
+            "position": 2,
+            "values": [
+              "Custom Length",
+              "34 Inches",
+              "35 Inches"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "DS-ADAPT Hybrid",
+        "handle": "ds-adapt-hybrid",
+        "vendor": "Cobra Golf",
+        "product_type": "FF--Hybrid",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right",
+              "Left"
+            ]
+          },
+          {
+            "name": "Loft",
+            "position": 2,
+            "values": [
+              "2",
+              "3",
+              "4",
+              "5",
+              "6"
+            ]
+          },
+          {
+            "name": "Shaft Flex",
+            "position": 3,
+            "values": [
+              "Graphite Lite",
+              "Graphite Regular",
+              "Graphite Stiff",
+              "Graphite X-Stiff"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "touredge": {
+    "products": [
+      {
+        "title": "Exotics Max Irons (Right Hand)",
+        "handle": "exotics-max-irons",
+        "vendor": "Exotics",
+        "product_type": "Drivers",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right",
+              "Left"
+            ]
+          },
+          {
+            "name": "Set Make Up",
+            "position": 2,
+            "values": [
+              "#5-PW",
+              "#5-PW & AW",
+              "#6-PW",
+              "#6-PW & AW",
+              "#6-AW & GW",
+              "#4",
+              "AW",
+              "GW",
+              "SW"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 3,
+            "values": [
+              "Fujikura Ventus White/Black",
+              "Fujikura Ventus Blue/Black",
+              "Fujikura Ventus Red/Black",
+              "KBS Tour Lite Steel"
+            ]
+          },
+          {
+            "name": "Flex",
+            "position": 4,
+            "values": [
+              "A-Flex (Senior)",
+              "R-Flex (Regular)",
+              "S-Flex (Stiff)",
+              "X-Flex (Extra Stiff)"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Exotics Max Fairway",
+        "handle": "exotics-max-fairway-1",
+        "vendor": "Tour Edge",
+        "product_type": "",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right",
+              "Left"
+            ]
+          },
+          {
+            "name": "Loft",
+            "position": 2,
+            "values": [
+              "#3-15\u00b0",
+              "#3-16.5\u00b0",
+              "#5-18\u00b0",
+              "#7-21\u00b0",
+              "#9-24\u00b0"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 3,
+            "values": [
+              "Fujikura Ventus White/Black",
+              "Fujikura Ventus Red/Black",
+              "Fujikura Ventus Blue/Black"
+            ]
+          },
+          {
+            "name": "Flex",
+            "position": 4,
+            "values": [
+              "S-Flex (Stiff)",
+              "R-Flex (Regular)",
+              "A-Flex (Senior)",
+              "X-Flex (Extra Stiff)"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Exotics Max Fairway",
+        "handle": "exotics-max-fairway",
+        "vendor": "Exotics",
+        "product_type": "Drivers",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right",
+              "Left"
+            ]
+          },
+          {
+            "name": "Loft",
+            "position": 2,
+            "values": [
+              "#3-15\u00b0",
+              "#3-16.5\u00b0",
+              "#5-18\u00b0",
+              "#7-21\u00b0",
+              "#9-24\u00b0"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 3,
+            "values": [
+              "Fujikura Ventus White/Black",
+              "Fujikura Ventus Red/Black",
+              "Fujikura Ventus Blue/Black"
+            ]
+          },
+          {
+            "name": "Flex",
+            "position": 4,
+            "values": [
+              "S-Flex (Stiff)",
+              "R-Flex (Regular)",
+              "A-Flex (Senior)",
+              "X-Flex (Extra Stiff)"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Hot Launch HL-01 Putter",
+        "handle": "hot-launch-hl01-putter",
+        "vendor": "Tour Edge",
+        "product_type": "Putters",
+        "options": [
+          {
+            "name": "Color",
+            "position": 1,
+            "values": [
+              "Silver"
+            ]
+          },
+          {
+            "name": "Length",
+            "position": 2,
+            "values": [
+              "33\"",
+              "34\"",
+              "35\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "miura": {
+    "products": [
+      {
+        "title": "TC-202",
+        "handle": "tc-202",
+        "vendor": "Miura",
+        "product_type": "Irons",
+        "options": [
+          {
+            "name": "Dexterity",
+            "position": 1,
+            "values": [
+              "RH"
+            ]
+          },
+          {
+            "name": "Club",
+            "position": 2,
+            "values": [
+              "Custom",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "PW",
+              "GW"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "K-Grind 2.0",
+        "handle": "k-grind-2-0",
+        "vendor": "Miura",
+        "product_type": "Wedges",
+        "options": [
+          {
+            "name": "Dexterity",
+            "position": 1,
+            "values": [
+              "RH"
+            ]
+          },
+          {
+            "name": "Loft",
+            "position": 2,
+            "values": [
+              "52",
+              "54",
+              "56",
+              "58",
+              "60"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "honma": {
+    "products": [
+      {
+        "title": "3-STAR IRON, BERES 10",
+        "handle": "3-star-iron-beres-11",
+        "vendor": "Honma Golf",
+        "product_type": "",
+        "options": [
+          {
+            "name": "Loft",
+            "position": 1,
+            "values": [
+              "5-11 / AW / SW",
+              "AW",
+              "SW"
+            ]
+          },
+          {
+            "name": "Flex",
+            "position": 2,
+            "values": [
+              "R",
+              "S",
+              "SR"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 3,
+            "values": [
+              "ARMRQ",
+              "ARMRQ Light"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "TW777 PCB MAX Irons",
+        "handle": "tw777-irons",
+        "vendor": "Honma Golf",
+        "product_type": "TW 757",
+        "options": [
+          {
+            "name": "Loft",
+            "position": 1,
+            "values": [
+              "#6-10",
+              "#5",
+              "#6",
+              "#7",
+              "#8",
+              "#9",
+              "#10",
+              "#11",
+              "AW",
+              "SW"
+            ]
+          },
+          {
+            "name": "Flex | Shaft",
+            "position": 2,
+            "values": [
+              "R - VIZARD FOR TW777",
+              "S - N.S.PRO950GH NEO"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "TW777 Hybrid",
+        "handle": "tw777-hybrid",
+        "vendor": "Honma Golf",
+        "product_type": "TW 757",
+        "options": [
+          {
+            "name": "Loft",
+            "position": 1,
+            "values": [
+              "3U",
+              "4U",
+              "5U",
+              "6U"
+            ]
+          },
+          {
+            "name": "Flex",
+            "position": 2,
+            "values": [
+              "R",
+              "S"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "takomo": {
+    "products": [
+      {
+        "title": "Ignis D2 Fairway Wood",
+        "handle": "ignis-d2-fairway-wood",
+        "vendor": "Takomo Golf",
+        "product_type": "",
+        "options": [
+          {
+            "name": "Head",
+            "position": 1,
+            "values": [
+              "FW 3",
+              "FW 5",
+              "FW 7"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Skyforger 002 Wedges",
+        "handle": "skyforger-002-wedges",
+        "vendor": "Takomo",
+        "product_type": "Stock Items",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right",
+              "Left"
+            ]
+          },
+          {
+            "name": "Loft & Grind",
+            "position": 2,
+            "values": [
+              "46F",
+              "48F",
+              "50F",
+              "52F",
+              "52V",
+              "54F",
+              "54V",
+              "56F",
+              "56V",
+              "58V",
+              "60V"
+            ]
+          },
+          {
+            "name": "Grip",
+            "position": 3,
+            "values": [
+              "Lamkin Crossline Standard",
+              "Lamkin Crossline Midsize",
+              "Lamkin Crossline Black Standard",
+              "Lamkin Crossline Black Midsize"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Iron 101U Driving Iron",
+        "handle": "iron-101u",
+        "vendor": "Takomo",
+        "product_type": "Stock Items",
+        "options": [
+          {
+            "name": "Model",
+            "position": 1,
+            "values": [
+              "Iron 2",
+              "Iron 3",
+              "Iron 4"
+            ]
+          },
+          {
+            "name": "Shaft",
+            "position": 2,
+            "values": [
+              "KBS Tour Graphite Hybrid 70 Regular (Green Label)",
+              "KBS Tour Graphite Hybrid 80 Stiff (Green Label)",
+              "KBS Tour Graphite Hybrid 80 X-Stiff (Green Label)"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "bettinardi": {
+    "products": [
+      {
+        "title": "BB1 Putter",
+        "handle": "bb1-putter-2",
+        "vendor": "Bettinardi Golf",
+        "product_type": "Custom Putters",
+        "options": [
+          {
+            "name": "Title",
+            "position": 1,
+            "values": [
+              "Default"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Queen B 6 Putter",
+        "handle": "queen-b-6-putter-2",
+        "vendor": "Studio B",
+        "product_type": "",
+        "options": [
+          {
+            "name": "Title",
+            "position": 1,
+            "values": [
+              "Default Title"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "evnroll": {
+    "products": [
+      {
+        "title": "ORIGIN ER8cs - Satin",
+        "handle": "origin-er8cs-satin",
+        "vendor": "Evnroll",
+        "product_type": "Putters",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right"
+            ]
+          },
+          {
+            "name": "Length",
+            "position": 2,
+            "values": [
+              "33\"",
+              "34\"",
+              "35\""
+            ]
+          }
+        ]
+      },
+      {
+        "title": "EZPZ",
+        "handle": "ezpz",
+        "vendor": "Evnroll",
+        "product_type": "Putters",
+        "options": [
+          {
+            "name": "Hand",
+            "position": 1,
+            "values": [
+              "Right"
+            ]
+          },
+          {
+            "name": "Length",
+            "position": 2,
+            "values": [
+              "33\"",
+              "34\"",
+              "35\""
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Custom ZERO Z5 HATCHBACK Mallet Putter",
+        "handle": "custom-zero-z5-mallet-putter-black",
+        "vendor": "Evnroll",
+        "product_type": "Custom Putters",
+        "options": [
+          {
+            "name": "Grip",
+            "position": 1,
+            "values": [
+              "NEO White/Black TourTac",
+              "NEO Black TourTac",
+              "NEO White/Red TourTac",
+              "NEO White/Blue TourTac",
+              "NEO White/Aqua TourTac",
+              "Black Pistol - 70g",
+              "Grey Pistol - 70g",
+              "Evnroll Gravity Grip",
+              "Gravity Grip GG3",
+              "TourTac - Black & White"
+            ]
+          },
+          {
+            "name": "Headcover",
+            "position": 2,
+            "values": [
+              "Zero Z5"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "newlevel": {
+    "products": [
+      {
+        "title": "Chrome 702 CB Forged Irons",
+        "handle": "702-cb-forged-irons",
+        "vendor": "Sunmax",
+        "product_type": "Iron Head",
+        "options": [
+          {
+            "name": "Club",
+            "position": 1,
+            "values": [
+              "4 Iron",
+              "5 Iron",
+              "6 Iron",
+              "7 Iron",
+              "8 Iron",
+              "9 Iron",
+              "PW"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "SPN-VS Forged Wedge",
+        "handle": "spn-vs-forged-wedge",
+        "vendor": "Deson",
+        "product_type": "Wedge",
+        "options": [
+          {
+            "name": "Club",
+            "position": 1,
+            "values": [
+              "54\u00b0 Right Handed (SOLD OUT)",
+              "56\u00b0 Right Handed (SOLD OUT)",
+              "58\u00b0 Right Handed",
+              "60\u00b0 Right Handed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "KBS Wedge X",
+        "handle": "kbs-wedge-x",
+        "vendor": "FST",
+        "product_type": "Shaft",
+        "options": [
+          {
+            "name": "Title",
+            "position": 1,
+            "values": [
+              "Default Title"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "NLU-01 UTILITY RIGHT HANDED",
+        "handle": "nlu-01",
+        "vendor": "Deson",
+        "product_type": "Utility",
+        "options": [
+          {
+            "name": "Club",
+            "position": 1,
+            "values": [
+              "18\u00b0 Right Handed (SOLD OUT)",
+              "21\u00b0 Right Handed (SOLD OUT)",
+              "24\u00b0 Right Handed (SOLD OUT)",
+              "27\u00b0 Right Handed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "NLH-01 Hybrid",
+        "handle": "nlh-01",
+        "vendor": "Deson",
+        "product_type": "Hybrid",
+        "options": [
+          {
+            "name": "Club",
+            "position": 1,
+            "values": [
+              "17\u00b0 Right Handed",
+              "20\u00b0 Right Handed (SOLD OUT)",
+              "23\u00b0 Right Handed"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

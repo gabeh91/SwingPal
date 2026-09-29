@@ -5,14 +5,19 @@ struct BagClubRecommendation: Equatable {
     let reason: String
 
     static func make(bag: Bag, playsLikeDistanceMeters: Int, distanceUnit: DistanceUnit = .meters) -> Self {
-        let club = bag.clubs.min {
+        guard playsLikeDistanceMeters > 0 else {
+            return Self(clubName: "No recommendation", reason: "A target distance is needed before suggesting a club.")
+        }
+        guard let club = bag.clubs.filter({ !$0.isPutter && $0.typicalDistanceMeters > 0 }).min(by: {
             abs($0.typicalDistanceMeters - playsLikeDistanceMeters) <
             abs($1.typicalDistanceMeters - playsLikeDistanceMeters)
-        } ?? .init(name: "Unknown", typicalDistanceMeters: 0)
+        }) else {
+            return Self(clubName: "No recommendation", reason: "Add a club with a typical distance to get a suggestion.")
+        }
 
         return Self(
             clubName: club.name,
-            reason: "Your \(club.name) average is \(distanceUnit.shortLabel(forMeters: club.typicalDistanceMeters)) and this shot plays like \(distanceUnit.shortLabel(forMeters: playsLikeDistanceMeters))."
+            reason: "Your bag lists \(club.name) at \(distanceUnit.shortLabel(forMeters: club.typicalDistanceMeters)); this shot plays like \(distanceUnit.shortLabel(forMeters: playsLikeDistanceMeters))."
         )
     }
 

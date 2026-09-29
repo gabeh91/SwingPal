@@ -5,52 +5,59 @@ import SwiftUI
 struct FollowInviteSheet: View {
     let invite: FollowInvitePresentation
     @ObservedObject var appState: AppState
-    let palette: SocialPalette
 
     @Environment(\.dismiss) private var dismiss
     @State private var isWorking = false
     @State private var errorText: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-            Text("Follow golfer")
-                .font(ShellTokens.Typography.sectionTitle)
-                .foregroundStyle(palette.primaryText)
-
-            Text(subtitle)
-                .font(ShellTokens.Typography.body)
-                .foregroundStyle(palette.secondaryText)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                BookNote("Follow")
+                Text(invite.displayName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? invite.displayName! : "A golfer")
+                    .font(Book.Typeface.title)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             if let errorText {
                 Text(errorText)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.red.opacity(0.9))
+                    .font(.subheadline)
+                    .foregroundStyle(Book.warning)
             }
 
-            HStack(spacing: ShellTokens.Spacing.x12) {
+            Spacer(minLength: 0)
+
+            VStack(spacing: 8) {
+                Button {
+                    Task { await confirm() }
+                } label: {
+                    HStack {
+                        Text("Follow")
+                        Spacer(minLength: 12)
+                        if isWorking {
+                            ProgressView().tint(Book.onStamp)
+                        } else {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+                .buttonStyle(BookStampButtonStyle())
+                .disabled(isWorking || appState.currentUser == nil)
+
                 Button("Not now") {
                     appState.dismissFollowInvite()
                     dismiss()
                 }
-                .buttonStyle(.bordered)
-
-                Button {
-                    Task { await confirm() }
-                } label: {
-                    if isWorking {
-                        ProgressView()
-                            .tint(palette.accentForeground)
-                    } else {
-                        Text("Follow")
-                            .fontWeight(.semibold)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(palette.accent)
-                .disabled(isWorking || appState.currentUser == nil)
+                .buttonStyle(BookStampButtonStyle(prominent: false))
             }
         }
-        .padding(ShellTokens.Spacing.x20)
+        .padding(20)
+        .padding(.top, 8)
+        .bookSheetChrome()
+        .presentationBackground(Book.paper)
         .presentationDragIndicator(.visible)
     }
 
@@ -82,7 +89,6 @@ struct FollowInviteSheet: View {
 
 struct PeopleSearchSheet: View {
     @ObservedObject var appState: AppState
-    let palette: SocialPalette
 
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
@@ -91,82 +97,51 @@ struct PeopleSearchSheet: View {
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>?
 
+    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespaces) }
+
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(palette.tertiaryText)
-                        TextField("Name or username", text: $query)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .foregroundStyle(palette.primaryText)
-                            .onChange(of: query) { _, newValue in
-                                scheduleSearch(newValue)
-                            }
-                    }
-                    .listRowBackground(palette.cardMutedTint)
-                }
-
-                Section("Results") {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
                     if isSearching && results.isEmpty {
-                        ProgressView()
-                            .listRowBackground(palette.cardMutedTint)
+                        HStack(spacing: 10) {
+                            ProgressView()
+                            Text("Searching…").font(.subheadline).foregroundStyle(Book.pencil)
+                        }
                     } else if results.isEmpty {
-                        Text(query.trimmingCharacters(in: .whitespaces).count < 2
-                             ? "Type at least two characters."
-                             : "No golfers match that search.")
-                            .font(ShellTokens.Typography.body)
-                            .foregroundStyle(palette.secondaryText)
-                            .listRowBackground(palette.cardMutedTint)
+                        Text(trimmedQuery.count < 2 ? "Search by name or username — two letters or more." : "No golfers match “\(trimmedQuery)”.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
                     } else {
-                        ForEach(results) { profile in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(profile.presentationName)
-                                        .font(.headline)
-                                        .foregroundStyle(palette.primaryText)
-                                    if let dn = profile.displayName,
-                                       !dn.isEmpty,
-                                       profile.username != nil {
-                                        Text(dn)
-                                            .font(.caption)
-                                            .foregroundStyle(palette.tertiaryText)
-                                    }
-                                }
-                                Spacer()
-                                if following.contains(profile.id) {
-                                    Text("Following")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(palette.tertiaryText)
-                                } else {
-                                    Button("Follow") {
-                                        appState.presentFollowInvite(userId: profile.id, displayName: profile.presentationName)
-                                    }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(palette.accent)
-                                    .disabled(appState.currentUser == nil)
-                                }
+                        BookGroup("Golfers", ruleInset: 60) {
+                            ForEach(results) { profile in
+                                golferRow(profile)
                             }
-                            .listRowBackground(palette.cardMutedTint)
                         }
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .scrollContentBackground(.hidden)
-            .background(palette.backgroundBase)
+            .bookSheetChrome()
             .navigationTitle("Find golfers")
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Name or username")
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .onChange(of: query) { _, newValue in
+                scheduleSearch(newValue)
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundStyle(palette.accent)
                 }
             }
         }
+        .presentationBackground(Book.paper)
         .task {
             await refreshFollowing()
         }
@@ -175,6 +150,43 @@ struct PeopleSearchSheet: View {
                 Task { await refreshFollowing() }
             }
         }
+    }
+
+    private func golferRow(_ profile: PublicProfile) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle().fill(Book.wash)
+                Text(String(profile.presentationName.prefix(1)).uppercased())
+                    .font(.system(.headline, weight: .bold).width(.condensed))
+            }
+            .frame(width: 34, height: 34)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(profile.presentationName).font(.body)
+                if let displayName = profile.displayName, !displayName.isEmpty, profile.username != nil {
+                    Text(displayName).font(.caption).foregroundStyle(Book.pencil)
+                }
+            }
+            Spacer(minLength: 8)
+            if following.contains(profile.id) {
+                Text("FOLLOWING")
+                    .font(Book.Typeface.noteSmall)
+                    .foregroundStyle(Book.pencil)
+            } else {
+                Button("Follow") {
+                    appState.presentFollowInvite(userId: profile.id, displayName: profile.presentationName)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Book.onStamp)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(Book.stamp, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .buttonStyle(.plain)
+                .disabled(appState.currentUser == nil)
+                .opacity(appState.currentUser == nil ? 0.4 : 1)
+            }
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 58)
     }
 
     private func scheduleSearch(_ raw: String) {
@@ -224,55 +236,77 @@ struct NearbyConnectSheet: View {
     @ObservedObject var appState: AppState
     @ObservedObject var nearbyCoordinator: NearbyDiscoveryCoordinator
     @ObservedObject var nfcScanner: NFCFollowScanner
-    let palette: SocialPalette
 
     @Environment(\.dismiss) private var dismiss
+
+    private var canLook: Bool { appState.currentUser.flatMap { UUID(uuidString: $0.id) } != nil }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x18) {
-                    Text("SwingPal looks for other open apps near you using Bluetooth and Wi‑Fi (Apple MultipeerConnectivity). Hold phones close and tap Start looking on both devices.")
-                        .font(ShellTokens.Typography.body)
-                        .foregroundStyle(palette.secondaryText)
-
-                    Text("NFC: Program a tag with a SwingPal link (swingpal://follow/…). iOS does not let third-party apps exchange custom data by tapping two phones together; use Nearby here, or scan a programmed NFC tag.")
-                        .font(.footnote)
-                        .foregroundStyle(palette.tertiaryText)
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Follow someone standing next to you")
+                            .font(Book.Typeface.heading)
+                        Text("Open this on both phones and tap Start looking. SwingPal finds the other phone over Bluetooth and Wi‑Fi.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     if nearbyCoordinator.isRunning {
-                        Label("Searching…", systemImage: "dot.radiowaves.left.and.right")
-                            .foregroundStyle(palette.accent)
+                        HStack(spacing: 10) {
+                            ProgressView()
+                            Text("Looking for SwingPal close by…").font(.subheadline)
+                        }
                     }
 
                     Button {
                         toggleNearby()
                     } label: {
-                        Text(nearbyCoordinator.isRunning ? "Stop" : "Start looking nearby")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(palette.accent)
-                    .disabled(appState.currentUser.flatMap { UUID(uuidString: $0.id) } == nil)
-
-                    if nfcScanner.isSupported {
-                        Button {
-                            nfcScanner.startScan()
-                        } label: {
-                            Label("Scan NFC tag", systemImage: "sensor.tag.radiowaves.forward")
-                                .frame(maxWidth: .infinity)
+                        HStack {
+                            Text(nearbyCoordinator.isRunning ? "Stop looking" : "Start looking")
+                            Spacer(minLength: 12)
+                            Image(systemName: nearbyCoordinator.isRunning ? "stop.fill" : "dot.radiowaves.left.and.right")
                         }
-                        .buttonStyle(.bordered)
-                        .disabled(nfcScanner.isScanning)
-                    } else {
-                        Text("NFC tag reading isn’t available on this device.")
-                            .font(.footnote)
-                            .foregroundStyle(palette.tertiaryText)
                     }
+                    .buttonStyle(BookStampButtonStyle(prominent: !nearbyCoordinator.isRunning))
+                    .disabled(!canLook)
+
+                    if !canLook {
+                        Text("Sign in to find golfers nearby.")
+                            .font(.footnote)
+                            .foregroundStyle(Book.pencil)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        BookNote("NFC tags")
+                        Text("iPhones can't swap details by tapping together, but you can scan a tag programmed with a SwingPal follow link (swingpal://follow/…).")
+                            .font(.footnote)
+                            .foregroundStyle(Book.pencil)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if nfcScanner.isSupported {
+                            Button {
+                                nfcScanner.startScan()
+                            } label: {
+                                HStack {
+                                    Text("Scan a tag")
+                                    Spacer(minLength: 12)
+                                    Image(systemName: "sensor.tag.radiowaves.forward")
+                                }
+                            }
+                            .buttonStyle(BookStampButtonStyle(prominent: false))
+                            .disabled(nfcScanner.isScanning)
+                        } else {
+                            Text("This device can't read NFC tags.")
+                                .font(.footnote.weight(.semibold))
+                        }
+                    }
+                    .padding(.top, 6)
                 }
-                .padding(ShellTokens.Spacing.x20)
+                .padding(20)
             }
-            .background(palette.backgroundBase)
+            .bookSheetChrome()
             .navigationTitle("Nearby")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -281,7 +315,6 @@ struct NearbyConnectSheet: View {
                         nearbyCoordinator.stop()
                         dismiss()
                     }
-                    .foregroundStyle(palette.accent)
                 }
             }
             .onChange(of: nearbyCoordinator.discoveredUserId) { _, uid in
@@ -297,6 +330,7 @@ struct NearbyConnectSheet: View {
                 nearbyCoordinator.stop()
             }
         }
+        .presentationBackground(Book.paper)
     }
 
     private func toggleNearby() {

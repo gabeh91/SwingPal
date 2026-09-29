@@ -178,4 +178,62 @@ final class OSMCourseDiscoveryTests: XCTestCase {
         XCTAssertGreaterThan(bbox.north, 0)
         XCTAssertGreaterThan(bbox.east, 0)
     }
+
+    // MARK: - Search phrasing
+
+    func testSearchDropsVenueWordsSoClubNamesMatchOpenStreetMap() {
+        // OpenStreetMap calls it "Westgate Golf Course"; people type "Westgate golf club".
+        XCTAssertEqual(CourseSearchQuery.variants(for: "Westgate golf club"), ["westgate golf course", "westgate golf"])
+        XCTAssertEqual(CourseSearchQuery.variants(for: "The Metropolitan Golf Club").first, "metropolitan golf course")
+    }
+
+    func testSearchFallsBackToEachWordForSuburbsAndExtras() {
+        let variants = CourseSearchQuery.variants(for: "Westgate Spotswood")
+        XCTAssertEqual(variants.first, "westgate spotswood golf course")
+        XCTAssertTrue(variants.contains("westgate golf course"))
+        XCTAssertLessThanOrEqual(variants.count, 4, "Nominatim allows one request a second")
+    }
+
+    func testSearchWithNothingDistinctiveIsSearchedAsTypedOrNotAtAll() {
+        XCTAssertEqual(CourseSearchQuery.variants(for: "The Golf Club"), ["The Golf Club"])
+        XCTAssertEqual(CourseSearchQuery.variants(for: "  "), [])
+    }
+
+    // MARK: - Overpass answers
+
+    func testBusyServerPagesAreRetryableNotUnreadableCourses() {
+        let xml = Data(#"<?xml version="1.0"?><osm><remark>runtime error: open64: 0 Success /osm3s_osm_base Dispatcher_Client::request_read_and_idx::rate_limited</remark></osm>"#.utf8)
+        XCTAssertThrowsError(try OverpassClient.checkPayload(xml)) { XCTAssertEqual($0 as? OSMCourseDiscoveryError, .rateLimited) }
+
+        let timedOut = Data(#"{"elements":[],"remark":"runtime error: Query timed out in \"query\" at line 3 after 61 seconds."}"#.utf8)
+        XCTAssertThrowsError(try OverpassClient.checkPayload(timedOut)) { XCTAssertEqual($0 as? OSMCourseDiscoveryError, .rateLimited) }
+
+        XCTAssertNoThrow(try OverpassClient.checkPayload(Data(#"{"elements":[]}"#.utf8)))
+    }
+
+    func testQueryBodyEscapesCharactersFormEncodingReserves() {
+        let body = String(decoding: OverpassClient.formBody(for: #"way["golf"~"a+b&c=d"];"#), as: UTF8.self)
+        XCTAssertFalse(body.dropFirst(5).contains("+"))
+        XCTAssertFalse(body.dropFirst(5).contains("&"))
+        XCTAssertTrue(body.hasPrefix("data="))
+    }
+
+    func testGeometryIsFetchedFromTheCourseBoundaryWhenItHasOne() {
+        let course = DiscoveredCourse(id: "way-29233650", name: "Westgate Golf Course", coordinate: .init(latitude: -37.8239, longitude: 144.8864), osmID: 29233650, osmType: .way, countryCode: "AU", region: nil, distanceKilometers: nil)
+        let query = LiveOSMCourseGeometryFetcher.boundaryQuery(for: course) ?? ""
+        XCTAssertTrue(query.contains("way(29233650)->.course;"))
+        XCTAssertTrue(query.contains("map_to_area"))
+        XCTAssertTrue(query.contains(#"node["golf"="pin"]"#))
+
+        let relation = DiscoveredCourse(id: "relation-4180358", name: "Royal Melbourne", coordinate: .init(latitude: -37.97, longitude: 145.03), osmID: 4180358, osmType: .relation, countryCode: "AU", region: nil, distanceKilometers: nil)
+        XCTAssertTrue(LiveOSMCourseGeometryFetcher.boundaryQuery(for: relation)?.contains("way(r.course)->.edges;") == true)
+
+        let node = DiscoveredCourse(id: "node-1", name: "Point", coordinate: .init(latitude: 0, longitude: 0), osmID: 1, osmType: .node, countryCode: nil, region: nil, distanceKilometers: nil)
+        XCTAssertNil(LiveOSMCourseGeometryFetcher.boundaryQuery(for: node), "A course mapped as a point falls back to the box query")
+    }
+
+    func testOnlyPayloadsWithHolesCountAsCourseData() {
+        XCTAssertEqual(LiveOSMCourseGeometryFetcher.holeCount(in: Data(#"{"elements":[{"type":"way","id":1,"tags":{"golf":"hole"}},{"type":"way","id":2,"tags":{"golf":"green"}}]}"#.utf8)), 1)
+        XCTAssertEqual(LiveOSMCourseGeometryFetcher.holeCount(in: Data("<html>busy</html>".utf8)), 0)
+    }
 }

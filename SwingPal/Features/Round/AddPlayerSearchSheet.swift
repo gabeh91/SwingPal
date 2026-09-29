@@ -15,107 +15,49 @@ struct AddPlayerSearchSheet: View {
     @State private var nearbyErrorText: String?
     @StateObject private var nearby = NearbyDiscoveryCoordinator()
 
+    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     var body: some View {
         NavigationStack {
-            List {
-                if let nearbyErrorText {
-                    Section("Nearby") {
-                        Text(nearbyErrorText)
-                            .foregroundStyle(.secondary)
-                    }
-                } else if let nearbyProfile {
-                    Section("Nearby") {
-                        Button {
-                            onSelect(nearbyProfile)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-                                    .font(.title3)
-                                    .foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    nearbySection
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(nearbyProfile.displayName?.isEmpty == false ? (nearbyProfile.displayName ?? "") : nearbyProfile.presentationName)
-                                        .foregroundStyle(.primary)
-                                    if let username = nearbyProfile.username, !username.isEmpty {
-                                        Text("@\(username)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-
-                                Spacer()
-                            }
-                        }
-                    }
-                } else if myUserId != nil {
-                    Section("Nearby") {
-                        HStack(spacing: 12) {
-                            if nearby.isRunning {
-                                ProgressView()
-                            } else {
-                                Image(systemName: "antenna.radiowaves.left.and.right")
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text(nearby.isRunning ? "Looking for nearby SwingPal players…" : "Searching nearby is paused.")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                if let errorText {
-                    Section {
+                    if let errorText {
                         Text(errorText)
-                            .foregroundStyle(.red)
+                            .font(.subheadline)
+                            .foregroundStyle(Book.warning)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                }
 
-                if isLoading {
-                    Section {
-                        HStack(spacing: 12) {
+                    if isLoading {
+                        HStack(spacing: 10) {
                             ProgressView()
-                            Text("Searching…")
+                            Text("Searching…").font(.subheadline).foregroundStyle(Book.pencil)
                         }
                     }
-                }
 
-                if !results.isEmpty {
-                    Section("Results") {
-                        ForEach(results) { profile in
-                            Button {
-                                onSelect(profile)
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "person.circle.fill")
-                                        .font(.title3)
-                                        .foregroundStyle(.secondary)
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(profile.displayName?.isEmpty == false ? (profile.displayName ?? "") : profile.presentationName)
-                                            .foregroundStyle(.primary)
-                                        if let username = profile.username, !username.isEmpty {
-                                            Text("@\(username)")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-
-                                    Spacer()
-                                }
+                    if !results.isEmpty {
+                        BookGroup("Players", ruleInset: 58) {
+                            ForEach(results) { profile in
+                                playerRow(profile)
                             }
                         }
-                    }
-                } else if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !isLoading, errorText == nil {
-                    Section {
-                        Text("No matching players.")
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Section {
-                        Text("Search by username or name.")
-                            .foregroundStyle(.secondary)
+                    } else if !trimmedQuery.isEmpty, !isLoading, errorText == nil {
+                        Text("No players match “\(trimmedQuery)”.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
+                    } else if trimmedQuery.isEmpty {
+                        Text("Search by name or username.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
+            .bookSheetChrome()
             .navigationTitle("Add player")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -123,7 +65,7 @@ struct AddPlayerSearchSheet: View {
                     Button("Done", action: onDismiss)
                 }
             }
-            .searchable(text: $query, prompt: "Search SwingPal players")
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search SwingPal players")
             .onChange(of: query) { _, newValue in
                 Task { await runSearch(newValue) }
             }
@@ -139,6 +81,70 @@ struct AddPlayerSearchSheet: View {
                 nearby.stop()
             }
         }
+        .presentationBackground(Book.paper)
+    }
+
+    @ViewBuilder
+    private var nearbySection: some View {
+        if let nearbyProfile {
+            BookGroup("Nearby", ruleInset: 58) {
+                playerRow(nearbyProfile, symbol: "antenna.radiowaves.left.and.right")
+            }
+        } else if let nearbyErrorText {
+            VStack(alignment: .leading, spacing: 6) {
+                BookNote("Nearby")
+                Text(nearbyErrorText).font(.subheadline).foregroundStyle(Book.pencil)
+            }
+        } else if myUserId != nil {
+            VStack(alignment: .leading, spacing: 6) {
+                BookNote("Nearby")
+                HStack(spacing: 10) {
+                    if nearby.isRunning {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "antenna.radiowaves.left.and.right").foregroundStyle(Book.pencil)
+                    }
+                    Text(nearby.isRunning ? "Looking for SwingPal players close by…" : "Not looking for players close by.")
+                        .font(.subheadline)
+                        .foregroundStyle(Book.pencil)
+                }
+            }
+        }
+    }
+
+    private func playerRow(_ profile: PublicProfile, symbol: String? = nil) -> some View {
+        let name = profile.displayName?.isEmpty == false ? (profile.displayName ?? "") : profile.presentationName
+        return Button {
+            onSelect(profile)
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(Book.wash)
+                    if let symbol {
+                        Image(systemName: symbol).font(.subheadline.weight(.semibold))
+                    } else {
+                        Text(String(name.prefix(1)).uppercased())
+                            .font(.system(.headline, weight: .bold).width(.condensed))
+                    }
+                }
+                .frame(width: 32, height: 32)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(name).font(.body)
+                    if let username = profile.username, !username.isEmpty {
+                        Text("@\(username)").font(.caption).foregroundStyle(Book.pencil)
+                    }
+                }
+                Spacer(minLength: 8)
+                Text("Add")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Book.stamp)
+            }
+            .padding(.horizontal, 14)
+            .frame(minHeight: 56)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(BookRowButtonStyle())
+        .accessibilityLabel("Add \(name)")
     }
 
     @MainActor

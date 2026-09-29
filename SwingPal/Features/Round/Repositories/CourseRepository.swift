@@ -12,7 +12,6 @@ struct SeededCourseRepository: CourseRepository {
         /// Filename (without extension) of the bundled JSON, or `nil` if this
         /// course doesn't have a hand-traced/OSM-derived asset yet.
         let bundledFilename: String?
-        let distanceKilometers: Double
         let quality: SwingPalCourse.QualitySnapshot
         let community: SwingPalCourse.CommunityState
     }
@@ -30,7 +29,6 @@ struct SeededCourseRepository: CourseRepository {
             CourseSeed(
                 displayName: "Royal Melbourne",
                 bundledFilename: "royal-melbourne-west",
-                distanceKilometers: 3.2,
                 quality: .init(
                     overallConfidence: .reviewed,
                     geometryConfidence: .reviewed,
@@ -41,7 +39,6 @@ struct SeededCourseRepository: CourseRepository {
             CourseSeed(
                 displayName: "Medway Golf Club",
                 bundledFilename: "medway",
-                distanceKilometers: 2.6,
                 quality: .init(
                     overallConfidence: .reviewed,
                     geometryConfidence: .reviewed,
@@ -53,7 +50,7 @@ struct SeededCourseRepository: CourseRepository {
 
         return seeds
             .compactMap(makeBundledCourse(seed:))
-            .sorted { $0.distanceKilometers < $1.distanceKilometers }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     private func makeBundledCourse(seed: CourseSeed) -> SwingPalCourse? {
@@ -67,7 +64,7 @@ struct SeededCourseRepository: CourseRepository {
         return SwingPalCourse(
             id: bundled.id,
             name: bundled.name,
-            distanceKilometers: seed.distanceKilometers,
+            distanceKilometers: nil,
             coordinate: bundled.coordinate,
             holeCount: bundled.holeCount,
             par: bundled.par,

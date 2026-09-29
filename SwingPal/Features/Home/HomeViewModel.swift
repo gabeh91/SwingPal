@@ -7,19 +7,6 @@ enum EditorialStagePresentation: Equatable {
     case stackedShowcase
 }
 
-struct HomeQuickStat: Equatable {
-    let title: String
-    let value: String
-    let note: String
-}
-
-struct HomeNearbyCoursePreview: Equatable {
-    let courseID: UUID
-    let name: String
-    let distanceLabel: String
-    let detail: String
-}
-
 struct HomeRoundDetailMetric: Equatable {
     let title: String
     let value: String
@@ -45,33 +32,10 @@ struct HomeRoundDetailModel: Equatable {
     let improvements: [String]
 }
 
-struct HomeSpotlight: Equatable {
-    let eyebrow: String
-    let title: String
-    let subtitle: String
-    let actionTitle: String
-}
-
 struct HomeViewModel {
-    let mastheadEditionLabel: String
     let hasActiveRound: Bool
-    let heroTitle: String
     let heroSubtitle: String
-    let heroDeck: String
-    let heroPrimaryActionTitle: String
-    let heroAssetName: String
-    let heroHighlights: [String]
-    let commandPresentation: EditorialStagePresentation
-    let spotlight: HomeSpotlight
-    let spotlightRound: RoundHistorySummary?
-    let spotlightAssetName: String
-    let spotlightPresentation: EditorialStagePresentation
-    let modules: [HomeModule]
-    let insights: [HomeInsight]
     let previousRounds: [RoundHistorySummary]
-    let quickStats: [HomeQuickStat]
-    let nearbyCoursePreview: [HomeNearbyCoursePreview]
-    let nearbyCoursesActionTitle: String
     let handicapBadgeText: String
     let distanceUnit: DistanceUnit
 
@@ -83,34 +47,9 @@ struct HomeViewModel {
         handicapBadgeText: String,
         distanceUnit: DistanceUnit
     ) {
-        mastheadEditionLabel = "Field Notes 01"
         hasActiveRound = activeRoundTitle != nil
-        heroTitle = activeRoundTitle == nil ? "Start Round" : "Resume Round"
-        heroSubtitle = activeRoundTitle ?? "Pick a nearby course and begin."
-        heroPrimaryActionTitle = activeRoundTitle == nil ? "Start Round" : "Open Round"
-        heroAssetName = "HomeLeadStage"
-        heroDeck = activeRoundTitle == nil
-            ? "Start a round, check your signals, and move with less friction."
-            : "Resume the round fast, then scan the strongest signals from your game."
-        heroHighlights = activeRoundTitle == nil
-            ? ["Pick a course", "Clear yardages", "Fast setup"]
-            : ["Live yardages", "Your bag ready", "Map view"]
-        commandPresentation = .stackedLead
-        modules = [.insights, .recentRounds, .nearbyCourses]
-        self.previousRounds = previousRounds
-        spotlightRound = previousRounds.first
-        spotlight = Self.makeSpotlight(from: spotlightRound)
-        self.insights = Self.makeInsights(from: analyses, spotlightRound: spotlightRound)
-        spotlightAssetName = "PremiumCoachingStage"
-        spotlightPresentation = .bulletin
-        quickStats = [
-            .init(title: "Score", value: Self.lastRoundScore(from: previousRounds), note: "Last completed round"),
-            .init(title: "FIR", value: "57%", note: "Rolling average"),
-            .init(title: "GIR", value: "44%", note: "Rolling average"),
-            .init(title: "Putts", value: "31.2", note: "Rolling average")
-        ]
-        nearbyCoursePreview = Self.makeNearbyCoursePreview(from: nearbyCourses, distanceUnit: distanceUnit)
-        nearbyCoursesActionTitle = "See all nearby"
+        heroSubtitle = activeRoundTitle ?? "Pick a course and begin."
+        self.previousRounds = previousRounds.sorted { $0.updatedAt > $1.updatedAt }
         self.handicapBadgeText = handicapBadgeText
         self.distanceUnit = distanceUnit
     }
@@ -130,62 +69,6 @@ struct HomeViewModel {
             handicapBadgeText: handicapBadgeText,
             distanceUnit: .meters
         )
-    }
-
-    private static func makeSpotlight(from latestRound: RoundHistorySummary?) -> HomeSpotlight {
-        if let latestRound {
-            return HomeSpotlight(
-                eyebrow: "AI Round Brief",
-                title: latestRound.courseName,
-                subtitle: "Revisit the mood, momentum, and AI notes from your latest round.",
-                actionTitle: "Open Round Detail"
-            )
-        }
-
-        return HomeSpotlight(
-            eyebrow: "AI Round Brief",
-            title: "Latest Round",
-            subtitle: "Your most recent round analysis will show up here once you finish and review a round.",
-            actionTitle: "Open Round Detail"
-        )
-    }
-
-    private static func makeInsights(from analyses: [RoundSummaryAnalysis], spotlightRound: RoundHistorySummary?) -> [HomeInsight] {
-        guard
-            let spotlightRound,
-            let analysis = analyses.first(where: { $0.roundID == spotlightRound.id })
-        else {
-            return []
-        }
-
-        if let topStrength = ProfileViewModel.sanitizedAnalysisItems(analysis.whatWentWell).first {
-            return [HomeInsight(title: "What Went Well", detail: topStrength)]
-        }
-
-        if let topImprovement = ProfileViewModel.sanitizedAnalysisItems(analysis.needsWork).first {
-            return [HomeInsight(title: "Needs Attention", detail: topImprovement)]
-        }
-
-        return []
-    }
-
-    private static func lastRoundScore(from previousRounds: [RoundHistorySummary]) -> String {
-        guard let recentRound = previousRounds.first else {
-            return "--"
-        }
-
-        return "\(recentRound.totalStrokes)"
-    }
-
-    private static func makeNearbyCoursePreview(from courses: [SwingPalCourse], distanceUnit: DistanceUnit) -> [HomeNearbyCoursePreview] {
-        courses.prefix(3).map { course in
-            HomeNearbyCoursePreview(
-                courseID: course.id,
-                name: course.name,
-                distanceLabel: distanceUnit.travelLabel(forKilometers: course.distanceKilometers),
-                detail: "\(course.holeCount) holes • Par \(course.par)"
-            )
-        }
     }
 
     static func roundDetailModel(for summary: RoundHistorySummary, analysis: RoundSummaryAnalysis?) -> HomeRoundDetailModel {

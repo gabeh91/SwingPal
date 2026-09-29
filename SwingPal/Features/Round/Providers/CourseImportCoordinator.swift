@@ -138,7 +138,11 @@ final class CourseImportCoordinator {
                     let aiReview = await aiValidator.review(converted)
                     try Task.checkCancellation()
 
-                    let result = makeValidationResult(deterministicFailures: deterministicFailures, aiReview: aiReview)
+                    let result = makeValidationResult(
+                        deterministicFailures: deterministicFailures,
+                        aiReview: aiReview,
+                        importNotes: RuntimeOSMCourseConverter.importNotes(for: converted)
+                    )
 
                     if result.outcome == .rejected {
                         continuation.yield(
@@ -176,7 +180,8 @@ final class CourseImportCoordinator {
 
     private func makeValidationResult(
         deterministicFailures: [String],
-        aiReview: AICourseReview
+        aiReview: AICourseReview,
+        importNotes: [String] = []
     ) -> CourseValidationResult {
         let outcome: CourseValidationResult.Outcome
         if !deterministicFailures.isEmpty {
@@ -188,7 +193,8 @@ final class CourseImportCoordinator {
             case .concerns:
                 outcome = .provisional
             case .ok:
-                outcome = aiReview.aiAvailable ? .approved : .provisional
+                // Anything estimated is shown to the player before they play it.
+                outcome = aiReview.aiAvailable && importNotes.isEmpty ? .approved : .provisional
             }
         }
         return CourseValidationResult(
@@ -196,7 +202,8 @@ final class CourseImportCoordinator {
             deterministicFailures: deterministicFailures,
             aiConcerns: aiReview.concerns,
             aiSummary: aiReview.oneLineSummary,
-            aiAvailable: aiReview.aiAvailable
+            aiAvailable: aiReview.aiAvailable,
+            importNotes: importNotes
         )
     }
 

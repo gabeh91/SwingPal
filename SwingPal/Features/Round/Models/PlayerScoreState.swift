@@ -28,20 +28,3 @@ struct PlayerScoreState: Identifiable, Equatable, Codable {
     }
 }
 
-struct RoundReviewSummary: Equatable {
-    let playerCount: Int
-    let loggedCount: Int
-    let pendingCount: Int
-    let confirmedCount: Int
-
-    var isReadyToClose: Bool {
-        playerCount > 0 && pendingCount == 0
-    }
-
-    init(players: [PlayerScoreState]) {
-        playerCount = players.count
-        loggedCount = players.filter { $0.strokes != nil }.count
-        pendingCount = players.filter { $0.status == .pending }.count
-        confirmedCount = players.filter { $0.status == .confirmed }.count
-    }
-}

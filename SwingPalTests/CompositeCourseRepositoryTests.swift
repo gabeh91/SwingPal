@@ -25,10 +25,10 @@ final class CompositeCourseRepositoryTests: XCTestCase {
             importedStore: ImportedCourseStore(baseDirectory: temporaryDirectory)
         )
 
-        XCTAssertEqual(repo.nearbyCourses().map(\.name), ["Royal Melbourne", "Medway Golf Club"])
+        XCTAssertEqual(repo.nearbyCourses().map(\.name), ["Medway Golf Club", "Royal Melbourne"])
     }
 
-    func testCompositeMergesBundledWithImportedSortedByDistance() {
+    func testCompositeMergesBundledWithImportedInNameOrderWithoutLocation() {
         let store = ImportedCourseStore(baseDirectory: temporaryDirectory)
         let imported = SwingPalCourse.test(name: "Sandhurst", distanceKilometers: 4.0)
         store.save(
@@ -46,7 +46,18 @@ final class CompositeCourseRepositoryTests: XCTestCase {
         )
 
         let names = repo.nearbyCourses().map(\.name)
-        XCTAssertEqual(names, ["Royal Melbourne", "Sandhurst", "Medway Golf Club"])
+        XCTAssertEqual(names, ["Medway Golf Club", "Royal Melbourne", "Sandhurst"])
+    }
+
+    func testCompositeDiscardsStoredDistanceFromAnotherLocationOrUser() {
+        let remote = SwingPalCourse.test(name: "Remote", distanceKilometers: 0.1)
+        let repo = CompositeCourseRepository(
+            bundled: StubBundled(courses: []),
+            importedStore: ImportedCourseStore(baseDirectory: temporaryDirectory),
+            communityCourses: { [remote] }
+        )
+
+        XCTAssertNil(repo.nearbyCourses().first?.distanceKilometers)
     }
 
     func testCompositeLetsBundledWinOverDuplicateImported() {

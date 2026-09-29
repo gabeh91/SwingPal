@@ -56,7 +56,7 @@ struct WatchClubPickerView: View {
                             Spacer()
                             if clubName == model.selectedClubText {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(Color(red: 0.81, green: 0.89, blue: 0.77))
                             }
                         }
                     }

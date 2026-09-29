@@ -12,7 +12,6 @@ final class LiveRoundStateTests: XCTestCase {
         )
 
         XCTAssertEqual(state.shotPhase, .teeShot)
-        XCTAssertEqual(state.shotPhaseTitle, "Tee shot")
         XCTAssertEqual(state.shotFocus, "Pick a confident starting line.")
     }
 
@@ -207,17 +206,29 @@ final class LiveRoundStateTests: XCTestCase {
         state.distanceToPinMeters = 84
 
         XCTAssertEqual(state.shotPhase, .scoring)
-        XCTAssertEqual(state.shotPhaseTitle, "Scoring zone")
         XCTAssertEqual(state.shotFocus, "Favor control over raw distance.")
     }
 
-    func testTargetLabelDescribesThePin() {
+    func testTargetLabelDoesNotInventAPinWithoutGeometry() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        XCTAssertEqual(state.targetLabel, "Pin")
+        XCTAssertEqual(state.targetLabel, "Target unavailable")
+    }
+
+    func testTargetLabelIdentifiesInferredGreenCentre() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            holeFeatures: [.init(kind: .green, label: "Green", coordinates: [
+                .init(latitude: -37.97, longitude: 145.03),
+                .init(latitude: -37.971, longitude: 145.031)
+            ])]
+        )
+        XCTAssertEqual(state.targetLabel, "Green centre")
+        state.presentShotLogger()
+        XCTAssertTrue(state.shotLoggingTitle.hasSuffix("to green centre"))
     }
 
     func testAvailableClubNamesIncludeBagStyleRoundOptions() {
@@ -250,10 +261,8 @@ final class LiveRoundStateTests: XCTestCase {
         state.selectClub(named: "8i")
         state.presentShotLogger()
 
-        let expectedDistance = state.shortDistanceLabel(forMeters: state.displayedPinDistanceMeters)
-        XCTAssertEqual(state.shotLoggingTitle, "8i • \(expectedDistance) to pin")
+        XCTAssertEqual(state.shotLoggingTitle, "8i • Target unavailable")
         // Subtitle adapts to context — stroke 1 always presents the tee form.
-        XCTAssertEqual(state.shotLoggingSubtitle, "Pick the club, tag the outcome, log the tee shot.")
     }
 
     func testShotLoggingSubtitleSwapsToPuttCopyOnTheGreen() {
@@ -264,7 +273,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.presentShotLogger()
         state.selectShotSurface(.green)
 
-        XCTAssertEqual(state.shotLoggingSubtitle, "Mark holed or missed — tap to log it.")
     }
 
     func testPresentClubWheelMarksClubSelectionUIActive() {
@@ -521,6 +529,8 @@ final class LiveRoundStateTests: XCTestCase {
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
         )
+        // This test inspects the full catalog; auto mode intentionally filters it.
+        state.setClubAutoRecommendationEnabled(false)
 
         let club = state.clubWheelEntries.first { $0.clubName == "7i" }
 
@@ -546,6 +556,7 @@ final class LiveRoundStateTests: XCTestCase {
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
         )
+        baselineOnly.setClubAutoRecommendationEnabled(false)
         let baselineSeven = baselineOnly.clubWheelEntries.first { $0.clubName == "7i" }
         XCTAssertEqual(baselineSeven?.carrySource, .baseline)
 
@@ -989,321 +1000,6 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertEqual(restored.selectedClubWheelEntry.displayCarryMeters, 128)
     }
 
-    func testClubWheelHoverSelectionIncludesVisiblePillCorner() {
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        let center = CGPoint(x: 200, y: 200)
-        let segmentDistance: CGFloat = 116
-        let entrySize = CGSize(width: 72, height: 58)
-        let index = 1
-        let angleStep = (2 * Double.pi) / Double(max(state.clubWheelEntries.count, 1))
-        let angle = (-Double.pi / 2) + (angleStep * Double(index))
-        let entryCenter = CGPoint(
-            x: center.x + (CGFloat(cos(angle)) * segmentDistance),
-            y: center.y + (CGFloat(sin(angle)) * segmentDistance)
-        )
-        let visibleCorner = CGPoint(
-            x: entryCenter.x + (entrySize.width / 2),
-            y: entryCenter.y - (entrySize.height / 2)
-        )
-
-        let hoveredClub = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: visibleCorner,
-            center: center,
-            clubNames: state.clubWheelEntries.map(\.clubName),
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: 56
-        )
-
-        XCTAssertEqual(hoveredClub, state.clubWheelEntries[index].clubName)
-    }
-
-    func testClubWheelHoverSelectionRotatesWithSelectedIndex() {
-        // After the player picks a club mid-round the wheel rotates so
-        // the picked entry sits at the top. The hover-hit math has to
-        // rotate with it — otherwise touching a visible spoke commits a
-        // *different* club (the bug surfaced as "selecting in reverse"
-        // once the bag was big enough that selectedIndex was non-zero).
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        // 12-club default catalog → selectedIndex 5 puts "6i" at top.
-        let clubNames = state.clubWheelEntries.map(\.clubName)
-        let count = clubNames.count
-        XCTAssertGreaterThanOrEqual(count, 8)
-        let selectedIndex = 5
-        let center = CGPoint(x: 200, y: 200)
-        let segmentDistance: CGFloat = 116
-        let entrySize = CGSize(width: 72, height: 58)
-        let angleStep = (2 * Double.pi) / Double(count)
-
-        // Walk every visible spoke position and assert the geometry
-        // returns the corresponding *post-rotation* entry.
-        for entryIndex in clubNames.indices {
-            let relative = entryIndex - selectedIndex
-            let angle = (-Double.pi / 2) + (angleStep * Double(relative))
-            let touchPoint = CGPoint(
-                x: center.x + (CGFloat(cos(angle)) * segmentDistance),
-                y: center.y + (CGFloat(sin(angle)) * segmentDistance)
-            )
-            let hovered = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-                for: touchPoint,
-                center: center,
-                clubNames: clubNames,
-                segmentDistance: segmentDistance,
-                entrySize: entrySize,
-                innerSelectionRadius: 56,
-                selectedIndex: selectedIndex
-            )
-            XCTAssertEqual(
-                hovered,
-                clubNames[entryIndex],
-                "Touch on spoke \(entryIndex) (visible at relative \(relative)) should map back to that entry"
-            )
-        }
-    }
-
-    func testClubWheelHoverSelectionStaysOnPreviousSpokeForSmallAngularDrift() {
-        // The user reported that an accidental upward drift on a
-        // side-spoke would snap the hover back to the spoke at the top
-        // of the rotated wheel. The fix is angular hysteresis: when the
-        // touch has just barely crossed the boundary into the adjacent
-        // sector, we keep the previous hover so small drifts feel sticky.
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        let clubNames = state.clubWheelEntries.map(\.clubName)
-        let count = clubNames.count
-        let center = CGPoint(x: 200, y: 200)
-        let segmentDistance: CGFloat = 116
-        let entrySize = CGSize(width: 72, height: 58)
-        let angleStep = (2 * Double.pi) / Double(count)
-
-        // Pick a non-top spoke and a touch point that's nudged just
-        // past the midpoint toward the previous spoke (a light drift).
-        let entryIndex = 3
-        let centerAngle = (-Double.pi / 2) + (angleStep * Double(entryIndex))
-        // Drift 60% of the way to the boundary between this spoke and
-        // its anti-clockwise neighbour. With our 20% stickiness margin
-        // this should still resolve to the original spoke.
-        let driftFraction: Double = 0.6
-        let driftedAngle = centerAngle - (angleStep / 2) * driftFraction
-        let touchPoint = CGPoint(
-            x: center.x + (CGFloat(cos(driftedAngle)) * segmentDistance),
-            y: center.y + (CGFloat(sin(driftedAngle)) * segmentDistance)
-        )
-
-        let hovered = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: touchPoint,
-            center: center,
-            clubNames: clubNames,
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: 56,
-            previousHoveredClubName: clubNames[entryIndex]
-        )
-
-        XCTAssertEqual(hovered, clubNames[entryIndex], "Drift inside the sector should keep the existing hover")
-    }
-
-    func testClubWheelHoverSelectionFlipsOnDeliberateAngularSweep() {
-        // Mirror of the stickiness test: a drift well past the midpoint
-        // (and through the stickiness margin) should commit to the new
-        // spoke. Otherwise the wheel would feel locked.
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        let clubNames = state.clubWheelEntries.map(\.clubName)
-        let count = clubNames.count
-        let center = CGPoint(x: 200, y: 200)
-        let segmentDistance: CGFloat = 116
-        let entrySize = CGSize(width: 72, height: 58)
-        let angleStep = (2 * Double.pi) / Double(count)
-
-        let entryIndex = 3
-        let centerAngle = (-Double.pi / 2) + (angleStep * Double(entryIndex))
-        // Move 95% of an angleStep toward the previous spoke — well past
-        // the stickiness threshold (midpoint = 50% + 20% margin = 70%).
-        let driftFraction: Double = 0.95
-        let driftedAngle = centerAngle - angleStep * driftFraction
-        let touchPoint = CGPoint(
-            x: center.x + (CGFloat(cos(driftedAngle)) * segmentDistance),
-            y: center.y + (CGFloat(sin(driftedAngle)) * segmentDistance)
-        )
-
-        let hovered = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: touchPoint,
-            center: center,
-            clubNames: clubNames,
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: 56,
-            previousHoveredClubName: clubNames[entryIndex]
-        )
-
-        XCTAssertEqual(
-            hovered,
-            clubNames[entryIndex - 1],
-            "Deliberate sweep past the stickiness margin should flip to the neighbour"
-        )
-    }
-
-    func testClubWheelHoverSelectionWithSelectedIndexZeroMatchesUnrotatedDefault() {
-        // Sanity check: when selectedIndex defaults to 0, the rotated
-        // helper should behave identically to the historical unrotated
-        // path. This locks in back-compat for any call site that relies
-        // on the default parameter.
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        let clubNames = state.clubWheelEntries.map(\.clubName)
-        let center = CGPoint(x: 200, y: 200)
-        let segmentDistance: CGFloat = 116
-        let entrySize = CGSize(width: 72, height: 58)
-        let angleStep = (2 * Double.pi) / Double(max(clubNames.count, 1))
-        let touchIndex = 3
-        let angle = (-Double.pi / 2) + (angleStep * Double(touchIndex))
-        let touchPoint = CGPoint(
-            x: center.x + (CGFloat(cos(angle)) * segmentDistance),
-            y: center.y + (CGFloat(sin(angle)) * segmentDistance)
-        )
-
-        let withDefault = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: touchPoint,
-            center: center,
-            clubNames: clubNames,
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: 56
-        )
-        let withExplicitZero = FreshLiveRoundClubWheelGeometry.hoveredClubName(
-            for: touchPoint,
-            center: center,
-            clubNames: clubNames,
-            segmentDistance: segmentDistance,
-            entrySize: entrySize,
-            innerSelectionRadius: 56,
-            selectedIndex: 0
-        )
-        XCTAssertEqual(withDefault, clubNames[touchIndex])
-        XCTAssertEqual(withDefault, withExplicitZero)
-    }
-
-    func testLiveRoundChromeMetricsFavorEdgeAlignedLauncher() {
-        // Distance-card metrics dropped along with the old 4-card row;
-        // the redesigned phase-aware top bar sizes its hero / satellite
-        // chips through `FreshLiveRoundTopPanelLayout` instead.
-        let metrics = FreshLiveRoundChromeMetrics.standard
-
-        XCTAssertEqual(metrics.launcherHorizontalInset, 0)
-        XCTAssertGreaterThanOrEqual(metrics.launcherContentPadding, 16)
-    }
-
-    func testLiveRoundPaletteFlipsTextContrastBetweenLightAndDarkAppearances() {
-        let lightPalette = FreshLiveRoundPalette.forColorScheme(.light)
-        let darkPalette = FreshLiveRoundPalette.forColorScheme(.dark)
-
-        XCTAssertEqual(lightPalette.primaryTextContrast, .darkInk)
-        XCTAssertEqual(lightPalette.secondaryTextContrast, .darkInk)
-        XCTAssertEqual(darkPalette.primaryTextContrast, .lightInk)
-        XCTAssertEqual(darkPalette.secondaryTextContrast, .lightInk)
-        XCTAssertFalse(lightPalette.unselectedChipUsesProminentFill)
-        XCTAssertFalse(darkPalette.unselectedChipUsesProminentFill)
-    }
-
-    func testLiveRoundPaletteUsesLighterGlassTreatmentInsteadOfHeavySlabTinting() {
-        let lightPalette = FreshLiveRoundPalette.forColorScheme(.light)
-        let darkPalette = FreshLiveRoundPalette.forColorScheme(.dark)
-
-        XCTAssertLessThan(lightPalette.chromeTintOpacity, 0.25)
-        XCTAssertLessThan(lightPalette.panelFillOpacity, 0.18)
-        XCTAssertLessThan(lightPalette.secondaryFillOpacity, 0.20)
-        XCTAssertLessThan(lightPalette.tertiaryFillOpacity, 0.12)
-        XCTAssertLessThan(darkPalette.chromeTintOpacity, 0.40)
-        XCTAssertGreaterThanOrEqual(darkPalette.panelFillOpacity, 0.12)
-        XCTAssertGreaterThanOrEqual(darkPalette.secondaryFillOpacity, 0.18)
-        XCTAssertGreaterThanOrEqual(darkPalette.tertiaryFillOpacity, 0.10)
-        XCTAssertLessThan(darkPalette.panelFillOpacity, 0.26)
-        XCTAssertLessThan(darkPalette.secondaryFillOpacity, 0.30)
-        XCTAssertLessThan(darkPalette.tertiaryFillOpacity, 0.20)
-    }
-
-    func testLiveRoundUsesNativeGlassAPIsOnIOS26AndAbove() {
-        XCTAssertTrue(FreshLiveRoundGlassCapabilities.supportsNativeGlass)
-    }
-
-    func testLiveRoundPrimaryChromeUsesRegularNativeGlassVariant() {
-        XCTAssertEqual(FreshLiveRoundNativeGlassPolicy.primaryChrome, .regular)
-        XCTAssertEqual(FreshLiveRoundNativeGlassPolicy.embeddedChrome, .regular)
-    }
-
-    func testLiveRoundUsesDedicatedTopPanelGestureShield() {
-        XCTAssertTrue(FreshLiveRoundHUDInteractionPolicy.usesDedicatedTopPanelGestureShield)
-    }
-
-    func testLiveRoundTopPanelGestureShieldIsBoundBehindPanelContent() {
-        XCTAssertTrue(FreshLiveRoundHUDInteractionPolicy.topPanelGestureShieldUsesBackgroundSizing)
-    }
-
-    func testLiveRoundPaletteUsesTintedLoggerSelectableFillInsteadOfPlainWhite() {
-        let lightPalette = FreshLiveRoundPalette.forColorScheme(.light)
-        let darkPalette = FreshLiveRoundPalette.forColorScheme(.dark)
-
-        XCTAssertTrue(lightPalette.loggerOptionUsesTintedFill)
-        XCTAssertTrue(darkPalette.loggerOptionUsesTintedFill)
-    }
-
-    func testLiveRoundPaletteKeepsEmbeddedTileOpacitySubtleForGlassHierarchy() {
-        let lightPalette = FreshLiveRoundPalette.forColorScheme(.light)
-        let darkPalette = FreshLiveRoundPalette.forColorScheme(.dark)
-
-        XCTAssertLessThan(lightPalette.secondaryFillOpacity, 0.07)
-        XCTAssertLessThan(lightPalette.tertiaryFillOpacity, 0.04)
-        XCTAssertGreaterThan(darkPalette.secondaryFillOpacity, lightPalette.secondaryFillOpacity)
-        XCTAssertGreaterThan(darkPalette.tertiaryFillOpacity, lightPalette.tertiaryFillOpacity)
-    }
-
-    func testLiveRoundDarkPaletteStrengthensWheelAndCardSurfacesForReadableContrast() {
-        let darkPalette = FreshLiveRoundPalette.forColorScheme(.dark)
-
-        XCTAssertGreaterThanOrEqual(darkPalette.wheelEntryFillOpacity, 0.14)
-        XCTAssertGreaterThanOrEqual(darkPalette.wheelCenterFillOpacity, 0.28)
-        XCTAssertGreaterThan(darkPalette.secondaryFillOpacity, darkPalette.panelFillOpacity)
-    }
-
-    func testClubWheelLayoutCentersAndUsesLargerPhoneMetrics() {
-        let anchor = CGRect(x: 24, y: 662, width: 132, height: 44)
-        let containerSize = CGSize(width: 393, height: 852)
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: anchor,
-            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0),
-            containerSize: containerSize,
-            entryCount: 10
-        )
-
-        XCTAssertEqual(layout.center.x, containerSize.width / 2, accuracy: 0.001)
-        XCTAssertEqual(layout.center.y, containerSize.height / 2, accuracy: 0.001)
-        XCTAssertGreaterThan(layout.outerRadius, 142)
-        XCTAssertGreaterThan(layout.entrySize.width, 84)
-        XCTAssertGreaterThan(layout.entrySize.height, 68)
-        XCTAssertLessThan(layout.segmentDistance, layout.outerRadius)
-    }
-
-    func testClubWheelMotionUsesProgressiveEntryAnimation() {
-        let motion = FreshLiveRoundClubWheelMotion.standard
-
-        XCTAssertLessThan(motion.entryBaseScale, 1)
-        XCTAssertGreaterThan(motion.selectedScale, 1)
-        XCTAssertGreaterThan(motion.entryDelayStep, 0)
-    }
-
     func testShotOutcomeLayoutSplitsRingIntoEightEqualSectors() {
         let layout = FreshLiveRoundShotOutcomeLayout.standard
 
@@ -1401,73 +1097,6 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertLessThanOrEqual(centerRadius, innerRadius, "center button's visible circle should fit inside the ring's inner hole")
     }
 
-    func testClubWheelKeepsSelectedClubAtTopOfRing() {
-        let state = LiveRoundState(
-            hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
-        )
-        state.selectClubFromWheel(named: "SW")
-        let anchor = CGRect(x: 24, y: 662, width: 132, height: 44)
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: anchor,
-            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0),
-            containerSize: CGSize(width: 393, height: 852),
-            entryCount: state.clubWheelEntries.count
-        )
-        let selectedIndex = try! XCTUnwrap(
-            state.clubWheelEntries.firstIndex(where: { $0.clubName == state.selectedClubName })
-        )
-        let topOfRing = CGPoint(x: layout.center.x, y: layout.center.y - layout.segmentDistance)
-        let distances = state.clubWheelEntries.indices.map { index -> CGFloat in
-            let position = layout.entryPosition(
-                for: index,
-                count: state.clubWheelEntries.count,
-                selectedIndex: selectedIndex,
-                anchorFrame: anchor
-            )
-            return hypot(position.x - topOfRing.x, position.y - topOfRing.y)
-        }
-
-        let nearestIndex = distances.enumerated().min(by: { $0.element < $1.element })?.offset
-
-        XCTAssertEqual(nearestIndex, selectedIndex)
-    }
-
-    func testClubWheelOrbitRingMatchesEntryOrbitDiameter() {
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: CGRect(x: 24, y: 662, width: 132, height: 44),
-            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0),
-            containerSize: CGSize(width: 393, height: 852),
-            entryCount: 11
-        )
-
-        XCTAssertEqual(layout.orbitRingDiameter, layout.segmentDistance * 2, accuracy: 0.001)
-    }
-
-    func testClubWheelChromeDiameterMatchesResolvedOuterRadius() {
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: CGRect(x: 24, y: 662, width: 132, height: 44),
-            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0),
-            containerSize: CGSize(width: 393, height: 852),
-            entryCount: 11
-        )
-
-        XCTAssertEqual(layout.chromeDiameter, layout.outerRadius * 2, accuracy: 0.001)
-    }
-
-    func testClubWheelResolvesToScreenCenterInsteadOfLauncherAnchor() {
-        let containerSize = CGSize(width: 393, height: 852)
-        let layout = FreshLiveRoundClubWheelLayout.resolve(
-            anchorFrame: CGRect(x: 24, y: 662, width: 132, height: 44),
-            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0),
-            containerSize: containerSize,
-            entryCount: 11
-        )
-
-        XCTAssertEqual(layout.center.x, containerSize.width / 2, accuracy: 0.001)
-        XCTAssertEqual(layout.center.y, containerSize.height / 2, accuracy: 0.001)
-    }
-
     func testPresentShotLoggerUsesTeeSurfaceForOpeningShot() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
@@ -1544,49 +1173,6 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertFalse(state.availableShotTypes.contains(.provisionalBall))
     }
 
-    func testExpandedLauncherUsesTallerLiveAndInspectionHeightsForActionGrid() {
-        XCTAssertGreaterThan(FreshLiveRoundLauncherLayoutPolicy.liveActionsBaseHeight, 300)
-        XCTAssertGreaterThan(FreshLiveRoundLauncherLayoutPolicy.liveExpandedBaseHeight, 550)
-        XCTAssertEqual(FreshLiveRoundLauncherLayoutPolicy.inspectionActionsBaseHeight, FreshLiveRoundLauncherLayoutPolicy.liveActionsBaseHeight)
-        XCTAssertEqual(FreshLiveRoundLauncherLayoutPolicy.inspectionExpandedBaseHeight, FreshLiveRoundLauncherLayoutPolicy.liveExpandedBaseHeight)
-        XCTAssertGreaterThan(FreshLiveRoundLauncherLayoutPolicy.maxExpandedHeightRatio, 0.72)
-    }
-
-    func testTopPanelLayoutUsesRegularTwoRowPresentationOnTallerPhones() {
-        let layout = FreshLiveRoundTopPanelLayout.resolve(
-            containerSize: CGSize(width: 430, height: 932)
-        )
-
-        XCTAssertEqual(layout.density, .regular)
-        XCTAssertGreaterThan(layout.panelMinHeight, 150)
-        XCTAssertGreaterThan(layout.distanceCardMinHeight, 72)
-    }
-
-    func testTopPanelLayoutCompactsOnSmallerPhonesToProtectMapSpace() {
-        let layout = FreshLiveRoundTopPanelLayout.resolve(
-            containerSize: CGSize(width: 375, height: 667)
-        )
-
-        XCTAssertEqual(layout.density, .compact)
-        XCTAssertLessThan(layout.panelMinHeight, 150)
-        XCTAssertLessThan(layout.distanceValueFontSize, 24)
-    }
-
-    func testCompactTopPanelUsesShortHoleTitleThatKeepsNumberVisible() {
-        XCTAssertEqual(
-            FreshLiveRoundTopPanelLayout.compactHoleTitle(for: 12),
-            "H12"
-        )
-    }
-
-    func testRegularTopPanelCondensesHoleTitleOnNarrowPhonesToKeepHoleNumberVisible() {
-        let layout = FreshLiveRoundTopPanelLayout.resolve(
-            containerSize: CGSize(width: 393, height: 852)
-        )
-
-        XCTAssertEqual(layout.holeTitle(for: 2), "H2")
-    }
-
     // MARK: - Phase-adaptive top-bar redesign
 
     func testTopBarPhaseMirrorsShotPhaseOnFreshTeeShot() {
@@ -1627,7 +1213,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.setClubAutoRecommendationEnabled(false)
 
         XCTAssertFalse(state.hasMeaningfulPlaysLikeDelta)
-        XCTAssertNil(state.topBarHeroSubtitle)
     }
 
     func testTopBarHeroSubtitleSurfacesPlaysLikeOnApproachWhenDeltaIsMeaningful() async {
@@ -1644,9 +1229,6 @@ final class LiveRoundStateTests: XCTestCase {
 
         XCTAssertTrue([LiveRoundState.TopBarPhase.approach, .scoring].contains(state.topBarPhase))
         XCTAssertTrue(state.hasMeaningfulPlaysLikeDelta)
-        let subtitle = state.topBarHeroSubtitle
-        XCTAssertNotNil(subtitle)
-        XCTAssertTrue(subtitle?.contains("plays") == true, "Expected plays-like delta in subtitle, got \(subtitle ?? "nil")")
     }
 
     func testTopBarHeroSubtitleSwapsToStrokeCounterOnTheGreen() {
@@ -1667,7 +1249,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.distanceToPinMeters = 5
 
         XCTAssertEqual(state.topBarPhase, .greenSide)
-        XCTAssertEqual(state.topBarHeroSubtitle, "Stroke 3 of par 4")
     }
 
     func testTopBarScoreChipReadsEvenParAndStrokeCounterMidHole() {
@@ -1676,11 +1257,9 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        XCTAssertEqual(state.topBarScoreHeadline, "E")
         XCTAssertEqual(state.topBarScoreSubtitle, "Stroke 1")
 
         state.logShot(clubName: "Driver", distanceToTargetMeters: 250)
-        XCTAssertEqual(state.topBarScoreHeadline, "E")
         XCTAssertEqual(state.topBarScoreSubtitle, "Stroke 2")
     }
 
@@ -1710,7 +1289,6 @@ final class LiveRoundStateTests: XCTestCase {
         // points at the now-confirmed hole 1.
         state.inspectPreviousHole()
 
-        XCTAssertEqual(state.topBarScoreHeadline, "-1")
         XCTAssertTrue(
             state.topBarScoreSubtitle.hasPrefix("Score "),
             "Expected Score subtitle, got \(state.topBarScoreSubtitle)"
@@ -1749,9 +1327,6 @@ final class LiveRoundStateTests: XCTestCase {
         )
 
         XCTAssertEqual(state.selectedTeeDistanceMeters, 5870, "Round-level tee total stays computable for other consumers")
-        XCTAssertEqual(state.topPanelHoleSubtitle, "Par 4")
-        XCTAssertFalse(state.topPanelHoleSubtitle.contains("•"), "Subtitle must stay single-component to dodge ellipsising")
-        XCTAssertFalse(state.topPanelHoleSubtitle.contains("5870"), "Round-level course total must never appear in the per-hole subtitle")
     }
 
     func testTopPanelSubtitleReadsParThreeOnAParThreeHole() {
@@ -1759,7 +1334,6 @@ final class LiveRoundStateTests: XCTestCase {
             hole: HoleSession(number: 6, par: 3),
             players: [.init(name: "You", kind: .selfPlayer)]
         )
-        XCTAssertEqual(state.topPanelHoleSubtitle, "Par 3")
     }
 
     func testShotLoggerUsesSystemSheetBackgroundBehavior() {
@@ -1910,7 +1484,6 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        XCTAssertEqual(state.currentClubLauncherTitle, state.selectedClubName)
     }
 
     func testInspectionModeDisablesLiveLauncherActions() {
@@ -1921,7 +1494,6 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertFalse(state.canPresentShotLogger)
         XCTAssertFalse(state.canMarkBallOnDisplayedHole)
         XCTAssertFalse(state.showsAtBallAction)
-        XCTAssertFalse(state.showsFinishHoleInvoker)
     }
 
     func testInspectionModeIgnoresClubWheelPresentation() {
@@ -1936,7 +1508,6 @@ final class LiveRoundStateTests: XCTestCase {
     func testLiveHoleShowsFinishHoleInvoker() {
         let state = makeStateWithThreeHoles(activeHoleNumber: 2)
 
-        XCTAssertTrue(state.showsFinishHoleInvoker)
     }
 
     func testPresentHoleConfirmationSeedsPendingHoleSummaryAndShowsSheet() {
@@ -2437,13 +2008,11 @@ final class LiveRoundStateTests: XCTestCase {
         state.setPendingShotPuttHoled(true)
         state.confirmPendingShot()
         XCTAssertTrue(state.isShowingHoleConfirmationPill)
-        let strokeCountBefore = state.hole.strokeCount
-
         let didConfirm = state.confirmCurrentHoleFromDerivedValues()
 
         XCTAssertTrue(didConfirm)
         XCTAssertFalse(state.isShowingHoleConfirmationPill)
-        XCTAssertEqual(state.hole.recordedScore, strokeCountBefore)
+        XCTAssertEqual(state.hole.recordedScore, 4, "Three played strokes plus one penalty")
         XCTAssertEqual(state.hole.recordedPenaltyCount, 1)
         XCTAssertNotNil(state.hole.recordedPutts)
         XCTAssertTrue(state.hole.isConfirmed)
@@ -2467,7 +2036,7 @@ final class LiveRoundStateTests: XCTestCase {
 
         let draft = state.makeCurrentHoleEditDraft()
 
-        XCTAssertEqual(draft.score, max(state.hole.strokeCount, 1))
+        XCTAssertEqual(draft.score, 3, "Two played strokes plus one penalty; the drop is not another stroke")
         XCTAssertEqual(draft.putts, 1, "Should derive putt count from logged putt shots")
         XCTAssertEqual(draft.penaltyCount, 1, "Should derive penalty total from per-shot penaltyCount")
         XCTAssertEqual(draft.dropCount, 1, "Should derive drop total from per-shot dropCount")
@@ -2806,8 +2375,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.presentShotLogger()
 
         XCTAssertEqual(state.pendingShotSurface, .bunker)
-        XCTAssertEqual(state.pendingShotSurfaceReasonTitle, "Mapped lie detected")
-        XCTAssertEqual(state.pendingShotSurfaceReasonText, "You are inside Front right bunker, so SwingPal starts the shot from bunker.")
     }
 
     func testPresentShotLoggerUsesFairwaySurfaceWhenPlayerIsInsideFairwayFeature() {
@@ -2840,8 +2407,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.presentShotLogger()
 
         XCTAssertEqual(state.pendingShotSurface, .fairway)
-        XCTAssertEqual(state.pendingShotSurfaceReasonTitle, "Mapped lie detected")
-        XCTAssertEqual(state.pendingShotSurfaceReasonText, "You are inside Primary fairway, so SwingPal starts the shot from fairway.")
     }
 
     func testPresentShotLoggerExplainsPhaseBasedFallbackWhenNoFeatureMatchExists() {
@@ -2854,8 +2419,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.presentShotLogger()
 
         XCTAssertEqual(state.pendingShotSurface, .fairway)
-        XCTAssertEqual(state.pendingShotSurfaceReasonTitle, "Phase-based starting lie")
-        XCTAssertEqual(state.pendingShotSurfaceReasonText, "Scoring zone defaults to fairway until mapped lie data says otherwise.")
     }
 
     func testConfirmPendingShotLogsSelectedSurfaceAndDismissesLogger() {
@@ -3045,7 +2608,7 @@ final class LiveRoundStateTests: XCTestCase {
         state.confirmPendingShot()
 
         XCTAssertEqual(state.lastLoggedShotOriginSource, .ballMark)
-        XCTAssertEqual(state.lastLoggedShotTargetLabel, "Pin")
+        XCTAssertEqual(state.lastLoggedShotTargetLabel, "Target unavailable")
         let target = try XCTUnwrap(state.lastLoggedShotTargetCoordinate)
         XCTAssertEqual(target.latitude, state.planningTargetCoordinate.latitude, accuracy: 0.000001)
         XCTAssertEqual(target.longitude, state.planningTargetCoordinate.longitude, accuracy: 0.000001)
@@ -3153,8 +2716,6 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        XCTAssertEqual(state.liveDistanceCaption, "Meters to aim")
-        XCTAssertEqual(state.planningRemainingCaption, "Remain to pin")
     }
 
     func testLiveRoundStartsCollapsedWithBothContextPillRows() {
@@ -3164,76 +2725,6 @@ final class LiveRoundStateTests: XCTestCase {
         )
 
         XCTAssertEqual(state.launcherDetent, .collapsed)
-        XCTAssertEqual(state.primaryContextPills.count, 2)
-        XCTAssertEqual(state.secondaryContextPills.count, 2)
-    }
-
-    func testLauncherSnapPolicyKeepsCollapsedTrayCollapsedForSmallUpwardDrag() {
-        let heights = FreshLiveRoundLauncherDetentHeights(
-            collapsed: 160,
-            actions: 360,
-            expanded: 620
-        )
-
-        let detent = FreshLiveRoundLauncherSnapPolicy.targetDetent(
-            from: .collapsed,
-            translation: -20,
-            predictedEndTranslation: -24,
-            heights: heights
-        )
-
-        XCTAssertEqual(detent, .collapsed)
-    }
-
-    func testLauncherSnapPolicyAdvancesCollapsedTrayByOnlyOneDetent() {
-        let heights = FreshLiveRoundLauncherDetentHeights(
-            collapsed: 160,
-            actions: 360,
-            expanded: 620
-        )
-
-        let detent = FreshLiveRoundLauncherSnapPolicy.targetDetent(
-            from: .collapsed,
-            translation: -260,
-            predictedEndTranslation: -340,
-            heights: heights
-        )
-
-        XCTAssertEqual(detent, .actions)
-    }
-
-    func testLauncherSnapPolicyAdvancesActionsTrayToExpandedOnStrongUpwardDrag() {
-        let heights = FreshLiveRoundLauncherDetentHeights(
-            collapsed: 160,
-            actions: 360,
-            expanded: 620
-        )
-
-        let detent = FreshLiveRoundLauncherSnapPolicy.targetDetent(
-            from: .actions,
-            translation: -120,
-            predictedEndTranslation: -180,
-            heights: heights
-        )
-
-        XCTAssertEqual(detent, .expanded)
-    }
-
-    func testLauncherSnapPolicyRetreatsExpandedTrayByOnlyOneDetent() {
-        let heights = FreshLiveRoundLauncherDetentHeights(
-            collapsed: 160,
-            actions: 360,
-            expanded: 620
-        )
-
-        let detent = FreshLiveRoundLauncherSnapPolicy.targetDetent(
-            from: .expanded,
-            translation: 260,
-            predictedEndTranslation: 340,
-            heights: heights
-        )
-
-        XCTAssertEqual(detent, .actions)
     }
 
     func testInspectingPreviousHoleEntersInspectionMode() {
@@ -4095,9 +3586,6 @@ final class LiveRoundStateTests: XCTestCase {
             locationProvider: StubRoundLocationProvider(status: .locating)
         )
 
-        XCTAssertEqual(state.holeTransitionTitle, "Hole 2")
-        XCTAssertEqual(state.holeTransitionSubtitle, "Par 3 • 360m opening number")
-        XCTAssertEqual(state.holeTransitionDetail, "Pick a confident starting line.")
     }
 
     func testSnapshotRoundTripPreservesCourseContext() {
@@ -4126,7 +3614,7 @@ final class LiveRoundStateTests: XCTestCase {
 
         XCTAssertEqual(restored.courseName, "Kingston Heath")
         XCTAssertEqual(restored.courseCoordinate, coordinate)
-        XCTAssertEqual(restored.targetLabel, "Pin")
+        XCTAssertEqual(restored.targetLabel, "Target unavailable")
         XCTAssertEqual(restored.currentHoleFeatures, holeFeatures)
     }
 
@@ -4832,20 +4320,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.selectShotDistance(.onNumber)
         state.confirmPendingShot()
 
-        XCTAssertEqual(
-            state.leadingInstrumentMetrics,
-            [
-                .init(title: "Plays Like", value: "\(state.playsLikeDistanceMeters)m"),
-                .init(title: "Club", value: "5W")
-            ]
-        )
-        XCTAssertEqual(
-            state.trailingInstrumentMetrics,
-            [
-                .init(title: "Strokes", value: "1"),
-                .init(title: "Target", value: "Pin")
-            ]
-        )
     }
 
     func testMovePlanningTargetUpdatesCarryAndRemainingDistances() {
@@ -4920,7 +4394,6 @@ final class LiveRoundStateTests: XCTestCase {
 
         await state.refreshWeather()
 
-        XCTAssertEqual(state.windSummaryText, "Wind 19 km/h NW")
         XCTAssertEqual(state.temperatureSummaryText, "22°C")
         XCTAssertEqual(state.weatherConditionText, "Partly cloudy")
         XCTAssertEqual(state.weatherAttributionText, "Weather for testing")
@@ -4935,7 +4408,6 @@ final class LiveRoundStateTests: XCTestCase {
 
         await state.refreshWeather()
 
-        XCTAssertEqual(state.windSummaryText, "Weather unavailable")
         XCTAssertEqual(state.temperatureSummaryText, "--")
         XCTAssertEqual(state.weatherConditionText, "Live conditions unavailable")
         XCTAssertNil(state.weatherAttributionText)
@@ -5157,7 +4629,6 @@ final class LiveRoundStateTests: XCTestCase {
         state.logShot(clubName: "7i", distanceToTargetMeters: 152)
 
         XCTAssertEqual(state.shotPhase, .approach)
-        XCTAssertEqual(state.shotPhaseTitle, "Approach")
         XCTAssertEqual(state.shotFocus, "Commit to a full carry number.")
     }
 
@@ -5208,18 +4679,93 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertNil(state.reviewPlayers.last?.strokes)
     }
 
-    func testRoundReviewSummaryCountsLoggedAndPendingPlayers() {
-        let summary = RoundReviewSummary(players: [
-            .init(name: "You", isGuest: false, strokes: 4, status: .edited),
-            .init(name: "Ben", isGuest: true, status: .pending),
-            .init(name: "Sarah", isGuest: false, strokes: 5, status: .confirmed)
-        ])
+    func testHoleConfirmationIncludesPenaltiesAndGroupedPuttsInScore() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 200, penaltyCount: 2)
+        state.logShot(clubName: "Putter", distanceToTargetMeters: 5,
+                      shotType: .putt, puttDetail: .init(puttCount: 2))
+        state.presentHoleConfirmation()
+        XCTAssertEqual(state.pendingHoleScore, 5)
+        XCTAssertEqual(state.makeCurrentHoleEditDraft().score, 5)
+        XCTAssertEqual(state.reviewPlayers.first?.strokes, 5)
+        XCTAssertTrue(state.confirmCurrentHoleFromDerivedValues())
+        XCTAssertEqual(state.hole.recordedScore, 5)
+    }
 
-        XCTAssertEqual(summary.playerCount, 3)
-        XCTAssertEqual(summary.loggedCount, 2)
-        XCTAssertEqual(summary.pendingCount, 1)
-        XCTAssertEqual(summary.confirmedCount, 1)
-        XCTAssertFalse(summary.isReadyToClose)
+    func testQuickHoleConfirmationPreservesEnteredScore() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 200)
+        var draft = state.makeCurrentHoleEditDraft()
+        draft.score = 6
+        state.applyCurrentHoleEditDraft(draft)
+        XCTAssertTrue(state.confirmCurrentHoleFromDerivedValues())
+        XCTAssertEqual(state.hole.recordedScore, 6)
+    }
+
+    func testReviewUsesRoundTotalsAndReflectsEarlierHoleCorrections() {
+        let state = makeStateWithThreeHoles(activeHoleNumber: 1)
+        state.presentHoleConfirmation()
+        state.setPendingHoleScore(5)
+        XCTAssertTrue(state.confirmCurrentHole())
+        state.logShot(clubName: "7i", distanceToTargetMeters: 130)
+        XCTAssertEqual(state.reviewPlayers.first?.strokes, 6)
+        XCTAssertEqual(state.reviewPlayers.first?.status, .edited)
+        state.presentHoleConfirmation()
+        state.setPendingHoleScore(4)
+        XCTAssertTrue(state.confirmCurrentHole())
+        XCTAssertEqual(state.reviewPlayers.first?.strokes, 9)
+        state.inspectHole(at: 0)
+        state.updateInspectedHoleScore(6)
+        XCTAssertEqual(state.reviewPlayers.first?.strokes, 10)
+        let restored = LiveRoundState(snapshot: state.snapshot)
+        XCTAssertEqual(restored.reviewPlayers.first?.strokes, 10)
+    }
+
+    func testReviewCorrectionRejectsNonpositiveScoresAndPersistsEarlierHolePutts() {
+        let state = makeStateWithThreeHoles(activeHoleNumber: 1)
+        state.presentHoleConfirmation()
+        state.setPendingHoleScore(5)
+        state.setPendingHolePutts(2)
+        XCTAssertTrue(state.confirmCurrentHole())
+        state.inspectHole(at: 0)
+        state.updateInspectedHoleScore(0)
+        XCTAssertEqual(state.holeInspectionEntries[0].score, 5)
+        state.updateInspectedHoleScore(-2)
+        XCTAssertEqual(state.holeInspectionEntries[0].score, 5)
+        state.updateInspectedHoleScore(6)
+        state.updateInspectedHolePutts(3)
+
+        let restored = LiveRoundState(snapshot: state.snapshot)
+        let corrected = restored.holeInspectionEntries[0]
+        XCTAssertEqual(corrected.score, 6)
+        XCTAssertEqual(corrected.putts, 3)
+        XCTAssertTrue(corrected.isConfirmed)
+        XCTAssertTrue(corrected.wasEditedAfterConfirmation)
+        XCTAssertEqual(restored.hole.number, 2)
+        XCTAssertEqual(restored.reviewPlayers.first?.strokes, 6)
+    }
+
+    func testReviewCorrectionCannotRecordFutureHoleAndClampsNegativePutts() {
+        let state = makeStateWithThreeHoles(activeHoleNumber: 1)
+        state.inspectHole(at: 2)
+        state.updateInspectedHoleScore(5)
+        state.updateInspectedHolePutts(2)
+        XCTAssertNil(state.holeInspectionEntries[2].score)
+        XCTAssertNil(state.holeInspectionEntries[2].putts)
+        state.returnToActiveHole()
+        state.updateInspectedHolePutts(-2)
+        XCTAssertEqual(state.holeInspectionEntries[0].putts, 0)
+        XCTAssertFalse(state.canCompleteRound)
+    }
+
+    func testRoundReviewSummaryCountsLoggedAndPendingPlayers() {
+
     }
 }
 

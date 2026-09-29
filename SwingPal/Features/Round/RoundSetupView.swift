@@ -1,156 +1,5 @@
 import SwiftUI
 
-private struct RoundSetupPalette {
-    let bgApp: Color
-    let surfacePrimary: Color
-    let surfaceSecondary: Color
-    let surfaceHUD: Color
-    let surfaceTinted: Color
-    let surfaceOverlay: Color
-    let textPrimary: Color
-    let textSecondary: Color
-    let textTertiary: Color
-    let textInverse: Color
-    let pine700: Color
-    let pine500: Color
-    let pine300: Color
-    let strokeDefault: Color
-    let shadowSoft: Color
-    let shadowFloating: Color
-
-    static func forColorScheme(_ colorScheme: ColorScheme) -> RoundSetupPalette {
-        switch colorScheme {
-        case .dark:
-            return .init(
-                bgApp: Color(red: 0.06, green: 0.08, blue: 0.07),
-                surfacePrimary: Color(red: 0.12, green: 0.15, blue: 0.13),
-                surfaceSecondary: Color(red: 0.16, green: 0.19, blue: 0.17),
-                surfaceHUD: Color.white.opacity(0.08),
-                surfaceTinted: Color(red: 0.14, green: 0.22, blue: 0.18),
-                surfaceOverlay: Color.white.opacity(0.10),
-                textPrimary: Color(red: 0.95, green: 0.97, blue: 0.96),
-                textSecondary: Color(red: 0.77, green: 0.82, blue: 0.79),
-                textTertiary: Color(red: 0.58, green: 0.64, blue: 0.61),
-                textInverse: Color(red: 0.06, green: 0.08, blue: 0.07),
-                pine700: Color(red: 0.50, green: 0.76, blue: 0.60),
-                pine500: Color(red: 0.38, green: 0.66, blue: 0.50),
-                pine300: Color(red: 0.27, green: 0.39, blue: 0.32),
-                strokeDefault: Color.white.opacity(0.14),
-                shadowSoft: Color.black.opacity(0.36),
-                shadowFloating: Color.black.opacity(0.46)
-            )
-        default:
-            return .init(
-                bgApp: ShellTokens.ColorRole.bgApp,
-                surfacePrimary: ShellTokens.ColorRole.surfacePrimary,
-                surfaceSecondary: ShellTokens.ColorRole.surfaceSecondary,
-                surfaceHUD: ShellTokens.ColorRole.surfaceHUD,
-                surfaceTinted: ShellTokens.ColorRole.surfaceTinted,
-                surfaceOverlay: ShellTokens.ColorRole.surfaceOverlay,
-                textPrimary: ShellTokens.ColorRole.textPrimary,
-                textSecondary: ShellTokens.ColorRole.textSecondary,
-                textTertiary: ShellTokens.ColorRole.textTertiary,
-                textInverse: ShellTokens.ColorRole.textInverse,
-                pine700: ShellTokens.ColorRole.pine700,
-                pine500: ShellTokens.ColorRole.pine500,
-                pine300: ShellTokens.ColorRole.pine300,
-                strokeDefault: ShellTokens.ColorRole.strokeDefault,
-                shadowSoft: ShellTokens.Shadow.soft,
-                shadowFloating: ShellTokens.Shadow.floating
-            )
-        }
-    }
-}
-
-private struct RoundSetupHeroModel {
-    let eyebrow: String
-    let title: String
-    let subtitle: String
-    let stageSummary: String
-    let highlights: [String]
-
-    @MainActor
-    init(state: RoundSetupState, distanceUnit: DistanceUnit) {
-        eyebrow = "Round Setup"
-
-        if let course = state.selectedCourse {
-            title = course.name
-            subtitle = "Lock the tee, confirm the group, and start with the course context already loaded."
-            stageSummary = Self.makeStageSummary(state: state, distanceUnit: distanceUnit)
-            highlights = [
-                "\(distanceUnit.travelLabel(forKilometers: course.distanceKilometers)) away",
-                "\(course.holeCount) holes",
-                "Par \(course.par)",
-            ]
-        } else {
-            title = "Build your round"
-            subtitle = "Choose a nearby course, lock the tees, then confirm who is playing."
-            stageSummary = "Course first • Tee second • Players last"
-            highlights = [
-                "Nearby courses"
-            ]
-        }
-    }
-
-    @MainActor
-    private static func makeStageSummary(state: RoundSetupState, distanceUnit: DistanceUnit) -> String {
-        guard state.selectedCourse != nil else {
-            return "Pick a course, lock the tees, then add players."
-        }
-
-        let teeLabel = state.selectedTeeName.map { "\($0) tees" } ?? "Choose tees"
-        let yardageLabel: String
-        if let yards = state.selectedTeeYards {
-            switch distanceUnit {
-            case .yards:
-                yardageLabel = "\(yards)yd"
-            case .meters:
-                let meters = Int((Double(yards) * 0.9144).rounded())
-                yardageLabel = "\(meters)m"
-            }
-        } else {
-            yardageLabel = "Tee distance pending"
-        }
-
-        let golferCount = state.players.count == 1 ? "1 golfer ready" : "\(state.players.count) golfers ready"
-        return "\(teeLabel) • \(yardageLabel) • \(golferCount)"
-    }
-}
-
-private struct RoundSetupSwipeBehavior {
-    static let revealWidth: CGFloat = 104
-    static let openThreshold: CGFloat = 46
-
-    static func contentOffset(
-        dragTranslation: CGFloat,
-        isRevealed: Bool,
-        revealWidth: CGFloat = revealWidth
-    ) -> CGFloat {
-        if isRevealed {
-            return min(0, max(-revealWidth, -revealWidth + dragTranslation))
-        }
-        return max(-revealWidth, min(0, dragTranslation))
-    }
-
-    static func actionWidth(
-        forContentOffset contentOffset: CGFloat,
-        revealWidth: CGFloat = revealWidth
-    ) -> CGFloat {
-        max(0, min(revealWidth, -contentOffset))
-    }
-
-    static func shouldRemainRevealed(
-        afterDragTranslation dragTranslation: CGFloat,
-        wasRevealed: Bool,
-        openThreshold: CGFloat = openThreshold
-    ) -> Bool {
-        if wasRevealed {
-            return dragTranslation < openThreshold
-        }
-        return dragTranslation < -openThreshold
-    }
-}
-
 private enum RoundSetupLocationPrimerTrigger: Identifiable {
     case nearbyDiscovery
     case startRound
@@ -163,6 +12,9 @@ private enum RoundSetupLocationPrimerTrigger: Identifiable {
     }
 }
 
+/// Setting the card: course, tees and players are the header of a scorecard.
+/// Each choice collapses into a filled line once made, and the book's table of
+/// contents (every hole in miniature) confirms the course you picked.
 struct RoundSetupView: View {
     @ObservedObject var state: RoundSetupState
     let distanceUnit: DistanceUnit
@@ -174,8 +26,6 @@ struct RoundSetupView: View {
     let myUserId: UUID?
     let onSearchPlayers: (String) async throws -> [PublicProfile]
     let onFetchPlayerProfileById: (UUID) async throws -> PublicProfile?
-    /// Phase 2+ injects the import flow here. In Phase 1 the host wires this
-    /// to a placeholder that just records that the user wants to import.
     let onDiscoveredCourseSelected: (DiscoveredCourse) -> Void
 
     init(
@@ -204,37 +54,19 @@ struct RoundSetupView: View {
         self.onDiscoveredCourseSelected = onDiscoveredCourseSelected
     }
 
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isChangingCourse = false
     @State private var isShowingGuestSheet = false
     @State private var isShowingPlayerSearch = false
     @State private var isShowingExitConfirmation = false
     @State private var isShowingCourseDiscovery = false
-    @State private var isHeroHighlightListExpanded = false
     @State private var locationPrimerTrigger: RoundSetupLocationPrimerTrigger?
     @State private var didHandleInitialNearbyLoad = false
-    @State private var revealedPlayerID: UUID?
 
     private static let nearbyPreviewCount = 5
-
     private let teeSectionID = "tee-section"
     private let playerSectionID = "player-section"
-
-    private var heroModel: RoundSetupHeroModel {
-        RoundSetupHeroModel(state: state, distanceUnit: distanceUnit)
-    }
-
-    private var palette: RoundSetupPalette {
-        .forColorScheme(colorScheme)
-    }
-
-    private var usesCompactHeroLayout: Bool {
-        horizontalSizeClass == .compact
-    }
-
-    private var compactHeroHighlightPresentation: ShellTokens.PillLayout.CompactPresentation {
-        ShellTokens.PillLayout.compactPresentation(from: heroModel.highlights, isExpanded: isHeroHighlightListExpanded)
-    }
 
     private var hasSetupProgress: Bool {
         state.selectedCourse != nil || state.selectedTee != nil || state.players.count > 1
@@ -244,51 +76,45 @@ struct RoundSetupView: View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x24) {
-                        heroCard
-                        courseSection
-                        teeSection
-                            .id(teeSectionID)
-                        playersSection
-                            .id(playerSectionID)
+                    VStack(alignment: .leading, spacing: 34) {
+                        if let course = state.selectedCourse, !isChangingCourse {
+                            selectedCourseHeader(course).id("selected-course")
+                            teeSection.id(teeSectionID)
+                        } else {
+                            courseSection
+                        }
+                        if state.selectedTee != nil, !isChangingCourse {
+                            playersSection.id(playerSectionID)
+                        }
+                        if dynamicTypeSize.isAccessibilitySize { footerBar }
                     }
-                    .padding(.horizontal, ShellTokens.Spacing.x20)
-                    .padding(.top, ShellTokens.Spacing.x20)
-                    .padding(.bottom, ShellTokens.Spacing.x24)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 28)
+                    .frame(maxWidth: 640, alignment: .leading)
+                    .frame(maxWidth: .infinity)
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .onChange(of: state.selectedCourse?.id, initial: false) { _, newValue in
                     guard newValue != nil else { return }
-                    withAnimation(.spring(response: 0.42, dampingFraction: 0.88)) {
-                        proxy.scrollTo(teeSectionID, anchor: .top)
+                    isChangingCourse = false
+                    withAnimation(reduceMotion ? nil : .snappy(duration: 0.35)) {
+                        proxy.scrollTo("selected-course", anchor: .top)
                     }
                 }
                 .onChange(of: state.selectedTeeName, initial: false) { _, newValue in
                     guard newValue != nil else { return }
-                    withAnimation(.spring(response: 0.42, dampingFraction: 0.88)) {
+                    withAnimation(reduceMotion ? nil : .snappy(duration: 0.35)) {
                         proxy.scrollTo(playerSectionID, anchor: .top)
                     }
                 }
             }
 
-            footerBar
+            if !dynamicTypeSize.isAccessibilitySize { footerBar }
         }
-        .background(
-            Group {
-                if colorScheme == .dark {
-                    palette.bgApp
-                } else {
-                    LinearGradient(
-                        colors: [
-                            palette.bgApp,
-                            palette.surfaceTinted.opacity(0.42)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                }
-            }
-            .ignoresSafeArea()
-        )
+        .background(Book.paper.ignoresSafeArea())
+        .foregroundStyle(Book.ink)
+        .tint(Book.stamp)
         .sheet(isPresented: $isShowingGuestSheet) {
             AddGuestPlayerSheet(
                 onAdd: { state.addGuest(named: $0) },
@@ -309,1031 +135,487 @@ struct RoundSetupView: View {
                 onDismiss: { isShowingPlayerSearch = false }
             )
         }
-        .sheet(isPresented: $isShowingCourseDiscovery) {
-            courseDiscoverySheet
-        }
-        .sheet(item: $locationPrimerTrigger) { trigger in
-            locationPermissionPrimerSheet
-        }
-        .confirmationDialog(
-            "Leave round setup?",
-            isPresented: $isShowingExitConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Leave Setup", role: .destructive) {
-                onExitSetup()
-            }
-
-            Button("Keep Editing", role: .cancel) {}
+        .sheet(isPresented: $isShowingCourseDiscovery) { courseDiscoverySheet }
+        .sheet(item: $locationPrimerTrigger) { _ in locationPermissionPrimerSheet }
+        .confirmationDialog("Leave round setup?", isPresented: $isShowingExitConfirmation, titleVisibility: .visible) {
+            Button("Leave setup", role: .destructive) { onExitSetup() }
+            Button("Keep editing", role: .cancel) {}
         } message: {
-            Text("Your course, tee, and player selections will be cleared.")
+            Text("Your course, tee and player choices will be cleared.")
         }
-        .navigationTitle("Round Setup")
+        .navigationTitle("New round")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Book.paper, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    if hasSetupProgress {
-                        isShowingExitConfirmation = true
-                    } else {
-                        onExitSetup()
-                    }
+                    if hasSetupProgress { isShowingExitConfirmation = true } else { onExitSetup() }
                 } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.headline.weight(.bold))
+                    Label("Home", systemImage: "chevron.left")
                 }
             }
         }
-        .animation(.spring(response: 0.34, dampingFraction: 0.88), value: state.selectedCourse?.id)
-        .animation(.spring(response: 0.34, dampingFraction: 0.88), value: state.selectedTeeName)
-        .animation(.spring(response: 0.34, dampingFraction: 0.88), value: state.players.count)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: state.selectedCourse?.id)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: state.selectedTeeName)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: state.players.count)
+        .animation(reduceMotion ? nil : .snappy(duration: 0.3), value: isChangingCourse)
         .task {
             guard !didHandleInitialNearbyLoad else { return }
             didHandleInitialNearbyLoad = true
-
-            if requiresLocationPermissionPrimer {
-                locationPrimerTrigger = .nearbyDiscovery
-            } else {
-                await state.refreshStoredCourses()
-                await state.loadNearbyCoursesIfNeeded()
-            }
+            await state.refreshStoredCourses()
         }
     }
 
-    private var heroCard: some View {
-        ZStack(alignment: .topTrailing) {
-            Circle()
-                .fill(palette.surfaceOverlay)
-                .frame(width: 190, height: 190)
-                .offset(x: 58, y: -64)
+    // MARK: Selected course
 
-            Circle()
-                .fill(palette.pine300.opacity(colorScheme == .dark ? 0.28 : 0.18))
-                .frame(width: 112, height: 112)
-                .offset(x: -18, y: 88)
-
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                    Text(heroModel.eyebrow.uppercased())
-                        .font(ShellTokens.Typography.eyebrow)
-                        .tracking(1.2)
-                        .foregroundStyle(palette.pine700)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(palette.surfaceOverlay, in: Capsule())
-
-                    if usesCompactHeroLayout {
-                        VStack(alignment: .leading, spacing: 8) {
-                            setupStageChip("Course", isComplete: state.selectedCourse != nil, isActive: state.selectedCourse == nil)
-                            setupStageChip("Tee", isComplete: state.selectedTee != nil, isActive: state.selectedCourse != nil && state.selectedTee == nil)
-                            setupStageChip("Players", isComplete: state.canStartRound, isActive: state.selectedTee != nil)
-                        }
-                    } else {
-                        HStack(spacing: 8) {
-                            setupStageChip("Course", isComplete: state.selectedCourse != nil, isActive: state.selectedCourse == nil)
-                            setupStageChip("Tee", isComplete: state.selectedTee != nil, isActive: state.selectedCourse != nil && state.selectedTee == nil)
-                            setupStageChip("Players", isComplete: state.canStartRound, isActive: state.selectedTee != nil)
-                        }
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                    Text(heroModel.title)
-                        .font(usesCompactHeroLayout ? .system(size: 30, weight: .semibold, design: .serif) : .system(size: 34, weight: .semibold, design: .serif))
-                        .foregroundStyle(palette.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text(heroModel.subtitle)
-                        .font(ShellTokens.Typography.lead)
-                        .foregroundStyle(palette.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                if usesCompactHeroLayout {
-                    ShellCompactPillFlow(spacing: ShellTokens.Spacing.x8) {
-                        ForEach(compactHeroHighlightPresentation.visibleTexts, id: \.self) { text in
-                            highlightPill(text)
-                        }
-                        if compactHeroHighlightPresentation.showsCollapseControl {
-                            highlightOverflowPill("Less") {
-                                isHeroHighlightListExpanded = false
-                            }
-                        } else if compactHeroHighlightPresentation.overflowCount > 0 {
-                            highlightOverflowPill("+\(compactHeroHighlightPresentation.overflowCount)") {
-                                isHeroHighlightListExpanded = true
-                            }
-                        }
-                    }
-                } else {
-                    HStack(spacing: ShellTokens.Spacing.x8) {
-                        ForEach(heroModel.highlights, id: \.self) { highlight in
-                            highlightPill(highlight)
-                        }
-                    }
-                }
-
-                Text(heroModel.stageSummary)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.textPrimary)
+    private func selectedCourseHeader(_ course: SwingPalCourse) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                BookNote("Course")
+                Spacer()
+                Button("Change") { isChangingCourse = true }
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minHeight: 44)
+                    .foregroundStyle(Book.ink)
+                    .accessibilityLabel("Change course")
+            }
+            Text(course.name)
+                .font(Book.Typeface.display)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(courseFacts(course))
+                .font(.subheadline)
+                .foregroundStyle(Book.pencil)
+            if !dynamicTypeSize.isAccessibilitySize, course.holes.contains(where: { HoleProjection(hole: $0) != nil }) {
+                CourseContentsStrip(holes: course.holes)
                     .padding(.top, 4)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .contentTransition(.opacity)
             }
-            .padding(usesCompactHeroLayout ? ShellTokens.Spacing.x16 : ShellTokens.Spacing.x20)
+            if let note = course.sourceReferences.compactMap(\.note).first(where: { !$0.isEmpty }) {
+                Text(note).font(.caption).foregroundStyle(Book.pencil)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [
-                    palette.surfacePrimary,
-                    palette.surfaceSecondary
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: ShellTokens.Radius.lg)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.lg)
-                .stroke(palette.strokeDefault, lineWidth: 1)
-        )
-        .shadow(color: palette.shadowSoft, radius: 14, y: 10)
     }
+
+    private func courseFacts(_ course: SwingPalCourse) -> String {
+        var parts = ["\(course.holeCount) holes", "Par \(course.par)", course.quality.readinessLabel]
+        if let source = course.sourceReferences.first?.kind.label { parts.append(source) }
+        return parts.joined(separator: " · ")
+    }
+
+    // MARK: Course choice
 
     private var courseSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-            sectionHeader(
-                eyebrow: "Course",
-                title: state.selectedCourse == nil ? "Choose the course" : "Course locked in",
-                detail: state.selectedCourse == nil
-                ? "Pick the course first. The tee and player setup will unlock right below."
-                : "You can still switch courses here before you start the round."
-            )
-
-            ForEach(Array(state.sortedCourses.enumerated()), id: \.element.id) { index, course in
-                courseCard(course, rank: index + 1)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Where are you playing?")
+                    .font(Book.Typeface.display)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                if isChangingCourse {
+                    Button("Cancel") { isChangingCourse = false }
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: 44)
+                }
             }
-
-            nearbyDiscoveryPreviewSection
-
+            discoverySearchField
+            if !state.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                discoverySearchResultsSection
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    BookSectionRule(title: "In your book", trailing: state.sortedCourses.isEmpty ? nil : "\(state.sortedCourses.count)")
+                        .padding(.bottom, 4)
+                    if state.sortedCourses.isEmpty {
+                        Text("Search by name to find and download your course.")
+                            .font(.subheadline)
+                            .foregroundStyle(Book.pencil)
+                            .padding(.vertical, 12)
+                    }
+                    ForEach(state.sortedCourses) { course in
+                        courseRow(course)
+                        BookHairline()
+                    }
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    BookSectionRule(title: "Elsewhere")
+                        .padding(.bottom, 4)
+                    Button {
+                        if requiresLocationPermissionPrimer { locationPrimerTrigger = .nearbyDiscovery }
+                        else { Task { await state.loadNearbyCoursesIfNeeded() } }
+                    } label: {
+                        actionRowLabel(title: "Courses near me", detail: "Uses your location once, when you tap", symbol: "location")
+                    }
+                    .buttonStyle(BookRowButtonStyle())
+                    BookHairline()
+                    if state.isLoadingNearby || !state.nearbyDiscoveries.isEmpty {
+                        nearbyDiscoveryPreviewSection
+                    }
+                    Button { isShowingCourseDiscovery = true } label: {
+                        actionRowLabel(title: "Browse and search", detail: "Every match by name, with quick downloads", symbol: "books.vertical")
+                    }
+                    .buttonStyle(BookRowButtonStyle())
+                    .accessibilityHint("Opens the full course discovery screen")
+                    BookHairline()
+                }
+            }
             if let message = state.discoveryStatusMessage {
-                Text(message)
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
-                    .padding(.top, 4)
-                    .transition(.opacity)
+                Label(message, systemImage: "info.circle")
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    private func actionRowLabel(title: String, detail: String, symbol: String) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol).font(.body.weight(.medium)).frame(width: 26)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.headline)
+                Text(detail).font(.subheadline).foregroundStyle(Book.pencil)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Book.pencil)
+        }
+        .padding(.vertical, 14)
     }
 
     private var discoverySearchField: some View {
-        HStack(spacing: ShellTokens.Spacing.x10) {
+        HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.textSecondary)
-
+                .font(.body.weight(.medium))
+                .foregroundStyle(Book.pencil)
             TextField(
                 state.searchFieldPlaceholder,
-                text: Binding(
-                    get: { state.searchQuery },
-                    set: { state.updateSearchQuery($0) }
-                )
+                text: Binding(get: { state.searchQuery }, set: { state.updateSearchQuery($0) })
             )
-            .font(.subheadline)
-            .foregroundStyle(palette.textPrimary)
+            .font(.title3)
             .textInputAutocapitalization(.words)
             .autocorrectionDisabled(true)
             .submitLabel(.search)
-
             if state.isSearching {
-                ProgressView()
-                    .controlSize(.small)
+                ProgressView().controlSize(.small)
             } else if !state.searchQuery.isEmpty {
-                Button {
-                    state.updateSearchQuery("")
-                } label: {
+                Button { state.updateSearchQuery("") } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(palette.textTertiary)
+                        .foregroundStyle(Book.pencil)
+                        .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Clear course search")
             }
         }
-        .padding(.horizontal, ShellTokens.Spacing.x14)
-        .padding(.vertical, ShellTokens.Spacing.x12)
-        .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                .stroke(palette.strokeDefault, lineWidth: 1)
-        )
+        .frame(minHeight: 48)
+        .overlay(alignment: .bottom) { Rectangle().fill(Book.ink.opacity(0.7)).frame(height: 1.25) }
+    }
+
+    private func courseRow(_ course: SwingPalCourse) -> some View {
+        let isSelected = state.selectedCourse?.id == course.id
+        return Button { state.selectCourse(course) } label: {
+            HStack(alignment: .center, spacing: 16) {
+                CourseThumbnail(course: course)
+                    .frame(width: 46, height: 62)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(course.name).font(.headline)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("\(course.holeCount) holes · Par \(course.par)")
+                        .font(.subheadline).foregroundStyle(Book.pencil)
+                    Text(course.distanceKilometers == nil ? course.quality.readinessLabel : course.proximityLabel(distanceUnit: distanceUnit))
+                        .font(.caption).foregroundStyle(Book.pencil)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "chevron.right")
+                    .font(isSelected ? .title3 : .footnote.weight(.semibold))
+                    .foregroundStyle(isSelected ? Book.stamp : Book.pencil)
+            }
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(BookRowButtonStyle())
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var nearbyDiscoveryPreviewSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
+        VStack(alignment: .leading, spacing: 0) {
             if state.isLoadingNearby && state.nearbyDiscoveries.isEmpty {
-                discoveryLoadingPlaceholder(
-                    title: "Looking for nearby courses…",
-                    detail: "Searching within \(distanceUnit.travelLabel(forKilometers: 10)) of your current location."
-                )
-            } else if !state.nearbyDiscoveries.isEmpty {
-                discoverySubheader(
-                    title: "Discover nearby",
-                    detail: "A quick preview — open the full list to search by name or see every match."
-                )
+                loadingRow("Looking for courses within \(distanceUnit.travelLabel(forKilometers: 10))…")
+            } else {
                 ForEach(Array(state.nearbyDiscoveries.prefix(Self.nearbyPreviewCount))) { discovered in
-                    discoveredCourseCard(discovered, onSelect: onDiscoveredCourseSelected)
+                    discoveredCourseRow(discovered, onSelect: onDiscoveredCourseSelected)
+                    BookHairline()
                 }
                 if state.nearbyDiscoveries.count > Self.nearbyPreviewCount {
-                    Text("Showing \(Self.nearbyPreviewCount) of \(state.nearbyDiscoveries.count) nearby")
-                        .font(.caption)
-                        .foregroundStyle(palette.textTertiary)
+                    BookNote("Showing \(Self.nearbyPreviewCount) of \(state.nearbyDiscoveries.count) nearby")
+                        .padding(.vertical, 10)
                 }
-            } else {
-                Text("No courses within \(distanceUnit.travelLabel(forKilometers: 10)) yet. Open browse & search to look up by name.")
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
             }
-
-            browseAllCoursesButton
         }
-    }
-
-    private var browseAllCoursesButton: some View {
-        Button {
-            isShowingCourseDiscovery = true
-        } label: {
-            HStack(alignment: .center, spacing: ShellTokens.Spacing.x12) {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x4) {
-                    Text("Browse & search courses")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.textPrimary)
-                    Text("Full nearby list, country search, and quick course downloads")
-                        .font(.caption)
-                        .foregroundStyle(palette.textSecondary)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer(minLength: 8)
-                Image(systemName: "chevron.right")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.textTertiary)
-            }
-            .padding(ShellTokens.Spacing.x16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-            .overlay(
-                RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                    .stroke(palette.strokeDefault, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityHint("Opens the full course discovery screen")
     }
 
     private var discoveryFullNearbySection: some View {
-        Group {
+        VStack(alignment: .leading, spacing: 0) {
             if state.isLoadingNearby && state.nearbyDiscoveries.isEmpty {
-                discoveryLoadingPlaceholder(
-                    title: "Looking for nearby courses…",
-                    detail: "Searching within \(distanceUnit.travelLabel(forKilometers: 10)) of your current location."
-                )
+                loadingRow("Looking for courses within \(distanceUnit.travelLabel(forKilometers: 10))…")
             } else if !state.nearbyDiscoveries.isEmpty {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                    discoverySubheader(
-                        title: "Discover nearby",
-                        detail: "Tap one and we’ll download the course layout."
-                    )
-                    ForEach(state.nearbyDiscoveries) { discovered in
-                        discoveredCourseCard(discovered) { course in
-                            onDiscoveredCourseSelected(course)
-                            isShowingCourseDiscovery = false
-                        }
+                BookSectionRule(title: "Nearby").padding(.bottom, 4)
+                ForEach(state.nearbyDiscoveries) { discovered in
+                    discoveredCourseRow(discovered) { course in
+                        onDiscoveredCourseSelected(course)
+                        isShowingCourseDiscovery = false
                     }
+                    BookHairline()
                 }
             } else if !state.isLoadingNearby {
-                Text("No golf courses found within \(distanceUnit.travelLabel(forKilometers: 10)). Try search above.")
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
+                Text("Type a course name above. Nearby results appear after you ask for them.")
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
             }
         }
     }
 
     private var discoverySearchResultsSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
+        VStack(alignment: .leading, spacing: 0) {
             if state.isSearching && state.searchResults.isEmpty {
-                discoveryLoadingPlaceholder(
-                    title: "Searching courses…",
-                    detail: state.userCountryCode.map { "Looking in \($0)." } ?? "One moment."
-                )
+                loadingRow(state.userCountryCode.map { "Searching courses in \($0)…" } ?? "Searching courses…")
             } else if !state.searchResults.isEmpty {
-                discoverySubheader(
-                    title: "Search results",
-                    detail: state.userCountryCode.map { "Showing matches in \($0)." }
-                        ?? "Showing matches in your country."
-                )
+                BookSectionRule(title: "Matches", trailing: state.userCountryCode).padding(.bottom, 4)
                 ForEach(state.searchResults) { discovered in
-                    discoveredCourseCard(discovered) { course in
+                    discoveredCourseRow(discovered) { course in
                         onDiscoveredCourseSelected(course)
                         isShowingCourseDiscovery = false
                     }
+                    BookHairline()
                 }
             }
         }
+    }
+
+    private func loadingRow(_ text: String) -> some View {
+        HStack(spacing: 12) {
+            ProgressView().controlSize(.small)
+            Text(text).font(.subheadline).foregroundStyle(Book.pencil)
+        }
+        .padding(.vertical, 14)
+    }
+
+    private func discoveredCourseRow(_ course: DiscoveredCourse, onSelect: @escaping (DiscoveredCourse) -> Void) -> some View {
+        Button { onSelect(course) } label: {
+            HStack(alignment: .center, spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(Book.rule, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    Image(systemName: "arrow.down")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Book.pencil)
+                }
+                .frame(width: 46, height: 62)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(course.name).font(.headline).lineLimit(2).multilineTextAlignment(.leading)
+                    Text(discoveredCourseSubtitle(for: course)).font(.subheadline).foregroundStyle(Book.pencil)
+                    BookNote("Tap to add to your book", color: Book.stamp)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(BookRowButtonStyle())
+    }
+
+    private func discoveredCourseSubtitle(for course: DiscoveredCourse) -> String {
+        var parts: [String] = []
+        if let distance = course.distanceKilometers { parts.append("\(distanceUnit.travelLabel(forKilometers: distance)) away") }
+        if let region = course.region, !region.isEmpty { parts.append(region) }
+        if let countryCode = course.countryCode, !countryCode.isEmpty { parts.append(countryCode) }
+        return parts.isEmpty ? "Course match" : parts.joined(separator: " · ")
     }
 
     private var courseDiscoverySheet: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
+                VStack(alignment: .leading, spacing: 22) {
                     discoverySearchField
-
                     if !state.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         discoverySearchResultsSection
                     } else {
                         discoveryFullNearbySection
                     }
-
                     if let message = state.discoveryStatusMessage {
-                        Text(message)
-                            .font(.caption)
-                            .foregroundStyle(palette.textSecondary)
-                            .padding(.top, 4)
+                        Text(message).font(.caption).foregroundStyle(Book.pencil)
                     }
                 }
-                .padding(.horizontal, ShellTokens.Spacing.x20)
-                .padding(.vertical, ShellTokens.Spacing.x16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
             }
-            .background(
-                Group {
-                    if colorScheme == .dark {
-                        palette.bgApp
-                    } else {
-                        LinearGradient(
-                            colors: [
-                                palette.bgApp,
-                                palette.surfaceTinted.opacity(0.42)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    }
-                }
-                .ignoresSafeArea()
-            )
+            .background(Book.paper.ignoresSafeArea())
+            .foregroundStyle(Book.ink)
             .navigationTitle("Find a course")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        state.updateSearchQuery("")
-                        isShowingCourseDiscovery = false
-                    }
+                    Button("Done") { isShowingCourseDiscovery = false }
                 }
             }
         }
+        .tint(Book.stamp)
         .presentationDetents([.large])
     }
 
-    private func discoverySubheader(title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x4) {
-            Text(title.uppercased())
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.textTertiary)
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(palette.textSecondary)
-        }
-    }
-
-    private func discoveryLoadingPlaceholder(title: String, detail: String) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x12) {
-            ProgressView()
-                .controlSize(.small)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.textPrimary)
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
-            }
-            Spacer()
-        }
-        .padding(ShellTokens.Spacing.x14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                .stroke(palette.strokeDefault, lineWidth: 1)
-        )
-    }
-
-    private func discoveredCourseCard(
-        _ course: DiscoveredCourse,
-        onSelect: @escaping (DiscoveredCourse) -> Void
-    ) -> some View {
-        Button {
-            onSelect(course)
-        } label: {
-            HStack(alignment: .top, spacing: ShellTokens.Spacing.x14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: ShellTokens.Radius.md, style: .continuous)
-                        .fill(palette.surfaceTinted)
-                    Image(systemName: "globe.europe.africa")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(palette.pine700)
-                }
-                .frame(width: 60, height: 64)
-
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x6) {
-                    Text(course.name)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(palette.textPrimary)
-                        .lineLimit(2)
-
-                    Text(discoveredCourseSubtitle(for: course))
-                        .font(.subheadline)
-                        .foregroundStyle(palette.textSecondary)
-                        .lineLimit(2)
-
-                    HStack(spacing: ShellTokens.Spacing.x8) {
-                        courseMetaPill("Tap to import", accent: true)
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "arrow.down.circle")
-                    .font(.title3)
-                    .foregroundStyle(palette.pine700)
-            }
-            .padding(ShellTokens.Spacing.x16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-            .overlay(
-                RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                    .stroke(palette.strokeDefault.opacity(0.7), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func discoveredCourseSubtitle(for course: DiscoveredCourse) -> String {
-        var parts: [String] = []
-        if let distance = course.distanceKilometers {
-            parts.append("\(distanceUnit.travelLabel(forKilometers: distance)) away")
-        }
-        if let region = course.region, !region.isEmpty {
-            parts.append(region)
-        }
-        if let countryCode = course.countryCode, !countryCode.isEmpty {
-            parts.append(countryCode)
-        }
-        if parts.isEmpty {
-            parts.append("Course match")
-        }
-        return parts.joined(separator: " • ")
-    }
+    // MARK: Tees
 
     private var teeSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-            sectionHeader(
-                eyebrow: "Tee",
-                title: state.selectedCourse == nil ? "Choose a course first" : "Lock the tee context",
-                detail: state.selectedCourse == nil
-                ? "Tee options appear as soon as you select a course."
-                : "Select the tee that matches today’s round so yardages and round context stay aligned."
-            )
-
+        VStack(alignment: .leading, spacing: 0) {
+            BookSectionRule(title: "Tees").padding(.bottom, 4)
             if state.availableTees.isEmpty {
-                lockedPlaceholderCard(
-                    title: "Tee selection is waiting on the course",
-                    detail: "Pick a nearby course above to reveal its tee set."
-                )
+                Label("No tee data for this course. You can still score it.", systemImage: "exclamationmark.triangle")
+                    .font(.subheadline)
+                    .foregroundStyle(Book.warning)
+                    .padding(.vertical, 12)
             } else {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: ShellTokens.Spacing.x12),
-                        GridItem(.flexible(), spacing: ShellTokens.Spacing.x12),
-                    ],
-                    spacing: ShellTokens.Spacing.x12
-                ) {
-                    ForEach(state.availableTees, id: \.id) { tee in
-                        teeCard(tee)
-                    }
+                ForEach(state.availableTees, id: \.id) { tee in
+                    teeRow(tee)
+                    BookHairline()
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
     }
+
+    private func teeRow(_ tee: SwingPalCourse.Tee) -> some View {
+        let isSelected = state.selectedTeeName == tee.name
+        return Button { state.selectTee(tee) } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().strokeBorder(Book.ink.opacity(isSelected ? 1 : 0.45), lineWidth: 1.25)
+                    if isSelected { Circle().fill(Book.ink).padding(5) }
+                }
+                .frame(width: 22, height: 22)
+                Text(tee.name).font(.headline.weight(isSelected ? .semibold : .regular))
+                Spacer(minLength: 12)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(teeDistanceValue(for: tee)).font(Book.Typeface.smallFigure)
+                    Text(distanceUnit.shortSuffix).font(.caption).foregroundStyle(Book.pencil)
+                }
+            }
+            .padding(.vertical, 16)
+        }
+        .buttonStyle(BookRowButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func teeDistanceValue(for tee: SwingPalCourse.Tee) -> String {
+        switch distanceUnit {
+        case .yards: return "\(tee.yards)"
+        case .meters: return "\(Int((Double(tee.yards) * 0.9144).rounded()))"
+        }
+    }
+
+    // MARK: Players
 
     private var playersSection: some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-            sectionHeader(
-                eyebrow: "Players",
-                title: state.selectedTee == nil ? "Confirm the tee first" : "Confirm the group",
-                detail: state.selectedTee == nil
-                ? "Once the tee is selected, you can confirm who is in the round."
-                : "You’re seeded into the round already. Add guests if the group isn’t locked yet."
-            )
-
-            if state.selectedTee == nil {
-                lockedPlaceholderCard(
-                    title: "Players unlock after tee selection",
-                    detail: "That keeps the round setup in one clean order: course, tee, then group."
-                )
-            } else {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x16) {
-                    VStack(spacing: ShellTokens.Spacing.x12) {
-                        ForEach(state.players) { player in
-                            if player.kind == .guest {
-                                RoundSetupSwipeRevealRow(
-                                    id: player.id,
-                                    revealedID: $revealedPlayerID,
-                                    onDelete: {
-                                        state.removeGuest(id: player.id)
-                                    }
-                                ) {
-                                    playerRow(player)
-                                }
-                            } else {
-                                playerRow(player)
-                            }
+        VStack(alignment: .leading, spacing: 0) {
+            BookSectionRule(title: "Playing with", trailing: "\(state.players.count)").padding(.bottom, 4)
+            ForEach(state.players) { player in
+                HStack(spacing: 14) {
+                    Text(String(player.name.prefix(1)).uppercased())
+                        .font(.system(.subheadline, weight: .bold).width(.condensed))
+                        .foregroundStyle(player.kind == .selfPlayer ? Book.onStamp : Book.ink)
+                        .frame(width: 34, height: 34)
+                        .background {
+                            if player.kind == .selfPlayer { Circle().fill(Book.stamp) }
+                            else { Circle().strokeBorder(Book.ink.opacity(0.5), lineWidth: 1) }
                         }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(player.name).font(.headline)
+                        Text(player.kind == .selfPlayer ? "Your scorecard" : "Companion · listed, score not kept")
+                            .font(.subheadline).foregroundStyle(Book.pencil)
                     }
-
-                    Button {
-                        isShowingGuestSheet = true
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "plus.circle.fill")
-                            Text("Add Guest Player")
-                                .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.bold))
+                    Spacer(minLength: 0)
+                    if player.kind == .guest {
+                        Button(role: .destructive) { state.removeGuest(id: player.id) } label: {
+                            Image(systemName: "xmark").font(.footnote.weight(.semibold)).frame(width: 44, height: 44)
                         }
-                        .padding(.horizontal, ShellTokens.Spacing.x16)
-                        .padding(.vertical, ShellTokens.Spacing.x14)
-                        .foregroundStyle(palette.pine700)
-                        .background(palette.surfaceTinted, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
+                        .foregroundStyle(Book.pencil)
+                        .accessibilityLabel("Remove \(player.name)")
                     }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        if authState == .authenticated {
-                            isShowingPlayerSearch = true
-                        } else {
-                            onAuthGateRequired(.signIn)
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "magnifyingglass")
-                            Text("Add Player")
-                                .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.bold))
-                        }
-                        .padding(.horizontal, ShellTokens.Spacing.x16)
-                        .padding(.vertical, ShellTokens.Spacing.x14)
-                        .foregroundStyle(palette.pine700)
-                        .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                                .stroke(palette.strokeDefault, lineWidth: 1)
-                        }
-                    }
-                    .buttonStyle(.plain)
                 }
-                .padding(ShellTokens.Spacing.x16)
-                .background(
-                    .ultraThinMaterial,
-                    in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                        .stroke(palette.strokeDefault.opacity(colorScheme == .dark ? 0.9 : 0.34), lineWidth: 1)
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.vertical, 10)
+                .accessibilityElement(children: .contain)
+                BookHairline()
             }
+            HStack(spacing: 18) {
+                Button { isShowingGuestSheet = true } label: {
+                    Label("Add companion", systemImage: "plus").frame(minHeight: 44)
+                }
+                Button {
+                    if authState == .authenticated { isShowingPlayerSearch = true } else { onAuthGateRequired(.signIn) }
+                } label: {
+                    Label("Find a player", systemImage: "magnifyingglass").frame(minHeight: 44)
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .buttonStyle(.plain)
+            .padding(.top, 8)
         }
     }
+
+    // MARK: Footer
 
     private var footerBar: some View {
-        VStack(spacing: ShellTokens.Spacing.x12) {
-            ViewThatFits(in: .vertical) {
-                HStack(spacing: ShellTokens.Spacing.x8) {
-                    footerChip(state.selectedCourse?.name ?? "Course pending")
-                    footerChip(state.selectedTeeName ?? "Tee pending")
-                    footerChip("\(state.players.count) golfer\(state.players.count == 1 ? "" : "s")")
-                }
-
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x8) {
-                    footerChip(state.selectedCourse?.name ?? "Course pending")
-                    HStack(spacing: ShellTokens.Spacing.x8) {
-                        footerChip(state.selectedTeeName ?? "Tee pending")
-                        footerChip("\(state.players.count) golfer\(state.players.count == 1 ? "" : "s")")
-                    }
-                }
+        VStack(alignment: .leading, spacing: 10) {
+            if !state.canStartRound {
+                Text(state.selectedCourse == nil ? "Choose a course to begin." : "Choose your tees to begin.")
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
             Button(action: handleStartRoundTapped) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Start Round")
-                            .font(.headline.weight(.semibold))
-                        Text(state.canStartRound ? heroModel.stageSummary : "Choose a course and tee to unlock the round.")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(
-                                state.canStartRound
-                                ? palette.textInverse.opacity(0.84)
-                                : palette.textSecondary
-                            )
-                            .lineLimit(2)
-                    }
-
-                    Spacer(minLength: 12)
-
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.title3)
-                }
-                .padding(.horizontal, ShellTokens.Spacing.x18)
-                .padding(.vertical, ShellTokens.Spacing.x16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(state.canStartRound ? palette.textInverse : palette.textPrimary)
-            .background(
-                LinearGradient(
-                    colors: state.canStartRound
-                    ? [palette.pine700, palette.pine500]
-                    : [palette.surfacePrimary, palette.surfaceSecondary],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                    .stroke(
-                        state.canStartRound ? Color.clear : palette.strokeDefault.opacity(colorScheme == .dark ? 0.9 : 0.55),
-                        lineWidth: 1
-                    )
-            )
-            .shadow(color: state.canStartRound ? palette.shadowFloating : .clear, radius: 12, y: 6)
-            .disabled(!state.canStartRound)
-            .opacity(1.0)
-        }
-        .padding(.horizontal, ShellTokens.Spacing.x20)
-        .padding(.top, ShellTokens.Spacing.x10)
-        .padding(.bottom, 32)
-        .background(
-            Rectangle()
-                .fill(colorScheme == .dark ? palette.bgApp : palette.bgApp.opacity(0.88))
-                .overlay(alignment: .top) {
-                    LinearGradient(
-                        colors: [
-                            palette.strokeDefault.opacity(colorScheme == .dark ? 0.90 : 0.55),
-                            .clear
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 18)
-                }
-                .shadow(
-                    color: palette.shadowFloating.opacity(colorScheme == .dark ? 0.42 : 0.14),
-                    radius: 18,
-                    y: -6
-                )
-        )
-    }
-
-    private func courseCard(_ course: SwingPalCourse, rank: Int) -> some View {
-        let isSelected = state.selectedCourse?.id == course.id
-
-        return Button {
-            state.selectCourse(course)
-        } label: {
-            HStack(alignment: .top, spacing: ShellTokens.Spacing.x14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: ShellTokens.Radius.md, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    palette.pine700,
-                                    palette.pine500
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    Text(String(format: "%02d", rank))
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(palette.textInverse)
-                }
-                .frame(width: 60, height: 72)
-
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x6) {
-                    HStack(spacing: 8) {
-                        Text(course.name)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(palette.textPrimary)
-
-                        if isSelected {
-                            Text("Selected")
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(palette.pine700)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(palette.surfaceTinted, in: Capsule())
-                                .transition(.scale.combined(with: .opacity))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Tee off").font(.headline)
+                        if let course = state.selectedCourse, let tee = state.selectedTeeName {
+                            Text("\(course.name) · \(tee)").font(.subheadline).opacity(0.78).lineLimit(1)
                         }
                     }
-
-                    Text("\(distanceUnit.travelLabel(forKilometers: course.distanceKilometers)) away • \(course.holeCount) holes • Par \(course.par)")
-                        .font(.subheadline)
-                        .foregroundStyle(palette.textSecondary)
-
-                    HStack(spacing: ShellTokens.Spacing.x8) {
-                        courseMetaPill(course.quality.readinessLabel, accent: isSelected)
-                        courseMetaPill("\(course.tees.count) tee sets", accent: false)
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isSelected ? palette.pine700 : palette.textTertiary)
-            }
-            .padding(ShellTokens.Spacing.x16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                let shape = RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                if isSelected {
-                    shape.fill(.ultraThinMaterial)
-                } else {
-                    shape.fill(palette.surfacePrimary)
+                    Spacer(minLength: 12)
+                    Image(systemName: "arrow.right").font(.headline)
                 }
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                    .stroke(
-                        isSelected ? palette.pine500 : palette.strokeDefault,
-                        lineWidth: 1
-                    )
-            )
-            .shadow(color: isSelected ? palette.shadowSoft.opacity(0.85) : .clear, radius: 12, y: 8)
+            .buttonStyle(BookStampButtonStyle())
+            .disabled(!state.canStartRound)
         }
-        .buttonStyle(.plain)
-        .contentTransition(.opacity)
-    }
-
-    private func teeCard(_ tee: SwingPalCourse.Tee) -> some View {
-        let isSelected = state.selectedTee?.id == tee.id
-
-        return Button {
-            state.selectTee(tee)
-        } label: {
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                HStack {
-                    Text(tee.name)
-                        .font(.headline.weight(.semibold))
-                    Spacer()
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(isSelected ? palette.pine700 : palette.textTertiary)
-                }
-
-                Text(teeDistanceLabel(for: tee))
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(palette.textPrimary)
-            }
-            .padding(ShellTokens.Spacing.x16)
-            .frame(maxWidth: .infinity, minHeight: 140, alignment: .topLeading)
-            .background {
-                let shape = RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                if isSelected {
-                    shape.fill(.ultraThinMaterial)
-                } else {
-                    shape.fill(palette.surfacePrimary)
-                }
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                    .stroke(
-                        isSelected ? palette.pine500 : palette.strokeDefault,
-                        lineWidth: 1
-                    )
-            )
-            .shadow(color: isSelected ? palette.shadowSoft.opacity(0.8) : .clear, radius: 10, y: 6)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func teeDistanceLabel(for tee: SwingPalCourse.Tee) -> String {
-        switch distanceUnit {
-        case .yards:
-            return "\(tee.yards)yd"
-        case .meters:
-            let meters = Int((Double(tee.yards) * 0.9144).rounded())
-            return "\(meters)m"
-        }
-    }
-
-    private func playerRow(_ player: RoundPlayerDraft) -> some View {
-        HStack(spacing: ShellTokens.Spacing.x12) {
-            ZStack {
-                Circle()
-                    .fill(player.kind == .selfPlayer ? palette.pine700 : palette.surfaceTinted)
-                Text(String(player.name.prefix(1)).uppercased())
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(player.kind == .selfPlayer ? palette.textInverse : palette.pine700)
-            }
-            .frame(width: 34, height: 34)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(player.name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.textPrimary)
-
-                Text(player.kind == .selfPlayer ? "Primary player" : "Guest player")
-                    .font(.caption)
-                    .foregroundStyle(palette.textSecondary)
-            }
-
-            Spacer()
-
-            Text(player.kind == .selfPlayer ? "You" : "Guest")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(player.kind == .selfPlayer ? palette.pine700 : palette.textSecondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(
-                    player.kind == .selfPlayer ? palette.surfaceTinted : palette.surfaceHUD,
-                    in: Capsule()
-                )
-        }
-        .padding(ShellTokens.Spacing.x14)
-        .background(palette.surfacePrimary.opacity(colorScheme == .dark ? 0.92 : 0.76), in: RoundedRectangle(cornerRadius: ShellTokens.Radius.sm))
-    }
-
-    private func sectionHeader(eyebrow: String, title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: ShellTokens.Spacing.x6) {
-            Text(eyebrow.uppercased())
-                .font(ShellTokens.Typography.eyebrow)
-                .tracking(1.2)
-                .foregroundStyle(palette.textTertiary)
-
-            Text(title)
-                .font(ShellTokens.Typography.sectionTitle)
-                .foregroundStyle(palette.textPrimary)
-
-            Text(detail)
-                .font(ShellTokens.Typography.lead)
-                .foregroundStyle(palette.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private func lockedPlaceholderCard(title: String, detail: String) -> some View {
-        HStack(alignment: .top, spacing: ShellTokens.Spacing.x12) {
-            Image(systemName: "lock.circle.fill")
-                .font(.title2)
-                .foregroundStyle(palette.textTertiary)
-
-            VStack(alignment: .leading, spacing: ShellTokens.Spacing.x4) {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(palette.textPrimary)
-                Text(detail)
-                    .font(.subheadline)
-                    .foregroundStyle(palette.textSecondary)
-            }
-        }
-        .padding(ShellTokens.Spacing.x16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md))
-        .overlay(
-            RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                .stroke(palette.strokeDefault, lineWidth: 1)
-        )
-    }
-
-    private func setupStageChip(_ title: String, isComplete: Bool, isActive: Bool) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: isComplete ? "checkmark.circle.fill" : (isActive ? "circle.lefthalf.filled" : "circle"))
-                .font(.caption.weight(.bold))
-            Text(title)
-                .font(.caption.weight(.semibold))
-        }
-        .foregroundStyle(isComplete || isActive ? palette.pine700 : palette.textSecondary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(
-            (isComplete || isActive) ? palette.surfaceTinted : palette.surfaceOverlay,
-            in: Capsule()
-        )
-    }
-
-    private func highlightPill(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .foregroundStyle(palette.textPrimary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(palette.surfaceOverlay, in: Capsule())
-    }
-
-    private func highlightOverflowPill(_ text: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            highlightPill(text)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func courseMetaPill(_ text: String, accent: Bool) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .foregroundStyle(accent ? palette.pine700 : palette.textPrimary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(
-                accent ? palette.surfaceTinted : palette.surfaceHUD,
-                in: Capsule()
-            )
-    }
-
-    private func footerChip(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .lineLimit(1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(palette.surfacePrimary.opacity(colorScheme == .dark ? 0.96 : 0.84), in: Capsule())
-            .foregroundStyle(palette.textPrimary)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+        .background(Book.paper)
+        .overlay(alignment: .top) { BookHairline() }
     }
 
     private func handleStartRoundTapped() {
         guard state.canStartRound else { return }
-
-        if requiresLocationPermissionPrimer {
-            locationPrimerTrigger = .startRound
-        } else {
-            onStartRound()
-        }
+        if requiresLocationPermissionPrimer { locationPrimerTrigger = .startRound } else { onStartRound() }
     }
+
+    // MARK: Location primer
 
     private var locationPermissionPrimerSheet: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: ShellTokens.Spacing.x20) {
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x12) {
-                        Text("LOCATION ACCESS")
-                            .font(ShellTokens.Typography.eyebrow)
-                            .tracking(1.2)
-                            .foregroundStyle(palette.pine700)
-
-                        Text("Why SwingPal needs your location")
-                            .font(ShellTokens.Typography.sectionTitle)
-                            .foregroundStyle(palette.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text("We use your location during a live round to calculate GPS yardages, place your ball accurately on the hole, and keep your course context in sync as you move.")
-                            .font(ShellTokens.Typography.body)
-                            .foregroundStyle(palette.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 24) {
+                    Image(systemName: "location.north.circle")
+                        .font(.system(size: 44, weight: .light))
+                    Text("Yardages from where you stand")
+                        .font(Book.Typeface.display)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("SwingPal uses your location during a round to measure to the green, place your ball on the hole and keep the page turned to the hole you’re on.")
+                        .font(.body)
+                        .foregroundStyle(Book.pencil)
+                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 0) {
+                        primerRow("Front, centre and back", "Measured from your position to the green geometry.")
+                        primerRow("Ball placement", "Shots you log are pinned where you hit them.")
+                        primerRow("Only while playing", "Used for live-round features, not background tracking.")
                     }
-
-                    VStack(alignment: .leading, spacing: ShellTokens.Spacing.x10) {
-                        locationBenefitRow(
-                            title: "Live GPS yardages",
-                            detail: "Front, pin, and back numbers update from where you actually are on the course."
-                        )
-                        locationBenefitRow(
-                            title: "Smarter shot context",
-                            detail: "Your position helps SwingPal understand lie, distance, and the next play more accurately."
-                        )
-                        locationBenefitRow(
-                            title: "Round-only purpose",
-                            detail: "This permission is used to power live-round GPS features, not generic background tracking."
-                        )
-                    }
-                    .padding(ShellTokens.Spacing.x16)
-                    .background(palette.surfacePrimary, in: RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ShellTokens.Radius.lg, style: .continuous)
-                            .stroke(palette.strokeDefault, lineWidth: 1)
-                    )
-
-                    VStack(spacing: ShellTokens.Spacing.x12) {
+                    VStack(spacing: 10) {
                         Button {
                             let trigger = locationPrimerTrigger
                             locationPrimerTrigger = nil
-
                             switch trigger {
                             case .nearbyDiscovery:
                                 Task {
@@ -1347,184 +629,85 @@ struct RoundSetupView: View {
                             }
                         } label: {
                             HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Continue")
-                                        .font(.headline.weight(.semibold))
-                                    Text(locationPrimerTrigger == .nearbyDiscovery ? "We’ll ask iOS for location to find nearby courses" : "We’ll ask iOS for location next")
-                                        .font(.caption.weight(.medium))
-                                        .foregroundStyle(palette.textInverse.opacity(0.84))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Continue").font(.headline)
+                                    Text("iOS will ask for permission next").font(.subheadline).opacity(0.78)
                                 }
-
-                                Spacer(minLength: 12)
-
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.title3)
+                                Spacer()
+                                Image(systemName: "arrow.right")
                             }
-                            .padding(.horizontal, ShellTokens.Spacing.x18)
-                            .padding(.vertical, ShellTokens.Spacing.x16)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .foregroundStyle(palette.textInverse)
-                            .background(
-                                LinearGradient(
-                                    colors: [palette.pine700, palette.pine500],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                in: RoundedRectangle(cornerRadius: ShellTokens.Radius.md)
-                            )
                         }
-                        .buttonStyle(.plain)
-
-                        Button("Not now") {
-                            locationPrimerTrigger = nil
-                        }
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                        .buttonStyle(BookStampButtonStyle())
+                        Button("Not now") { locationPrimerTrigger = nil }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Book.pencil)
+                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
                 }
-                .padding(ShellTokens.Spacing.x20)
+                .padding(24)
             }
-            .background(palette.bgApp.ignoresSafeArea())
-            .navigationTitle("Location")
+            .background(Book.paper.ignoresSafeArea())
+            .foregroundStyle(Book.ink)
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(palette.bgApp)
+        .presentationBackground(Book.paper)
     }
 
-    private func locationBenefitRow(title: String, detail: String) -> some View {
+    private func primerRow(_ title: String, _ detail: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(ShellTokens.Typography.microEyebrow)
-                .tracking(0.8)
-                .foregroundStyle(palette.textPrimary)
-
-            Text(detail)
-                .font(ShellTokens.Typography.body)
-                .foregroundStyle(palette.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(title).font(.headline)
+            Text(detail).font(.subheadline).foregroundStyle(Book.pencil).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .overlay(alignment: .bottom) { BookHairline() }
     }
 }
 
-private struct RoundSetupSwipeRevealRow<Content: View>: View {
-    private enum CommittedDragAxis {
-        case horizontal
-        case vertical
-    }
+// MARK: - Course miniatures
 
-    let id: UUID
-    @Binding var revealedID: UUID?
-    let onDelete: () -> Void
-    @ViewBuilder let content: Content
-
-    @State private var dragOffset: CGFloat = 0
-    @State private var committedDragAxis: CommittedDragAxis?
-
-    private var isOpen: Bool {
-        revealedID == id
-    }
-
-    private var contentOffset: CGFloat {
-        RoundSetupSwipeBehavior.contentOffset(
-            dragTranslation: dragOffset,
-            isRevealed: isOpen
-        )
-    }
-
-    private var actionWidth: CGFloat {
-        RoundSetupSwipeBehavior.actionWidth(forContentOffset: contentOffset)
-    }
+/// The book's table of contents: every hole in miniature, tee to green, numbered.
+struct CourseContentsStrip: View {
+    let holes: [SwingPalCourse.Hole]
 
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if actionWidth > 0.5 {
-                Button {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
-                        revealedID = nil
-                        dragOffset = 0
+        ScrollView(.horizontal) {
+            HStack(alignment: .bottom, spacing: 6) {
+                ForEach(holes) { hole in
+                    VStack(spacing: 4) {
+                        HolePageDrawing(hole: hole, showsArcs: false, showsCentreLine: false, showsScale: false,
+                                        insets: EdgeInsets(top: 4, leading: 3, bottom: 3, trailing: 3))
+                            .frame(width: 30, height: 64)
+                        Text("\(hole.number)")
+                            .font(.system(size: 11, weight: .semibold).width(.condensed))
+                            .foregroundStyle(Book.pencil)
                     }
-                    onDelete()
-                } label: {
-                    ZStack {
-                        Color(red: 0.86, green: 0.22, blue: 0.22)
-                        VStack(spacing: 4) {
-                            Image(systemName: "trash.fill")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Delete")
-                                .font(.caption2.weight(.semibold))
-                        }
-                        .foregroundStyle(.white)
-                    }
-                    .frame(width: RoundSetupSwipeBehavior.revealWidth)
-                    .frame(maxHeight: .infinity)
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .frame(width: actionWidth, alignment: .trailing)
-                .clipped()
-                .zIndex(0)
             }
-
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-                .offset(x: contentOffset)
-                .zIndex(1)
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 20)
-                        .onChanged { value in
-                            let w = value.translation.width
-                            let h = value.translation.height
-                            if committedDragAxis == nil {
-                                let dist = max(abs(w), abs(h))
-                                if dist >= 16 {
-                                    committedDragAxis = abs(w) > abs(h) ? .horizontal : .vertical
-                                }
-                            }
-                            guard committedDragAxis == .horizontal else { return }
-                            if w < 0 {
-                                dragOffset = w
-                            } else if isOpen {
-                                dragOffset = w
-                            }
-                        }
-                        .onEnded { value in
-                            let wasVertical = committedDragAxis == .vertical
-                            committedDragAxis = nil
-                            if wasVertical {
-                                dragOffset = 0
-                                return
-                            }
-                            let shouldOpen = RoundSetupSwipeBehavior.shouldRemainRevealed(
-                                afterDragTranslation: value.translation.width,
-                                wasRevealed: isOpen
-                            )
-                            withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
-                                revealedID = shouldOpen ? id : nil
-                                dragOffset = 0
-                            }
-                        }
-                )
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        if isOpen {
-                            withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
-                                revealedID = nil
-                                dragOffset = 0
-                            }
-                        }
-                    }
-                )
-                .clipShape(RoundedRectangle(cornerRadius: ShellTokens.Radius.sm, style: .continuous))
-                .onChange(of: revealedID) { _, newValue in
-                    if newValue != id {
-                        dragOffset = 0
-                    }
-                }
+            .padding(.vertical, 2)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityHidden(true)
+    }
+}
+
+/// A course's first hole, drawn small: its spine in the book.
+struct CourseThumbnail: View {
+    let course: SwingPalCourse
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 5, style: .continuous).fill(Book.leaf)
+            RoundedRectangle(cornerRadius: 5, style: .continuous).strokeBorder(Book.rule)
+            if let hole = course.holes.first(where: { HoleProjection(hole: $0) != nil }) {
+                HolePageDrawing(hole: hole, showsArcs: false, showsCentreLine: false, showsScale: false,
+                                insets: EdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6))
+            } else {
+                Image(systemName: "flag").foregroundStyle(Book.pencil)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
