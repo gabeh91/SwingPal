@@ -55,6 +55,15 @@ SwingPal feels like **a caddie's yardage book**: every hole is drawn to scale fr
 - `DesignSystem/`: the `Book` tokens and type in `Tokens/`; `ScoreMark`, `BookStampButtonStyle`, rules and notes in `Atoms/`; `ThumbIndex`, `BookCounter` and `ScorecardStub` in `Molecules/`; `HolePageDrawing` / `HoleProjection` (geometry projection and rendering) in `Organisms/HolePage/`; `HoleMark` and `SwingPalMark` in `Brand/`.
 - Home: `HomeView` (book, thumb index, scorecard stubs, round record). Setup: `RoundSetupView` (course contents strip and thumbnails). Live: `FreshLiveRoundScreen` (header, dock, club sequence, drawn map mode with arcs, hole score sheet). Review: `RoundReviewView`. Stats: `StatsView` (stroke line, book tabs). Social: `SocialView` (clubhouse board). Profile: `ProfileView` (carry ladder).
 
+## The book on the wrist (Apple Watch)
+
+The Watch is always dark, so it uses the night book directly (`WatchBook` in `SwingPalWatch Watch App/DesignSystem/Tokens/WatchBook.swift`, with atoms, molecules and the hole-sketch organism beside it): paper, leaf, ink, pencil, stamp and flag, with condensed figures and expanded pencil notes.
+
+- **Hole page.** The folio, par and round score sit at the top. Centre, front and back are written beside the hole, which is drawn to scale from the same geometry and projection as the phone's drawn page (tee down, green up, the aim ring and planned line in flag). The club code and its carry source sit over the **Log** stamp.
+- **Shot page** (Digital Crown down). The hole so far and the **Hole score** stamp, then *This shot*: At ball, Undo, Penalty and Re-tee, in the phone's taxonomy.
+- **Entry.** Tee and full shots use the phone's eight-sector landing dial with a centre Hit, Normal/Far for lateral misses and a provisional option on the tee. Putts need Holed or Missed, with an optional miss sector. Hole score is the card notation chosen with the Crown. A holed putt opens it directly.
+- **Truth.** The iPhone owns the round. Each Watch request carries an id and the live hole number. The iPhone applies it through the same `LiveRoundState` methods its own controls use, ignores re-deliveries, and refuses requests for a hole the round has left, while its logger or score sheet is open, or while it shows another hole. The Watch says "saved" and plays the success haptic only after the iPhone's receipt arrives. Queued, out-of-reach and stale-yardage states are written in plain words.
+
 ## Evidence and limits
 
 Native renders on iPhone 17 Pro, iOS Simulator 26.3.1, SwingPal Design Audit device, in light and dark: Home (active round, thumb-index scrub, scorecard stubs), setup (course list and selected course), live (aerial and drawn, club preview), hole score, scorecard (populated and empty), Stats, Social (empty) and Profile (guest). The fixtures are DEBUG-only (`SWINGPAL_DESIGN_REVIEW`, plus `DesignReviewScenario.override`, which must stay `nil` in commits).

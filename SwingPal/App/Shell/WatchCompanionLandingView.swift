@@ -31,7 +31,7 @@ struct WatchCompanionLandingView: View {
                         .font(.body)
                         .foregroundStyle(Book.pencil)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("On your wrist: hole, distance, club, quick shot and hole finish. Changes are confirmed on iPhone.")
+                    Text("On your wrist: the hole drawn to scale, green distances, your club, shots, putts, penalties, undo and the hole score. Each change counts once iPhone confirms it.")
                         .font(.subheadline)
                         .foregroundStyle(Book.pencil)
                         .fixedSize(horizontal: false, vertical: true)

@@ -465,8 +465,11 @@ final class AppState: ObservableObject {
         // initialized - the closure captures `self` and Swift requires full
         // self-init before any capture.
         if let actionReceiver = roundCompanionSync as? RoundCompanionActionReceiving {
-            actionReceiver.setIncomingActionHandler { [weak self] action in
-                self?.handleRoundCompanionAction(action)
+            actionReceiver.setIncomingActionHandler { [weak self] envelope in
+                guard let self else {
+                    return .init(actionID: envelope.id, outcome: .noActiveRound)
+                }
+                return self.handleRoundCompanionAction(envelope)
             }
         }
 
@@ -799,8 +802,16 @@ final class AppState: ObservableObject {
         return "Set handicap"
     }
 
-    func handleRoundCompanionAction(_ action: RoundCompanionAction) {
-        activeRoundState?.applyCompanionAction(action, source: .watch)
+    var watchCompanionInstallState: WatchCompanionInstallState {
+        (roundCompanionSync as? WatchCompanionStatusReporting)?.installState ?? .unsupported
+    }
+
+    @discardableResult
+    func handleRoundCompanionAction(_ envelope: RoundCompanionActionEnvelope) -> RoundCompanionActionReceipt {
+        guard let activeRoundState else {
+            return .init(actionID: envelope.id, outcome: .noActiveRound)
+        }
+        return activeRoundState.applyCompanionAction(envelope, source: .watch)
     }
 
     func openNearbyCourses() {
@@ -969,7 +980,7 @@ final class AppState: ObservableObject {
         }
 
         return hole.shots.reduce(0) { partialResult, shot in
-            partialResult + ((shot.surface == .green || shot.shotType == .putt) ? 1 : 0)
+            partialResult + (shot.isPuttStroke ? 1 : 0)
         }
     }
 

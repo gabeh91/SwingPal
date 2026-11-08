@@ -24,11 +24,13 @@ struct HoleSession: Equatable, Codable {
 
     /// Putt detail stores the running hole putt count, including legacy grouped
     /// putts. Use the latest count once. Drops never add another penalty stroke.
+    /// Penalty-only events (quick penalty, re-tee) add their penalty, not a swing.
     var derivedScore: Int {
-        let puttShots = shots.filter { $0.puttDetail != nil || $0.shotType == .putt || $0.surface == .green }
+        let swings = shots.filter { !$0.isSyntheticPenalty }
+        let puttShots = swings.filter(\.isPuttStroke)
         let putts = puttShots.compactMap(\.puttDetail?.puttCount).last ?? puttShots.count
         let penalties = recordedPenaltyCount ?? shots.reduce(0) { $0 + $1.penaltyCount }
-        return shots.count - puttShots.count + putts + penalties
+        return swings.count - puttShots.count + putts + penalties
     }
 
     var totalScore: Int { recordedScore ?? derivedScore }

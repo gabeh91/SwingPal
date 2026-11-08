@@ -29,7 +29,7 @@ That document covers migrations, auth providers (email/magic link, Apple, Google
 | Path | Purpose |
 |------|---------|
 | `SwingPal/` | iOS app: `App/` (entry point, shell, launch splash), `Features/` (Home, Round, Profile, Social, Stats, Auth, Premium; each grouped into `Views/`, `ViewModels/` or `State/`, `Models/`, `Services/`), `Core/` (Supabase, sync, weather), `DesignSystem/` (`Tokens/`, `Atoms/`, `Molecules/`, `Organisms/`, `Brand/`) |
-| `SwingPalWatch Watch App/` | watchOS round companion and quick-shot flows |
+| `SwingPalWatch Watch App/` | watchOS round companion: `App/`, `DesignSystem/` (tokens, atoms, molecules, organisms) and `Features/Round/` (state, models, views) |
 | `SwingPalTests/` | Unit tests, in folders mirroring `SwingPal/` |
 | `supabase/` | SQL migrations and Supabase helper scripts |
 | `Tools/` | Small Swift utilities for rendering splash / branding assets |

@@ -329,7 +329,7 @@ final class LiveRoundState: ObservableObject {
     /// penalty stroke to. Treated as a marker by the shot-history
     /// classifier (`shotHistoryEntryKind`) so we render the row as a
     /// penalty rather than a literal "Hit / On Number" outcome.
-    static let syntheticPenaltyClubName = "Penalty"
+    static let syntheticPenaltyClubName = ShotEvent.syntheticPenaltyClubName
 
     /// Discriminator used by the shot-history view (and any future
     /// shot-list surface) to render each event with the right copy.
@@ -898,7 +898,7 @@ final class LiveRoundState: ObservableObject {
     private var activeRoundCompanionMutationSourceContext: RoundCompanionMutationSource?
     private var lastRoundCompanionMutationSource: RoundCompanionMutationSource = .phone
     private var lastRoundCompanionMutationAt: Date = .now
-    private var roundCompanionConnectionState: RoundCompanionConnectionState = .connected
+    private var companionSketchCache: (holeNumber: Int, projection: HoleProjection?, features: [RoundCompanionHoleSketch.Feature])?
     private var holeSessions: [HoleSession]
     private var activeHoleIndex: Int
 
@@ -914,29 +914,154 @@ final class LiveRoundState: ObservableObject {
 
     private(set) var distanceUnit: DistanceUnit = .meters
 
+    /// What the Watch shows. Always describes the live hole; while the phone
+    /// inspects another hole, live yardage is withheld rather than mixed up.
     var roundCompanionSnapshot: RoundCompanionSnapshot {
-        let session = displayedHoleSessionState
+        let live = hole
+        let isLiveOnScreen = displayedHoleIndex == activeHoleIndex
+        let isRoundComplete = !holeSessions.isEmpty && holeSessions.allSatisfy(\.isConfirmed)
+        let hasGreen = courseHoles.first(where: { $0.number == live.number })?
+            .features.contains { $0.kind == .green && !$0.coordinates.isEmpty } ?? false
+        let hasFix = locationStatus == .ready && playerLocation != nil
+
+        let yardageStatus: RoundCompanionYardageStatus
+        if !isLiveOnScreen {
+            yardageStatus = .inspectingOtherHole
+        } else if !hasGreen {
+            yardageStatus = .noGreen
+        } else if !hasFix {
+            yardageStatus = .noLocation
+        } else {
+            yardageStatus = .live
+        }
+
+        let yardage: RoundCompanionYardage? = yardageStatus == .live && isDisplayedHoleLive
+            ? .init(
+                frontMeters: displayedFrontDistanceMeters,
+                centreMeters: displayedPinDistanceMeters,
+                backMeters: displayedBackDistanceMeters,
+                playsLikeMeters: hasMeaningfulPlaysLikeDelta ? displayedPlaysLikeDistanceMeters : nil
+            )
+            : nil
+
+        let lastShot = live.shots.last.map { shot in
+            RoundCompanionShotSummary(
+                clubName: shot.clubName,
+                surface: RoundCompanionSurface(rawValue: shot.surface.rawValue) ?? .fairway,
+                isPutt: shot.shotType == .putt || shot.puttDetail != nil,
+                isPenalty: shot.isSyntheticPenalty
+            )
+        }
+
+        let ballMark: RoundCompanionBallMark
+        if !isLiveOnScreen || !canMarkBallOnDisplayedHole {
+            ballMark = .hidden
+        } else {
+            ballMark = ballMarkState == nil ? .available : .marked
+        }
+
+        let surface = isLiveOnScreen ? suggestedShotSurface : (live.isOpeningShot ? .tee : .fairway)
+        let shotContext: RoundCompanionShotContext
+        switch surface {
+        case .green: shotContext = .putt
+        case .tee: shotContext = .tee
+        case .fairway, .rough, .bunker: shotContext = live.isOpeningShot ? .tee : .shot
+        }
+
         return .init(
+            courseName: courseName,
             distanceUnit: distanceUnit,
-            holeNumber: session.number,
-            par: session.par,
+            holeNumber: live.number,
+            par: live.par,
+            holeCount: holeSessions.count,
+            inspectedHoleNumber: isLiveOnScreen ? nil : displayedHoleSessionState.number,
+            isRoundComplete: isRoundComplete,
+            yardage: yardage,
+            yardageStatus: yardageStatus,
             selectedClubName: selectedClubName,
-            availableClubNames: availableClubNames,
-            frontDistanceMeters: displayedFrontDistanceMeters,
-            distanceToTargetMeters: displayedPinDistanceMeters,
-            backDistanceMeters: displayedBackDistanceMeters,
-            loggedShotCount: session.shots.count,
-            shotNumber: max(1, session.strokeCount + 1),
-            puttCount: displayedHolePuttCount,
-            penaltyCount: displayedHolePenaltyCount,
-            currentSurface: roundCompanionCurrentSurface,
-            holeScore: displayedHoleScore,
-            canFinishHole: isShowingHoleConfirmation && canConfirmHoleSummary,
-            isInspectingHole: isInspectingHole,
+            clubs: availableClubNames.map { name in
+                RoundCompanionClub(
+                    name: name,
+                    carryMeters: displayCarryMeters(for: name),
+                    isEstimated: Self.lookupClubValue(in: clubCarryMetersByClubName, clubName: name) == nil
+                )
+            },
+            recommendedClubName: isLiveOnScreen ? recommendedClubName : nil,
+            shotContext: shotContext,
+            suggestedSurface: RoundCompanionSurface(rawValue: surface.rawValue) ?? .fairway,
+            strokeNumber: max(1, live.strokeCount + 1),
+            holeScore: live.totalScore,
+            puttCount: live.recordedPutts ?? Self.derivedPuttCount(for: live),
+            penaltyCount: live.recordedPenaltyCount ?? Self.derivedPenaltyCount(for: live),
+            lastShot: lastShot,
+            canUndoLastShot: isLiveOnScreen && canUndoLastShot,
+            ballMark: ballMark,
+            proposedHoleScore: live.totalScore > 0 ? live.totalScore : max(live.par, 1),
+            proposedHolePutts: live.recordedPutts ?? Self.derivedPuttCount(for: live),
+            roundScoreToPar: roundScoreToPar,
+            confirmedHoleCount: roundConfirmedHoleCount,
+            isPhoneBusy: isShowingShotLogger || isShowingHoleConfirmation,
+            sketch: roundCompanionSketch(isLiveOnScreen: isLiveOnScreen, hasFix: hasFix),
             lastMutationSource: lastRoundCompanionMutationSource,
-            lastMutationAt: lastRoundCompanionMutationAt,
-            connectionState: roundCompanionConnectionState,
-            previewSpec: roundCompanionPreviewSpec
+            lastMutationAt: lastRoundCompanionMutationAt
+        )
+    }
+
+    /// The live hole projected the way the phone draws it: tee at the bottom,
+    /// green at the top, in whole metres. Geometry is cached per hole; only
+    /// the player and aim points are recomputed.
+    private func roundCompanionSketch(isLiveOnScreen: Bool, hasFix: Bool) -> RoundCompanionHoleSketch? {
+        if companionSketchCache?.holeNumber != hole.number {
+            let courseHole = courseHoles.first(where: { $0.number == hole.number })
+            let projection = courseHole.flatMap { HoleProjection(hole: $0) }
+            var features: [RoundCompanionHoleSketch.Feature] = []
+            if let courseHole, let projection {
+                let kinds: [(SwingPalCourse.Hole.FeatureKind, RoundCompanionHoleSketch.Kind)] = [
+                    (.fairway, .fairway), (.water, .water), (.bunker, .bunker), (.green, .green), (.tee, .tee)
+                ]
+                for (kind, sketchKind) in kinds {
+                    for feature in courseHole.features where feature.kind == kind && feature.coordinates.count > 2 {
+                        let points = feature.coordinates.map { coordinate -> (x: Double, y: Double) in
+                            let metres = projection.metres(coordinate)
+                            return (Double(metres.x), Double(metres.y))
+                        }
+                        let simplified = RoundCompanionHoleSketch.simplified(points)
+                        if simplified.count > 2 {
+                            features.append(.init(kind: sketchKind, points: simplified))
+                        }
+                    }
+                }
+            }
+            companionSketchCache = (hole.number, projection, features)
+        }
+
+        guard let cache = companionSketchCache, let projection = cache.projection, !cache.features.isEmpty else {
+            return nil
+        }
+
+        func sketchPoint(metres: CGPoint) -> RoundCompanionHoleSketch.Point {
+            .init(x: Int(metres.x.rounded()), y: Int(metres.y.rounded()))
+        }
+        func sketchPoint(coordinate: MapCoordinate) -> RoundCompanionHoleSketch.Point {
+            sketchPoint(metres: projection.metres(SwingPalCourse.Coordinate(latitude: coordinate.latitude, longitude: coordinate.longitude)))
+        }
+
+        var player: RoundCompanionHoleSketch.Point?
+        if hasFix, let playerLocation {
+            let candidate = sketchPoint(coordinate: playerLocation.coordinate)
+            // Off the page (practice ground, car park, simulator) draws nothing.
+            let box = projection.bounds.insetBy(dx: -60, dy: -60)
+            if box.contains(CGPoint(x: candidate.x, y: candidate.y)) {
+                player = candidate
+            }
+        }
+
+        return .init(
+            features: cache.features,
+            tee: projection.tee.map { sketchPoint(metres: $0) },
+            green: projection.green.map { sketchPoint(metres: $0) },
+            player: player,
+            aim: isLiveOnScreen ? sketchPoint(coordinate: planningTargetCoordinate) : nil
         )
     }
 
@@ -949,32 +1074,6 @@ final class LiveRoundState: ObservableObject {
 
     func shortDistanceLabel(forMeters meters: Int) -> String {
         distanceUnit.shortLabel(forMeters: meters)
-    }
-
-    private var roundCompanionPreviewSpec: RoundCompanionPreviewSpec? {
-        guard let displayedHole else {
-            return nil
-        }
-
-        guard let holeBounds = RoundCompanionPreviewCorridorBounds.resolve(for: displayedHole) else {
-            return nil
-        }
-
-        let origin = currentShotOriginCoordinate
-            ?? .init(latitude: teeCoordinate.latitude, longitude: teeCoordinate.longitude)
-        let target = planningTargetCoordinate
-
-        return .init(
-            holeBounds: holeBounds,
-            originCoordinate: .init(
-                latitude: origin.latitude,
-                longitude: origin.longitude
-            ),
-            targetCoordinate: .init(
-                latitude: target.latitude,
-                longitude: target.longitude
-            )
-        )
     }
 
     var snapshot: Snapshot {
@@ -2358,16 +2457,6 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
-    private var roundCompanionCurrentSurface: String {
-        if isShowingShotLogger {
-            return pendingShotSurface.rawValue
-        }
-        if let surface = displayedHoleSessionState.shots.last?.surface {
-            return surface.rawValue
-        }
-        return suggestedShotSurface.rawValue
-    }
-
     var teeCoordinate: CLLocationCoordinate2D {
         if let teeCoordinate = primaryFeatureCoordinate(for: .tee) {
             return teeCoordinate
@@ -3032,55 +3121,115 @@ final class LiveRoundState: ObservableObject {
         publishRoundCompanionSnapshot()
     }
 
-    func applyCompanionAction(_ action: RoundCompanionAction, source: RoundCompanionMutationSource) {
+    /// Applies a Watch request through the same state methods the phone's own
+    /// controls use, so scoring, undo and penalty rules cannot drift apart.
+    @discardableResult
+    func applyCompanionAction(
+        _ envelope: RoundCompanionActionEnvelope,
+        source: RoundCompanionMutationSource = .watch
+    ) -> RoundCompanionActionReceipt {
+        func receipt(_ outcome: RoundCompanionActionReceipt.Outcome) -> RoundCompanionActionReceipt {
+            .init(actionID: envelope.id, outcome: outcome)
+        }
+
+        if envelope.action.isBoundToHole {
+            guard envelope.holeNumber == hole.number, !hole.isConfirmed else { return receipt(.holeChanged) }
+            guard displayedHoleIndex == activeHoleIndex else { return receipt(.inspectingOtherHole) }
+            guard !isShowingShotLogger, !isShowingHoleConfirmation else { return receipt(.phoneBusy) }
+        }
+
+        var outcome: RoundCompanionActionReceipt.Outcome = .notAvailable
         performRoundCompanionMutation(source: source) {
-            switch action {
-            case .changeClub(let name):
+            switch envelope.action {
+            case .selectClub(let name):
                 selectClub(named: name)
-            case .logShot(let direction, let distance, let surface):
-                logShot(
-                    clubName: selectedClubName,
-                    distanceToTargetMeters: displayedPinDistanceMeters,
-                    strokeNumber: max(1, hole.strokeCount + 1),
-                    surface: Self.watchSurface(from: surface) ?? suggestedShotSurface,
-                    direction: ShotEvent.DirectionResult(rawValue: direction) ?? .hit,
-                    distanceResult: ShotEvent.DistanceResult(rawValue: distance) ?? .onNumber
-                )
-            case .addPenalty:
-                hole.recordedPenaltyCount = displayedHolePenaltyCount + 1
-            case .markDrop:
-                hole.recordedDropCount = (hole.recordedDropCount ?? derivedHoleDropCount) + 1
-            case .addPutt:
-                logShot(
-                    clubName: "Putter",
-                    distanceToTargetMeters: displayedPinDistanceMeters,
-                    strokeNumber: max(1, hole.strokeCount + 1),
-                    surface: .green,
-                    direction: .hit,
-                    distanceResult: .onNumber,
-                    shotType: .putt,
-                    puttDetail: .init(
-                        puttCount: displayedHolePuttCount + 1,
-                        firstPuttDistanceMeters: nil
+                if selectedClubName.caseInsensitiveCompare(Self.canonicalClubName(name)) == .orderedSame {
+                    outcome = .applied
+                }
+
+            case .logShot(let entry):
+                guard entry.surface != .green, let surface = ShotEvent.Surface(rawValue: entry.surface.rawValue) else { return }
+                let shotCount = hole.shots.count
+                presentShotLogger()
+                overridePendingShotClubName(entry.clubName)
+                selectShotSurface(surface)
+                if let direction = ShotEvent.DirectionResult(rawValue: entry.direction.rawValue) {
+                    selectShotDirection(direction)
+                }
+                if let distance = ShotEvent.DistanceResult(rawValue: entry.distance.rawValue) {
+                    selectShotDistance(distance)
+                }
+                if entry.isProvisional, availableShotTypes.contains(.provisionalBall) {
+                    setPendingShotType(.provisionalBall)
+                }
+                confirmPendingShot()
+                if hole.shots.count > shotCount {
+                    outcome = .applied
+                } else {
+                    dismissShotLogger()
+                }
+
+            case .logPutt(let entry):
+                let shotCount = hole.shots.count
+                presentShotLogger()
+                overridePendingShotClubName(availableClubNames.first(where: Self.isLikelyPutterCarryName) ?? "Putter")
+                selectShotSurface(.green)
+                setPendingShotPuttHoled(entry.holed)
+                if !entry.holed {
+                    setPendingShotPuttMissOutcome(
+                        direction: entry.missDirection.flatMap { ShotEvent.DirectionResult(rawValue: $0.rawValue) },
+                        distance: entry.missDistance.flatMap { ShotEvent.DistanceResult(rawValue: $0.rawValue) }
                     )
-                )
-            case .finishHole:
-                if !isShowingHoleConfirmation {
-                    presentHoleConfirmation()
                 }
-                _ = confirmCurrentHole()
-            case .undoLastAction:
-                if !hole.shots.isEmpty {
-                    hole.shots.removeLast()
-                } else if let recordedPenaltyCount = hole.recordedPenaltyCount, recordedPenaltyCount > 0 {
-                    hole.recordedPenaltyCount = recordedPenaltyCount - 1
-                } else if let recordedDropCount = hole.recordedDropCount, recordedDropCount > 0 {
-                    hole.recordedDropCount = recordedDropCount - 1
+                confirmPendingShot()
+                if hole.shots.count > shotCount {
+                    outcome = .applied
+                } else {
+                    dismissShotLogger()
                 }
-            case .recenterTarget:
-                resetViewport()
+
+            case .quickPenalty(let penalty):
+                guard canLogQuickPenalty, let type = QuickPenaltyType(rawValue: penalty.rawValue) else { return }
+                logQuickPenalty(type)
+                outcome = .applied
+
+            case .retee:
+                guard canRetee else { return }
+                confirmRetee()
+                outcome = .applied
+
+            case .markBall:
+                guard canMarkBallOnDisplayedHole, playerLocation != nil else { return }
+                markBall()
+                outcome = .applied
+
+            case .undoLastShot:
+                guard confirmUndoLastShot() != nil else { return }
+                outcome = .applied
+
+            case .finishHole(let score, let putts):
+                guard score >= 1 else { return }
+                let holeNumber = hole.number
+                presentHoleConfirmation()
+                setPendingHoleScore(score)
+                setPendingHolePutts(min(max(putts, 0), score))
+                if confirmCurrentHole(), hole.number != holeNumber || hole.isConfirmed {
+                    outcome = .applied
+                } else {
+                    dismissHoleConfirmation()
+                }
+
+            case .returnToLiveHole:
+                returnToActiveHole()
+                outcome = .applied
             }
         }
+
+        if outcome != .applied {
+            // Refusals change nothing, but the Watch still needs a fresh snapshot.
+            publishRoundCompanionSnapshot()
+        }
+        return receipt(outcome)
     }
 
     func selectClub(named clubName: String) {
@@ -4287,20 +4436,13 @@ final class LiveRoundState: ObservableObject {
         mutation()
     }
 
-    private static func watchSurface(from rawValue: String?) -> ShotEvent.Surface? {
-        guard let rawValue else { return nil }
-        return ShotEvent.Surface(rawValue: rawValue)
-    }
-
     static func derivedPuttCount(for hole: HoleSession) -> Int {
         let puttCounts = hole.shots.compactMap(\.puttDetail?.puttCount)
         if let explicitPuttCount = puttCounts.last {
             return explicitPuttCount
         }
 
-        return hole.shots.filter { shot in
-            shot.surface == .green || shot.shotType == .putt
-        }.count
+        return hole.shots.filter(\.isPuttStroke).count
     }
 
     private static func derivedPenaltyCount(for hole: HoleSession) -> Int {

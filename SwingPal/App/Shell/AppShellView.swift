@@ -316,13 +316,17 @@ struct AppShellView: View {
         }
 
         let connectionBadge: String
-        switch snapshot.connectionState {
-        case .connected:
+        switch appState.watchCompanionInstallState {
+        case .ready:
             connectionBadge = "Connected"
-        case .syncing:
-            connectionBadge = "Syncing"
-        case .disconnected:
-            connectionBadge = "Offline"
+        case .installedButNotReachable:
+            connectionBadge = "Watch not reachable"
+        case .watchAppNotInstalled:
+            connectionBadge = "Install SwingPal on Apple Watch"
+        case .notPaired:
+            connectionBadge = "No Apple Watch paired"
+        case .unsupported:
+            connectionBadge = "Not available"
         }
 
         let mutationSourceText: String

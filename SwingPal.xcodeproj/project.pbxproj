@@ -88,14 +88,7 @@
 		A00000000000000000000168 /* royal-melbourne-west.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000169 /* royal-melbourne-west.json */; };
 		A0000000000000000000016A /* BundledCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016B /* BundledCourseRepository.swift */; };
 		A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016D /* WatchConnectivityRoundCompanionSync.swift */; };
-		A00000000000000000000173 /* SwingPalWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000170 /* SwingPalWatchApp.swift */; };
-		A00000000000000000000174 /* WatchRoundCompanionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000171 /* WatchRoundCompanionStore.swift */; };
-		A00000000000000000000175 /* WatchRoundCompanionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */; };
 		A0000000000000000000017F /* RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* RoundCompanionSyncing.swift */; };
-		A00000000000000000000180 /* WatchRoundHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000181 /* WatchRoundHomeView.swift */; };
-		A00000000000000000000182 /* WatchClubPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000183 /* WatchClubPickerView.swift */; };
-		A00000000000000000000184 /* WatchQuickShotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000185 /* WatchQuickShotView.swift */; };
-		A00000000000000000000186 /* WatchHoleFinishView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000187 /* WatchHoleFinishView.swift */; };
 		A00000000000000000000188 /* medway.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000189 /* medway.json */; };
 		A0000000000000000000018A /* SwingPalWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A00000000000000000000176 /* SwingPalWatch.app */; };
 		A00000000000000000000200 /* OSMCourseDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000201 /* OSMCourseDiscovery.swift */; };
@@ -191,6 +184,38 @@
 		B511F26694739E6818AA06C2 /* StrokeLineChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51F6594C7AD6ECF5B23BB62 /* StrokeLineChart.swift */; };
 		B57B127C31C0521BA7ED768F /* GraphPaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53ECA97C713D01BF634F67A /* GraphPaper.swift */; };
 		B509CF91CD045EFA487FD178 /* AuthFlowModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AB87C399E35C5AD226A4EC /* AuthFlowModalView.swift */; };
+		C3653067CE7510F4374795A7 /* SwingPalWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C365804B6D1D7B46911AFCA7 /* SwingPalWatchApp.swift */; };
+		C3E37E565E7B254AA023379E /* WatchBookHairline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C397D1B27129F54BFE1CD387 /* WatchBookHairline.swift */; };
+		C3010C8CF860F9F9C980730E /* WatchBookNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3986D93A99F9BDB16A18A8D /* WatchBookNote.swift */; };
+		C32486838E573AF7627D6582 /* WatchButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3165383383DF236E5517288 /* WatchButtonStyles.swift */; };
+		C369621A29881AF096E07EF1 /* WatchSurfaceModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C374D94E8C0F91F9C328482B /* WatchSurfaceModifiers.swift */; };
+		C3743029247B20BEFA252D28 /* WatchBookCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C342F94386CBA5091CD76A17 /* WatchBookCounter.swift */; };
+		C3257106C2993794D28254C9 /* WatchScoreMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BBC41188F059347A10E852 /* WatchScoreMark.swift */; };
+		C3FEC25A62FB42828777395E /* WatchHoleSketchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C36CCA1F98708C3D52B43286 /* WatchHoleSketchView.swift */; };
+		C309786EAD4EAD45A01ABD97 /* WatchBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C3094B0C80841295ED0574 /* WatchBook.swift */; };
+		C361B09A777F38380E72A7D3 /* WatchBookLabels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C283887DA361402E3CE774 /* WatchBookLabels.swift */; };
+		C3941A2BF6DE176594ED3B1D /* WatchShotEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B4789F42013250DCDA4671 /* WatchShotEntry.swift */; };
+		C362A8B3D859BCD99CA6A182 /* WatchCompanionOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3476D0B7E08A78D19DB7292 /* WatchCompanionOutbox.swift */; };
+		C3E23DC3ED5D4BBD7FD680DE /* WatchRoundCompanionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39A8DC2BC49A41F8489BF07 /* WatchRoundCompanionStore.swift */; };
+		C3981C6E4BC82DCD9E3FE7C7 /* WatchRoundPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32926C7DC211E77D025C9DB /* WatchRoundPresentation.swift */; };
+		C3516207B342969A29A12C18 /* WatchRoundCovers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38FD4FA36788557C17C06C6 /* WatchRoundCovers.swift */; };
+		C3F9C15CA18B765F1D31A4FC /* WatchHolePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D63BB76CF6E552B9049800 /* WatchHolePage.swift */; };
+		C334F9BD475C366FE4B05EEA /* WatchLiveRoundPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3A25139ECD294B056C326DD /* WatchLiveRoundPages.swift */; };
+		C3472F7474644DB175036E24 /* WatchShotActionsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C308AA5DF71C19657C477CEC /* WatchShotActionsPage.swift */; };
+		C326740E1E9D7A3704E48A03 /* WatchClubPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C392210EEEE5A1FC500B496E /* WatchClubPickerView.swift */; };
+		C3497F926FB412C2B8B7F32D /* WatchLiePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35C2AE57EB259B74E2D9987 /* WatchLiePickerView.swift */; };
+		C3ABDC7C5ADD8B7136A6F0C1 /* WatchPenaltyPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DB2CD48B2139351A58E9C6 /* WatchPenaltyPickerView.swift */; };
+		C36F13784AD383E859876067 /* WatchOutcomeDial.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3211CF2CE678BB461ED3CFF /* WatchOutcomeDial.swift */; };
+		C33187AB00028062C9A592E1 /* WatchPuttLoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3EAFD4B1B6CF7DDE3D9064D /* WatchPuttLoggerView.swift */; };
+		C3414E19A8BFC144A064B74F /* WatchShotLoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C31C1E6BA06CE554DE32DF96 /* WatchShotLoggerView.swift */; };
+		C33E13A9F9F91C1189E7A635 /* WatchFeedbackToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D160C939713954A8595620 /* WatchFeedbackToast.swift */; };
+		C33E1C335325A00E2B37A4C9 /* WatchHoleScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3CA453B89455D18C363041B /* WatchHoleScoreView.swift */; };
+		C31C0D37825D07D07C4F5C1A /* WatchRoundRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3AADA7A27ADCF3C98FA9AE1 /* WatchRoundRootView.swift */; };
+		C3E1344160D895F766B5C5CD /* WatchBookLabels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C283887DA361402E3CE774 /* WatchBookLabels.swift */; };
+		C31ADB0E212868A5622B709E /* WatchShotEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B4789F42013250DCDA4671 /* WatchShotEntry.swift */; };
+		C306E7A85D960782FB3C7B18 /* WatchCompanionOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3476D0B7E08A78D19DB7292 /* WatchCompanionOutbox.swift */; };
+		C38EDD6341F5C64FFD0530AF /* WatchRoundPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32926C7DC211E77D025C9DB /* WatchRoundPresentation.swift */; };
+		C38A2B66B5A5B98526CB95BA /* WatchCompanionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C371887B84EE445599FA4200 /* WatchCompanionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -309,14 +334,7 @@
 		A00000000000000000000169 /* royal-melbourne-west.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "royal-melbourne-west.json"; sourceTree = "<group>"; };
 		A0000000000000000000016B /* BundledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledCourseRepository.swift; sourceTree = "<group>"; };
 		A0000000000000000000016D /* WatchConnectivityRoundCompanionSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityRoundCompanionSync.swift; sourceTree = "<group>"; };
-		A00000000000000000000170 /* SwingPalWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalWatchApp.swift; sourceTree = "<group>"; };
-		A00000000000000000000171 /* WatchRoundCompanionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionStore.swift; sourceTree = "<group>"; };
-		A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionViewModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000176 /* SwingPalWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwingPalWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A00000000000000000000181 /* WatchRoundHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundHomeView.swift; sourceTree = "<group>"; };
-		A00000000000000000000183 /* WatchClubPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchClubPickerView.swift; sourceTree = "<group>"; };
-		A00000000000000000000185 /* WatchQuickShotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchQuickShotView.swift; sourceTree = "<group>"; };
-		A00000000000000000000187 /* WatchHoleFinishView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleFinishView.swift; sourceTree = "<group>"; };
 		A00000000000000000000189 /* medway.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = medway.json; sourceTree = "<group>"; };
 		A00000000000000000000201 /* OSMCourseDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMCourseDiscovery.swift; sourceTree = "<group>"; };
 		A00000000000000000000203 /* CourseDiscoveryGeocoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDiscoveryGeocoding.swift; sourceTree = "<group>"; };
@@ -410,6 +428,34 @@
 		B51F6594C7AD6ECF5B23BB62 /* StrokeLineChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeLineChart.swift; sourceTree = "<group>"; };
 		B53ECA97C713D01BF634F67A /* GraphPaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphPaper.swift; sourceTree = "<group>"; };
 		B5AB87C399E35C5AD226A4EC /* AuthFlowModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowModalView.swift; sourceTree = "<group>"; };
+		C365804B6D1D7B46911AFCA7 /* SwingPalWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalWatchApp.swift; sourceTree = "<group>"; };
+		C397D1B27129F54BFE1CD387 /* WatchBookHairline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBookHairline.swift; sourceTree = "<group>"; };
+		C3986D93A99F9BDB16A18A8D /* WatchBookNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBookNote.swift; sourceTree = "<group>"; };
+		C3165383383DF236E5517288 /* WatchButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchButtonStyles.swift; sourceTree = "<group>"; };
+		C374D94E8C0F91F9C328482B /* WatchSurfaceModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSurfaceModifiers.swift; sourceTree = "<group>"; };
+		C342F94386CBA5091CD76A17 /* WatchBookCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBookCounter.swift; sourceTree = "<group>"; };
+		C3BBC41188F059347A10E852 /* WatchScoreMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchScoreMark.swift; sourceTree = "<group>"; };
+		C36CCA1F98708C3D52B43286 /* WatchHoleSketchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleSketchView.swift; sourceTree = "<group>"; };
+		C3C3094B0C80841295ED0574 /* WatchBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBook.swift; sourceTree = "<group>"; };
+		C3C283887DA361402E3CE774 /* WatchBookLabels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBookLabels.swift; sourceTree = "<group>"; };
+		C3B4789F42013250DCDA4671 /* WatchShotEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchShotEntry.swift; sourceTree = "<group>"; };
+		C3476D0B7E08A78D19DB7292 /* WatchCompanionOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCompanionOutbox.swift; sourceTree = "<group>"; };
+		C39A8DC2BC49A41F8489BF07 /* WatchRoundCompanionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionStore.swift; sourceTree = "<group>"; };
+		C32926C7DC211E77D025C9DB /* WatchRoundPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundPresentation.swift; sourceTree = "<group>"; };
+		C38FD4FA36788557C17C06C6 /* WatchRoundCovers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCovers.swift; sourceTree = "<group>"; };
+		C3D63BB76CF6E552B9049800 /* WatchHolePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHolePage.swift; sourceTree = "<group>"; };
+		C3A25139ECD294B056C326DD /* WatchLiveRoundPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLiveRoundPages.swift; sourceTree = "<group>"; };
+		C308AA5DF71C19657C477CEC /* WatchShotActionsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchShotActionsPage.swift; sourceTree = "<group>"; };
+		C392210EEEE5A1FC500B496E /* WatchClubPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchClubPickerView.swift; sourceTree = "<group>"; };
+		C35C2AE57EB259B74E2D9987 /* WatchLiePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLiePickerView.swift; sourceTree = "<group>"; };
+		C3DB2CD48B2139351A58E9C6 /* WatchPenaltyPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPenaltyPickerView.swift; sourceTree = "<group>"; };
+		C3211CF2CE678BB461ED3CFF /* WatchOutcomeDial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchOutcomeDial.swift; sourceTree = "<group>"; };
+		C3EAFD4B1B6CF7DDE3D9064D /* WatchPuttLoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPuttLoggerView.swift; sourceTree = "<group>"; };
+		C31C1E6BA06CE554DE32DF96 /* WatchShotLoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchShotLoggerView.swift; sourceTree = "<group>"; };
+		C3D160C939713954A8595620 /* WatchFeedbackToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchFeedbackToast.swift; sourceTree = "<group>"; };
+		C3CA453B89455D18C363041B /* WatchHoleScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleScoreView.swift; sourceTree = "<group>"; };
+		C3AADA7A27ADCF3C98FA9AE1 /* WatchRoundRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundRootView.swift; sourceTree = "<group>"; };
+		C371887B84EE445599FA4200 /* WatchCompanionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCompanionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1162,6 +1208,7 @@
 			children = (
 				B5809B82E0458D8F90890DE2 /* App */,
 				B54B5FE1969C95FE1515D80D /* Features */,
+				C3C16D279D10B3C872D9A70A /* Watch */,
 				A00000000000000000000024 /* SwingPalTests.swift */,
 			);
 			path = SwingPalTests;
@@ -1314,16 +1361,164 @@
 		A00000000000000000000177 /* SwingPalWatch Watch App */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000170 /* SwingPalWatchApp.swift */,
-				A00000000000000000000171 /* WatchRoundCompanionStore.swift */,
-				A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */,
-				A00000000000000000000181 /* WatchRoundHomeView.swift */,
-				A00000000000000000000183 /* WatchClubPickerView.swift */,
-				A00000000000000000000185 /* WatchQuickShotView.swift */,
-				A00000000000000000000187 /* WatchHoleFinishView.swift */,
+				C3FD4B53768B1618CC75DD10 /* App */,
+				C30EA09DE2E57BCA9745866B /* DesignSystem */,
+				C34FF4F2AD816C3CB31FBD93 /* Features */,
 				A00000000000000000000701 /* Assets.xcassets */,
 			);
 			path = "SwingPalWatch Watch App";
+			sourceTree = "<group>";
+		};
+		C3FD4B53768B1618CC75DD10 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C365804B6D1D7B46911AFCA7 /* SwingPalWatchApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C30EA09DE2E57BCA9745866B /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				C3B645530A60B480924B1A50 /* Atoms */,
+				C3A5A04E375864AB25AEBD19 /* Molecules */,
+				C350A690CBD1C7319211950B /* Organisms */,
+				C372D4DB13F0F8345AF1AE35 /* Tokens */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		C3B645530A60B480924B1A50 /* Atoms */ = {
+			isa = PBXGroup;
+			children = (
+				C397D1B27129F54BFE1CD387 /* WatchBookHairline.swift */,
+				C3986D93A99F9BDB16A18A8D /* WatchBookNote.swift */,
+				C3165383383DF236E5517288 /* WatchButtonStyles.swift */,
+				C374D94E8C0F91F9C328482B /* WatchSurfaceModifiers.swift */,
+			);
+			path = Atoms;
+			sourceTree = "<group>";
+		};
+		C3A5A04E375864AB25AEBD19 /* Molecules */ = {
+			isa = PBXGroup;
+			children = (
+				C342F94386CBA5091CD76A17 /* WatchBookCounter.swift */,
+				C3BBC41188F059347A10E852 /* WatchScoreMark.swift */,
+			);
+			path = Molecules;
+			sourceTree = "<group>";
+		};
+		C350A690CBD1C7319211950B /* Organisms */ = {
+			isa = PBXGroup;
+			children = (
+				C36CCA1F98708C3D52B43286 /* WatchHoleSketchView.swift */,
+			);
+			path = Organisms;
+			sourceTree = "<group>";
+		};
+		C372D4DB13F0F8345AF1AE35 /* Tokens */ = {
+			isa = PBXGroup;
+			children = (
+				C3C3094B0C80841295ED0574 /* WatchBook.swift */,
+			);
+			path = Tokens;
+			sourceTree = "<group>";
+		};
+		C34FF4F2AD816C3CB31FBD93 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				C36BE602B4864B942C602349 /* Round */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		C36BE602B4864B942C602349 /* Round */ = {
+			isa = PBXGroup;
+			children = (
+				C3ECE2C56A08333B88B6CA72 /* Models */,
+				C337D9BD45A021DBF2D799A2 /* State */,
+				C31A9919DC5CBA8399E86048 /* Views */,
+			);
+			path = Round;
+			sourceTree = "<group>";
+		};
+		C3ECE2C56A08333B88B6CA72 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C3C283887DA361402E3CE774 /* WatchBookLabels.swift */,
+				C3B4789F42013250DCDA4671 /* WatchShotEntry.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C337D9BD45A021DBF2D799A2 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				C3476D0B7E08A78D19DB7292 /* WatchCompanionOutbox.swift */,
+				C39A8DC2BC49A41F8489BF07 /* WatchRoundCompanionStore.swift */,
+				C32926C7DC211E77D025C9DB /* WatchRoundPresentation.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		C31A9919DC5CBA8399E86048 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C3BAEAACB2F495AADCEE3C7D /* Covers */,
+				C375549944C202C31AB34DDD /* Live */,
+				C319FCC9766E5631D0B398F6 /* Pickers */,
+				C3AC012F1649FEB20D8C6697 /* ShotLogger */,
+				C3D160C939713954A8595620 /* WatchFeedbackToast.swift */,
+				C3CA453B89455D18C363041B /* WatchHoleScoreView.swift */,
+				C3AADA7A27ADCF3C98FA9AE1 /* WatchRoundRootView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C3BAEAACB2F495AADCEE3C7D /* Covers */ = {
+			isa = PBXGroup;
+			children = (
+				C38FD4FA36788557C17C06C6 /* WatchRoundCovers.swift */,
+			);
+			path = Covers;
+			sourceTree = "<group>";
+		};
+		C375549944C202C31AB34DDD /* Live */ = {
+			isa = PBXGroup;
+			children = (
+				C3D63BB76CF6E552B9049800 /* WatchHolePage.swift */,
+				C3A25139ECD294B056C326DD /* WatchLiveRoundPages.swift */,
+				C308AA5DF71C19657C477CEC /* WatchShotActionsPage.swift */,
+			);
+			path = Live;
+			sourceTree = "<group>";
+		};
+		C319FCC9766E5631D0B398F6 /* Pickers */ = {
+			isa = PBXGroup;
+			children = (
+				C392210EEEE5A1FC500B496E /* WatchClubPickerView.swift */,
+				C35C2AE57EB259B74E2D9987 /* WatchLiePickerView.swift */,
+				C3DB2CD48B2139351A58E9C6 /* WatchPenaltyPickerView.swift */,
+			);
+			path = Pickers;
+			sourceTree = "<group>";
+		};
+		C3AC012F1649FEB20D8C6697 /* ShotLogger */ = {
+			isa = PBXGroup;
+			children = (
+				C3211CF2CE678BB461ED3CFF /* WatchOutcomeDial.swift */,
+				C3EAFD4B1B6CF7DDE3D9064D /* WatchPuttLoggerView.swift */,
+				C31C1E6BA06CE554DE32DF96 /* WatchShotLoggerView.swift */,
+			);
+			path = ShotLogger;
+			sourceTree = "<group>";
+		};
+		C3C16D279D10B3C872D9A70A /* Watch */ = {
+			isa = PBXGroup;
+			children = (
+				C371887B84EE445599FA4200 /* WatchCompanionTests.swift */,
+			);
+			path = Watch;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1528,6 +1723,10 @@
 				B580B0D8B913B6A1A27565D8 /* LiveMapDrawingCache.swift in Sources */,
 				A0000000000000000000014C /* RoundCompanionSyncing.swift in Sources */,
 				A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */,
+				C3E1344160D895F766B5C5CD /* WatchBookLabels.swift in Sources */,
+				C31ADB0E212868A5622B709E /* WatchShotEntry.swift in Sources */,
+				C306E7A85D960782FB3C7B18 /* WatchCompanionOutbox.swift in Sources */,
+				C38EDD6341F5C64FFD0530AF /* WatchRoundPresentation.swift in Sources */,
 				A000000000000000000000E8 /* ShotEvent.swift in Sources */,
 				A000000000000000000000E9 /* HoleSession.swift in Sources */,
 				A000000000000000000000EA /* PlayerScoreState.swift in Sources */,
@@ -1618,6 +1817,7 @@
 				A0000000000000000000003B /* HomeViewModelTests.swift in Sources */,
 				A000000000000000000000B4 /* RoundSetupStateTests.swift in Sources */,
 				A000000000000000000000FB /* LiveRoundStateTests.swift in Sources */,
+				C38A2B66B5A5B98526CB95BA /* WatchCompanionTests.swift in Sources */,
 				A000000000000000000000FC /* BagClubRecommendationTests.swift in Sources */,
 				A000000000000000000000FD /* GatedActionResolverTests.swift in Sources */,
 				A000000000000000000000FE /* ShellIntegrationTests.swift in Sources */,
@@ -1645,14 +1845,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00000000000000000000173 /* SwingPalWatchApp.swift in Sources */,
-				A00000000000000000000174 /* WatchRoundCompanionStore.swift in Sources */,
-				A00000000000000000000175 /* WatchRoundCompanionViewModel.swift in Sources */,
-				A00000000000000000000180 /* WatchRoundHomeView.swift in Sources */,
-				A00000000000000000000182 /* WatchClubPickerView.swift in Sources */,
-				A00000000000000000000184 /* WatchQuickShotView.swift in Sources */,
-				A00000000000000000000186 /* WatchHoleFinishView.swift in Sources */,
-				A0000000000000000000017F /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */,
+				C3653067CE7510F4374795A7 /* SwingPalWatchApp.swift in Sources */,
+				C3E37E565E7B254AA023379E /* WatchBookHairline.swift in Sources */,
+				C3010C8CF860F9F9C980730E /* WatchBookNote.swift in Sources */,
+				C32486838E573AF7627D6582 /* WatchButtonStyles.swift in Sources */,
+				C369621A29881AF096E07EF1 /* WatchSurfaceModifiers.swift in Sources */,
+				C3743029247B20BEFA252D28 /* WatchBookCounter.swift in Sources */,
+				C3257106C2993794D28254C9 /* WatchScoreMark.swift in Sources */,
+				C3FEC25A62FB42828777395E /* WatchHoleSketchView.swift in Sources */,
+				C309786EAD4EAD45A01ABD97 /* WatchBook.swift in Sources */,
+				C361B09A777F38380E72A7D3 /* WatchBookLabels.swift in Sources */,
+				C3941A2BF6DE176594ED3B1D /* WatchShotEntry.swift in Sources */,
+				C362A8B3D859BCD99CA6A182 /* WatchCompanionOutbox.swift in Sources */,
+				C3E23DC3ED5D4BBD7FD680DE /* WatchRoundCompanionStore.swift in Sources */,
+				C3981C6E4BC82DCD9E3FE7C7 /* WatchRoundPresentation.swift in Sources */,
+				C3516207B342969A29A12C18 /* WatchRoundCovers.swift in Sources */,
+				C3F9C15CA18B765F1D31A4FC /* WatchHolePage.swift in Sources */,
+				C334F9BD475C366FE4B05EEA /* WatchLiveRoundPages.swift in Sources */,
+				C3472F7474644DB175036E24 /* WatchShotActionsPage.swift in Sources */,
+				C326740E1E9D7A3704E48A03 /* WatchClubPickerView.swift in Sources */,
+				C3497F926FB412C2B8B7F32D /* WatchLiePickerView.swift in Sources */,
+				C3ABDC7C5ADD8B7136A6F0C1 /* WatchPenaltyPickerView.swift in Sources */,
+				C36F13784AD383E859876067 /* WatchOutcomeDial.swift in Sources */,
+				C33187AB00028062C9A592E1 /* WatchPuttLoggerView.swift in Sources */,
+				C3414E19A8BFC144A064B74F /* WatchShotLoggerView.swift in Sources */,
+				C33E13A9F9F91C1189E7A635 /* WatchFeedbackToast.swift in Sources */,
+				C33E1C335325A00E2B37A4C9 /* WatchHoleScoreView.swift in Sources */,
+				C31C0D37825D07D07C4F5C1A /* WatchRoundRootView.swift in Sources */,
+				A0000000000000000000017F /* RoundCompanionSyncing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
