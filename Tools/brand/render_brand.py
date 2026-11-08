@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renders SwingPal's brand artwork from the hole-mark geometry.
 
-The same numbers drive `HoleMark` in SwingPal/SwingPalLaunchLogo.swift, so the
+The same numbers drive `HoleMark` in SwingPal/DesignSystem/Brand/HoleMark.swift, so the
 Home Screen icon, the launch screen and the in-app mark stay one drawing.
 
     python3 Tools/brand/render_brand.py          # from the repo root
