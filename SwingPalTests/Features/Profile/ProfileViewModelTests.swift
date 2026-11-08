@@ -82,12 +82,12 @@ final class ProfileViewModelTests: XCTestCase {
 
         let model = ProfileViewModel.previousRoundAnalysisModel(for: summary)
 
+        // A round saved before the card was kept: only totals to go on, so
+        // only what the totals show, and no padding.
         XCTAssertEqual(model.heading, "Round insights")
-        XCTAssertEqual(model.summary, "This saved round captured enough scoring context to show where the round was trending before you stopped.")
-        XCTAssertEqual(model.strengths.count, 3)
-        XCTAssertEqual(model.improvements.count, 3)
-        XCTAssertEqual(model.strengths.first, "You completed 4 holes before saving, giving the round a useful scoring baseline.")
-        XCTAssertEqual(model.improvements.first, "2 penalty strokes were logged, so keeping the next ball in play is the clearest scoring gain.")
+        XCTAssertEqual(model.summary, "27 strokes over 4 holes, 6 putts and 2 penalty strokes.")
+        XCTAssertEqual(model.strengths, ["6 putts over 4 holes — 1.5 a hole."])
+        XCTAssertEqual(model.improvements, ["2 penalty strokes over 4 holes."])
     }
 
     func testPreviousRoundAnalysisModelCanBeBuiltFromCachedAnalysis() {

@@ -19,9 +19,11 @@ struct HomeView: View {
     @State private var selectedAnalysisRound: RoundHistorySummary?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var viewportHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
+            GeometryReader { viewport in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     masthead
@@ -51,6 +53,8 @@ struct HomeView: View {
                 .padding(.bottom, 32)
             }
             .scrollIndicators(.hidden)
+            .onChange(of: viewport.size.height, initial: true) { _, height in viewportHeight = height }
+            }
             .background(Book.paper.ignoresSafeArea())
             .foregroundStyle(Book.ink)
             .toolbar(.hidden, for: .navigationBar)
@@ -249,7 +253,16 @@ struct HomeView: View {
         .padding(.bottom, 9)
     }
 
-    private var pageHeight: CGFloat { 404 }
+    /// Everything on the first screen except the hole drawing: masthead, the
+    /// page's header and footer, the Tee off button and the gaps between.
+    private static let firstScreenOverhead: CGFloat = 372
+
+    /// The drawing takes what's left of the screen, so the Tee off button
+    /// always sits clear of the tab bar when Home opens.
+    private var pageHeight: CGFloat {
+        guard viewportHeight > 0 else { return 404 }
+        return min(max(viewportHeight - Self.firstScreenOverhead, 240), 440)
+    }
 
     private func pageHeader(hole: SwingPalCourse.Hole, projection: HoleProjection?) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -330,7 +343,12 @@ struct HomeView: View {
     // MARK: Actions
 
     private var actions: some View {
-        VStack(spacing: 12) {
+        // Side by side, so both fit on the first screen; stacked with a
+        // written label at accessibility text sizes.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 12))
+            : AnyLayout(HStackLayout(spacing: 10))
+        return layout {
             Button {
                 if model.hasActiveRound { onOpenRound() }
                 else if let course = selectedCourse { onOpenNearbyCourse(course.id) }
@@ -352,14 +370,28 @@ struct HomeView: View {
 
             if !model.hasActiveRound {
                 Button(action: onOpenNearbyCourses) {
-                    Label("Find another course", systemImage: "magnifyingglass")
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                    if dynamicTypeSize.isAccessibilitySize {
+                        Label("Find another course", systemImage: "magnifyingglass")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    } else {
+                        Image(systemName: "magnifyingglass")
+                            .font(.headline)
+                            .frame(width: 58)
+                            .frame(maxHeight: .infinity)
+                            .background {
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(Book.ink.opacity(0.85), lineWidth: 1.25)
+                            }
+                            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Book.ink)
+                .accessibilityLabel("Find another course")
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var primaryTitle: String {

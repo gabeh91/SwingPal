@@ -39,15 +39,24 @@ struct FreshLiveRoundShotLoggerSheet: View {
                     }
 
                     Group {
-                        switch state.currentShotLoggerContext {
-                        case .tee:
-                            teeContextSection
-                        case .shot:
-                            shotContextSection
-                        case .putt:
-                            puttContextSection
+                        if state.isFinishingHole {
+                            finishHoleSection
+                        } else {
+                            switch state.currentShotLoggerContext {
+                            case .tee:
+                                teeContextSection
+                            case .shot:
+                                if state.isPendingShotShortGame {
+                                    shortGameContextSection
+                                } else {
+                                    shotContextSection
+                                }
+                            case .putt:
+                                puttContextSection
+                            }
                         }
                     }
+                    .animation(.spring(response: 0.28, dampingFraction: 0.86), value: state.isFinishingHole)
 
                     addDetailDisclosure
 
@@ -58,7 +67,7 @@ struct FreshLiveRoundShotLoggerSheet: View {
                 .padding(.bottom, 24)
             }
             .bookSheetChrome()
-            .navigationTitle("Log shot")
+            .navigationTitle(state.isFinishingHole ? "Finish the hole" : "Log shot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -253,6 +262,8 @@ struct FreshLiveRoundShotLoggerSheet: View {
 
             if prefersStandardControls { standardShotOutcome } else { shotOutcomeSection }
 
+            if state.canPendingShotBeHoled { holedChoice }
+
             if state.availableShotTypes.contains(.provisionalBall) {
                 provisionalChip
             }
@@ -263,9 +274,40 @@ struct FreshLiveRoundShotLoggerSheet: View {
         VStack(alignment: .leading, spacing: 20) {
             clubAndLie()
             if prefersStandardControls { standardShotOutcome } else { shotOutcomeSection }
+            if state.canPendingShotBeHoled { holedChoice }
         }
     }
 
+    /// For the shot that goes in: a hole in one from a par 3 tee, or a
+    /// chip-in or holed approach from anywhere else.
+    private var holedChoice: some View {
+        let isHoled = state.pendingShotHoled
+        let ace = state.isPendingShotAceChance
+        return Button {
+            state.setPendingShotHoled(!isHoled)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: isHoled ? "checkmark.square.fill" : "flag")
+                    .font(.body.weight(.medium))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(ace ? "Hole in one" : "In the hole")
+                        .font(.subheadline.weight(.semibold))
+                    Text(ace ? "Straight in from the tee" : state.isPendingBunkerGreenside ? "Holed out from the sand" : "Chipped in or holed out from here")
+                        .font(.caption)
+                        .opacity(0.75)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .bookChoice(isSelected: isHoled)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isHoled ? .isSelected : [])
+        .sensoryFeedback(.success, trigger: isHoled) { _, holed in holed }
+    }
+
+    /// One putt at a time: holed or missed, and where a miss finished.
     private var puttContextSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             if !prefersStandardControls {
@@ -276,8 +318,249 @@ struct FreshLiveRoundShotLoggerSheet: View {
                 puttMissPanel
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
+            loggerModeSwitch(title: "Finish the hole in one entry", finishing: true)
         }
         .animation(.spring(response: 0.28, dampingFraction: 0.86), value: state.pendingShotPuttHoled)
+    }
+
+    /// The rest of the hole in one entry, for logging after holing out: the
+    /// shots it took around the green, then the putts.
+    private var finishHoleSection: some View {
+        let fromOffTheGreen = state.currentShotLoggerContext == .shot
+        let chips = state.effectiveChipsToHoleOut
+        let putts = state.pendingPuttsToHoleOut
+        let puttsAlreadyLogged = state.currentPlayerTotalPutts
+        // From off the green the shot being logged is one of them.
+        let chipChoices: [Int] = fromOffTheGreen ? [1, 2, 3, 4] : [0, 1, 2, 3]
+        let topChipChoice: Int = fromOffTheGreen ? 4 : 3
+        // No putts only makes sense when a chip went in.
+        let puttChoices: [Int] = chips > 0 ? [0, 1, 2, 3, 4] : [1, 2, 3, 4]
+        return VStack(alignment: .leading, spacing: 20) {
+            if !prefersStandardControls {
+                clubAndLie(showsClub: fromOffTheGreen)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                sectionHeading(
+                    title: "Shots around the green",
+                    subtitle: fromOffTheGreen
+                        ? "Chips, pitches, sand shots and the putter from off the green. This one included."
+                        : "Chips, pitches, sand shots and the putter from off the green."
+                )
+                HStack(spacing: 8) {
+                    ForEach(chipChoices, id: \.self) { count in
+                        let isTop: Bool = count == topChipChoice
+                        let isSelected: Bool = isTop ? chips >= count : chips == count
+                        countChoice(
+                            count: count,
+                            showsPlus: isTop,
+                            caption: chipsCaption(count),
+                            isSelected: isSelected,
+                            spoken: chipsSpoken(count, orMore: isTop)
+                        ) {
+                            state.setPendingChipsToHoleOut(count)
+                        }
+                    }
+                }
+                if chips >= topChipChoice {
+                    BookCounter(title: "Shots", value: chips, range: topChipChoice...9) { state.setPendingChipsToHoleOut($0) }
+                        .transition(.opacity)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                sectionHeading(
+                    title: puttsAlreadyLogged == 0 ? "Putts" : "Putts still to hole out",
+                    subtitle: puttsAlreadyLogged == 0
+                        ? nil
+                        : "\(puttsAlreadyLogged) putt\(puttsAlreadyLogged == 1 ? "" : "s") logged on this green so far."
+                )
+                HStack(spacing: 8) {
+                    // No putts only makes sense when a chip went in.
+                    ForEach(puttChoices, id: \.self) { count in
+                        let chosenPutts: Int = putts ?? -1
+                        let isSelected: Bool = count == 4 ? chosenPutts >= 4 : chosenPutts == count
+                        countChoice(
+                            count: count,
+                            showsPlus: count == 4,
+                            caption: puttsCaption(count),
+                            isSelected: isSelected,
+                            spoken: puttsSpoken(count)
+                        ) {
+                            // Tapping the chosen one again clears it.
+                            state.setPendingPuttsToHoleOut(isSelected ? nil : count)
+                        }
+                    }
+                }
+                if let putts, putts >= 4 {
+                    BookCounter(title: "Putts", value: putts, range: 4...10) { state.setPendingPuttsToHoleOut($0) }
+                        .transition(.opacity)
+                }
+            }
+
+            if puttsAlreadyLogged == 0, (putts ?? 1) > 0 {
+                VStack(spacing: 0) {
+                    BookHairline()
+                    optionalCounter(
+                        title: "First putt",
+                        value: state.pendingShotFirstPuttDistanceMeters,
+                        unsetLabel: state.measuredFirstPuttDistanceMeters.map { "\($0) m from where you marked the ball" }
+                            ?? "Add how long it was. Optional.",
+                        suffix: "m",
+                        range: 0...60,
+                        setValue: { value in
+                            // Opening the counter starts from the measured length, or a typical first putt.
+                            if state.pendingShotFirstPuttDistanceMeters == nil, value == 0 {
+                                state.setPendingShotFirstPuttDistanceMeters(state.measuredFirstPuttDistanceMeters ?? 6)
+                            } else {
+                                state.setPendingShotFirstPuttDistanceMeters(value)
+                            }
+                        }
+                    )
+                    BookHairline()
+                }
+            }
+
+            loggerModeSwitch(
+                title: fromOffTheGreen ? "Log just this shot" : "Log one putt at a time",
+                finishing: false
+            )
+        }
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: chips)
+        .animation(.spring(response: 0.28, dampingFraction: 0.86), value: putts)
+    }
+
+    /// One chip, pitch, bunker shot or putt from off the green: what it was
+    /// and where it finished.
+    private var shortGameContextSection: some View {
+        let shotType = state.pendingShotType ?? state.inferredShortGameShotType
+        return VStack(alignment: .leading, spacing: 20) {
+            clubAndLie()
+
+            optionSection(
+                title: "Shot",
+                options: [ShotEvent.ShotType.chip, .pitch, .bunkerShot, .fringePutt],
+                selection: shotType,
+                // Four choices: two rows of two, not three and a stray one.
+                gridColumns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                label: { type in
+                    switch type {
+                    case .pitch: return "Pitch"
+                    case .bunkerShot: return "Bunker shot"
+                    case .fringePutt: return "Putter"
+                    default: return "Chip"
+                    }
+                },
+                action: { state.setShortGameShotType($0) }
+            )
+
+            VStack(alignment: .leading, spacing: 10) {
+                sectionHeading(title: "Where did it finish?")
+                VStack(spacing: 8) {
+                    ForEach(ShotEvent.ShortGameResult.allCases, id: \.self) { result in
+                        shortGameResultChoice(result)
+                    }
+                }
+            }
+
+            loggerModeSwitch(title: "Finish the hole in one entry", finishing: true)
+        }
+    }
+
+    private func shortGameResultChoice(_ result: ShotEvent.ShortGameResult) -> some View {
+        let isSelected = state.pendingShortGameResult == result
+        let copy = shortGameResultCopy(result)
+        let title: String = copy.title
+        let detail: String = copy.detail
+        let symbol: String = copy.symbol
+        return Button {
+            state.setPendingShortGameResult(isSelected ? nil : result)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: symbol)
+                    .font(.body.weight(.medium))
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.subheadline.weight(.semibold))
+                    Text(detail).font(.caption).opacity(0.75)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .bookChoice(isSelected: isSelected)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: isSelected)
+    }
+
+    private func shortGameResultCopy(_ result: ShotEvent.ShortGameResult) -> (title: String, detail: String, symbol: String) {
+        switch result {
+        case .holed: return ("In the hole", "Chipped in or holed out", "flag.fill")
+        case .tapIn: return ("Tap-in", "Inside about a metre", "circle.circle")
+        case .makeable: return ("Makeable", "One to three metres left", "circle.dashed")
+        case .longPutt: return ("Long putt left", "On the green, three metres or more", "arrow.up.right")
+        case .missedGreen: return ("Still off the green", "Another one to play", "arrow.uturn.backward")
+        }
+    }
+
+    private func chipsCaption(_ count: Int) -> String {
+        if count == 0 { return "none" }
+        return count == 1 ? "shot" : "shots"
+    }
+
+    private func chipsSpoken(_ count: Int, orMore: Bool) -> String {
+        if count == 0 { return "No shots around the green" }
+        let noun = count == 1 ? "shot" : "shots"
+        return orMore ? "\(count) or more \(noun) around the green" : "\(count) \(noun) around the green"
+    }
+
+    private func puttsCaption(_ count: Int) -> String {
+        if count == 0 { return "holed it" }
+        return count == 1 ? "putt" : "putts"
+    }
+
+    private func puttsSpoken(_ count: Int) -> String {
+        if count == 0 { return "No putts, holed from off the green" }
+        if count >= 4 { return "4 or more putts" }
+        return count == 1 ? "1 putt" : "\(count) putts"
+    }
+
+    /// A numbered choice: a big figure over what it counts.
+    private func countChoice(
+        count: Int,
+        showsPlus: Bool,
+        caption: String,
+        isSelected: Bool,
+        spoken: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                Text(showsPlus ? "\(count)+" : "\(count)")
+                    .font(.system(size: 28, weight: .bold).width(.condensed))
+                    .monospacedDigit()
+                Text(caption)
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .opacity(0.75)
+            }
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .bookChoice(isSelected: isSelected, cornerRadius: 14)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(spoken)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: isSelected)
+    }
+
+    private func loggerModeSwitch(title: String, finishing: Bool) -> some View {
+        Button(title) { state.setFinishingHole(finishing) }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Book.stamp)
+            .frame(maxWidth: .infinity, minHeight: 44)
     }
 
     private var puttHoledMissedRow: some View {
@@ -554,23 +837,18 @@ struct FreshLiveRoundShotLoggerSheet: View {
         case .putt:
             VStack(alignment: .leading, spacing: 20) {
                 VStack(spacing: 0) {
-                    optionalCounter(
-                        title: "Putts",
-                        value: state.pendingShotPuttCount,
-                        unsetLabel: "Counted for you (\(max(1, state.currentPlayerTotalPutts + 1)))",
-                        range: 1...4,
-                        setValue: { state.setPendingShotPuttCount($0) }
-                    )
-                    BookHairline()
-                    optionalCounter(
-                        title: "First putt",
-                        value: state.pendingShotFirstPuttDistanceMeters,
-                        unsetLabel: "Add how long it was",
-                        suffix: "m",
-                        range: 0...60,
-                        setValue: { state.setPendingShotFirstPuttDistanceMeters($0) }
-                    )
-                    BookHairline()
+                    // Logging the whole green asks for the first putt up front.
+                    if !state.isFinishingHole {
+                        optionalCounter(
+                            title: "First putt",
+                            value: state.pendingShotFirstPuttDistanceMeters,
+                            unsetLabel: "Add how long it was",
+                            suffix: "m",
+                            range: 0...60,
+                            setValue: { state.setPendingShotFirstPuttDistanceMeters($0) }
+                        )
+                        BookHairline()
+                    }
                     BookCounter(title: "Penalties", value: state.pendingShotPenaltyCount, range: 0...10, onChange: state.setPendingShotPenaltyCount)
                     BookHairline()
                 }
@@ -631,12 +909,13 @@ struct FreshLiveRoundShotLoggerSheet: View {
         subtitle: String? = nil,
         options: [Option],
         selection: Option?,
+        gridColumns: [GridItem]? = nil,
         label: @escaping (Option) -> String,
         action: @escaping (Option) -> Void
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeading(title: title, subtitle: subtitle)
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: gridColumns ?? columns, spacing: 8) {
                 ForEach(options, id: \.self) { option in
                     let isSelected = selection == option
                     Button {
@@ -682,7 +961,7 @@ struct FreshLiveRoundShotLoggerSheet: View {
             .frame(width: layout.canvasSize.width, height: layout.canvasSize.height, alignment: .center)
             .frame(maxWidth: .infinity)
 
-            selectionLine(text: shotOutcomeChipLabel, isEmpty: isEmpty)
+            selectionLine(text: state.pendingShotHoled ? (state.isPendingShotAceChance ? "Hole in one" : "In the hole") : shotOutcomeChipLabel, isEmpty: isEmpty)
 
             outcomeIntensitySelector
         }
@@ -703,7 +982,7 @@ struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private func isShotOutcomeNodeSelected(_ node: FreshLiveRoundShotOutcomeNode) -> Bool {
-        state.pendingShotDirection == node.resolvedDirection(intensity: shotOutcomeIntensity)
+        !state.pendingShotHoled && state.pendingShotDirection == node.resolvedDirection(intensity: shotOutcomeIntensity)
             && state.pendingShotDistance == node.distance
     }
 
@@ -764,7 +1043,7 @@ struct FreshLiveRoundShotLoggerSheet: View {
     }
 
     private func outcomeCenterHitButton(size: CGSize) -> some View {
-        let isCleanStrike = state.pendingShotDirection == .hit && state.pendingShotDistance == .onNumber
+        let isCleanStrike = state.pendingShotDirection == .hit && state.pendingShotDistance == .onNumber && !state.pendingShotHoled
 
         return Button {
             state.selectShotDirection(.hit)

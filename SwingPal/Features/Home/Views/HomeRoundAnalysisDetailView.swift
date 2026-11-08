@@ -20,6 +20,9 @@ struct HomeRoundAnalysisDetailView: View {
             VStack(alignment: .leading, spacing: 30) {
                 header
                 ledger
+                if !summary.holes.isEmpty {
+                    RoundCardTable(holes: summary.holes)
+                }
                 notes
             }
             .padding(.horizontal, 20)
@@ -120,7 +123,7 @@ struct HomeRoundAnalysisDetailView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         BookNote(section.title, color: index == 0 ? Book.stamp : Book.warning)
                         if section.items.isEmpty {
-                            Text("Nothing recorded for this yet.").font(.subheadline).foregroundStyle(Book.pencil)
+                            Text("Nothing stood out.").font(.subheadline).foregroundStyle(Book.pencil)
                         }
                         ForEach(Array(section.items.enumerated()), id: \.offset) { _, item in
                             HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -132,7 +135,9 @@ struct HomeRoundAnalysisDetailView: View {
                     .padding(.top, 6)
                 }
                 if let generated = detailModel.analysisGeneratedAtTitle {
-                    Text("Written \(generated) from this round’s totals. Totals are recorded facts; notes are interpretation.")
+                    Text(summary.holes.isEmpty
+                         ? "Written \(generated) from this round’s totals. It was saved before hole-by-hole scores were kept, so there’s less to go on."
+                         : "Written \(generated) from the hole-by-hole card.")
                         .font(.caption)
                         .foregroundStyle(Book.pencil)
                         .padding(.top, 4)
@@ -155,15 +160,6 @@ struct HomeRoundAnalysisDetailView: View {
         if let analysis = try? await analysisService.analysis(for: summary) {
             return analysis
         }
-        return RoundSummaryAnalysis(
-            roundID: summary.id,
-            cacheKey: RoundSummaryAnalysis.CacheKey(summary: summary).rawValue,
-            provider: .deterministic,
-            summary: ProfileViewModel.legacySummary(for: summary),
-            whatWentWell: ProfileViewModel.legacyStrengths(for: summary),
-            needsWork: ProfileViewModel.legacyImprovements(for: summary),
-            generatedAt: Date(),
-            updatedAt: nil
-        )
+        return RoundRecapWriter.analysis(for: summary)
     }
 }

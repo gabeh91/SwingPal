@@ -397,6 +397,15 @@ struct FreshLiveRoundScreen: View {
                             .background(Book.leaf, in: Capsule())
                             .overlay(Capsule().strokeBorder(Book.rule))
                     }
+                    .confirmationDialog(
+                        "The ball's already marked a few steps from here",
+                        isPresented: $state.isAskingAboutRemark,
+                        titleVisibility: .visible
+                    ) {
+                        Button("I've hit again: mark the new spot") { state.markBall(as: .newShot) }
+                        Button("Same ball: move the mark here") { state.markBall(as: .correction) }
+                        Button("Cancel", role: .cancel) {}
+                    }
                 }
                 Spacer()
                 Button {
@@ -814,33 +823,76 @@ struct FreshLiveRoundScreen: View {
         .tint(CourseStyle.action)
     }
 
+    /// Every club in the bag with its carry, whatever the wheel is showing,
+    /// so a suggestion never hides a club.
     private var courseClubPicker: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Toggle("Automatic club suggestions", isOn: Binding(
-                        get: { state.isClubAutoRecommendationEnabled },
-                        set: state.setClubAutoRecommendationEnabled
-                    ))
-                } footer: {
-                    Text(state.isClubAutoRecommendationEnabled
-                         ? "Auto shows clubs relevant to the current shot. Turn off for the complete manual catalog."
-                         : "Manual shows the standard catalog and your custom bag clubs. Choosing a club does not log a shot.")
-                }
-                Section {
-                    Picker("Selected club", selection: Binding(
-                        get: { state.selectedClubName },
-                        set: { state.selectClubFromWheel(named: $0) }
-                    )) {
-                        ForEach(state.clubWheelDisplayedClubNames, id: \.self) { club in
-                            Text(club).tag(club)
+        let recommended = state.recommendedClubName.map { $0.lowercased() }
+        let selected = state.selectedClubName.lowercased()
+        return NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Toggle("Suggest a club for each shot", isOn: Binding(
+                            get: { state.isClubAutoRecommendationEnabled },
+                            set: state.setClubAutoRecommendationEnabled
+                        ))
+                        .tint(Book.stamp)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: 52)
+                        .background(Book.leaf, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Book.rule, lineWidth: 0.5))
+                        Text(state.isClubAutoRecommendationEnabled
+                             ? "The suggestion matches your carries to the distance left. Choose any club to override it."
+                             : "No suggestions: the full catalog and your own clubs are listed.")
+                            .font(.caption)
+                            .foregroundStyle(Book.pencil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    BookGroup(state.isClubAutoRecommendationEnabled ? "Your bag" : "All clubs") {
+                        ForEach(state.allChoosableClubNames, id: \.self) { club in
+                            Button {
+                                if state.isClubAutoRecommendationEnabled {
+                                    state.selectClub(named: club)
+                                } else {
+                                    state.selectClubFromWheel(named: club)
+                                }
+                                isShowingNativeClubPicker = false
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "checkmark")
+                                        .font(.subheadline.weight(.bold))
+                                        .foregroundStyle(Book.stamp)
+                                        .opacity(club.lowercased() == selected ? 1 : 0)
+                                        .frame(width: 18)
+                                    Text(club).font(.body.weight(club.lowercased() == selected ? .semibold : .regular))
+                                    if club.lowercased() == recommended {
+                                        Text("SUGGESTED").font(Book.Typeface.noteSmall).foregroundStyle(Book.stamp)
+                                    }
+                                    Spacer(minLength: 8)
+                                    Text(state.shortDistanceLabel(forMeters: state.carryMeters(forClub: club)))
+                                        .font(Book.Typeface.smallFigure)
+                                        .foregroundStyle(Book.pencil)
+                                }
+                                .padding(.horizontal, 14)
+                                .frame(minHeight: 50)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(BookRowButtonStyle())
+                            .accessibilityAddTraits(club.lowercased() == selected ? .isSelected : [])
+                            .accessibilityHint(club.lowercased() == recommended ? "Suggested for this shot" : "")
                         }
                     }
-                    .pickerStyle(.inline)
-                } footer: {
-                    Text("Choosing a club does not log a shot. \(selectedCarrySource).")
+
+                    Text("Choosing a club doesn't log a shot.")
+                        .font(.caption)
+                        .foregroundStyle(Book.pencil)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
             }
+            .bookSheetChrome()
             .navigationTitle("Choose club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -848,8 +900,8 @@ struct FreshLiveRoundScreen: View {
                     Button("Done") { isShowingNativeClubPicker = false }
                 }
             }
-            .tint(CourseStyle.action)
         }
+        .presentationBackground(Book.paper)
     }
 
     private func finishRoundAction(_ action: @escaping () -> Void) {
@@ -886,8 +938,8 @@ struct FreshLiveRoundScreen: View {
                             roundActionRow("Penalty", detail: "Lost, out of bounds, unplayable, water", symbol: "exclamationmark.triangle") { finishRoundAction { state.presentQuickPenaltyPicker() } }
                             roundActionRow("Re-tee", detail: "Play again from the tee", symbol: "arrow.counterclockwise") { finishRoundAction { state.presentReteeConfirmation() } }
                             roundActionRow(state.atBallActionTitle, detail: "Measure the next shot from here", symbol: "scope", enabled: state.canMarkBallOnDisplayedHole) {
-                                state.markBall()
-                                isShowingRoundActions = false
+                                // After the sheet has gone, so the "new shot or correction?" question has somewhere to appear.
+                                finishRoundAction { state.markBall() }
                             }
                         }
                     }

@@ -10,7 +10,13 @@ final class NFCFollowScanner: NSObject, ObservableObject, NFCNDEFReaderSessionDe
     private var session: NFCNDEFReaderSession?
 
     var isSupported: Bool {
-        NFCNDEFReaderSession.readingAvailable
+        #if PERSONAL_TEAM
+        // Built without the NFC entitlement (a free Apple account can't sign
+        // it), so a scan could only fail. Treat the phone as unable to read tags.
+        return false
+        #else
+        return NFCNDEFReaderSession.readingAvailable
+        #endif
     }
 
     func clearParsed() {

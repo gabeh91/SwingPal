@@ -42,6 +42,23 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         case pitch
         case bunkerShot
         case putt
+        /// The putter used from off the green. It's a shot around the green,
+        /// not a putt: putts are only counted on the putting surface.
+        case fringePutt
+    }
+
+    /// Where a chip, pitch or bunker shot finished: the result that matters
+    /// around the green, in place of left/right and long/short.
+    enum ShortGameResult: String, Codable, Equatable, CaseIterable {
+        case holed
+        /// Inside about a metre.
+        case tapIn
+        /// One to three metres.
+        case makeable
+        /// On the green with three metres or more left.
+        case longPutt
+        /// Still off the green.
+        case missedGreen
     }
 
     struct PuttDetail: Equatable, Codable {
@@ -55,17 +72,23 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         /// (in metres). `nil` when the putt was holed or the player chose
         /// not to record a quantitative miss distance.
         let missDistanceMeters: Int?
+        /// How many putts this one entry stands for, when the green was
+        /// logged in one go after holing out ("a two-putt"). `nil` for a
+        /// putt logged on its own.
+        let puttsTogether: Int?
 
         init(
             puttCount: Int,
             firstPuttDistanceMeters: Int? = nil,
             holed: Bool = false,
-            missDistanceMeters: Int? = nil
+            missDistanceMeters: Int? = nil,
+            puttsTogether: Int? = nil
         ) {
             self.puttCount = max(1, puttCount)
             self.firstPuttDistanceMeters = firstPuttDistanceMeters
             self.holed = holed
             self.missDistanceMeters = missDistanceMeters.map { max(0, $0) }
+            self.puttsTogether = puttsTogether.map { max(1, $0) }
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -73,6 +96,7 @@ struct ShotEvent: Identifiable, Equatable, Codable {
             case firstPuttDistanceMeters
             case holed
             case missDistanceMeters
+            case puttsTogether
         }
 
         init(from decoder: Decoder) throws {
@@ -81,6 +105,7 @@ struct ShotEvent: Identifiable, Equatable, Codable {
             self.firstPuttDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .firstPuttDistanceMeters)
             self.holed = try container.decodeIfPresent(Bool.self, forKey: .holed) ?? false
             self.missDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .missDistanceMeters)
+            self.puttsTogether = try container.decodeIfPresent(Int.self, forKey: .puttsTogether)
         }
     }
 
@@ -96,8 +121,18 @@ struct ShotEvent: Identifiable, Equatable, Codable {
     let shotType: ShotType?
     let strikeResult: StrikeResult?
     let puttDetail: PuttDetail?
+    /// A full shot that went in: a hole in one, a chip-in, a holed approach.
+    /// Putts record this in `puttDetail`. Absent in older logs.
+    let holedOut: Bool?
+    /// Set on shots logged with the short-game screen. Absent in older logs.
+    let shortGameResult: ShortGameResult?
     let note: String?
     let createdAt: Date
+
+    /// A chip, pitch or bunker shot around the green.
+    var isShortGameShot: Bool {
+        shortGameResult != nil || shotType == .chip || shotType == .pitch || shotType == .bunkerShot || shotType == .fringePutt
+    }
 
     init(
         id: UUID = UUID(),
@@ -112,6 +147,8 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         shotType: ShotType? = nil,
         strikeResult: StrikeResult? = nil,
         puttDetail: PuttDetail? = nil,
+        holedOut: Bool? = nil,
+        shortGameResult: ShortGameResult? = nil,
         note: String? = nil,
         createdAt: Date = .now
     ) {
@@ -127,6 +164,8 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         self.strikeResult = strikeResult
         self.shotType = shotType
         self.puttDetail = puttDetail
+        self.holedOut = holedOut == true ? true : nil
+        self.shortGameResult = shortGameResult
         self.note = note?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         self.createdAt = createdAt
     }
@@ -141,8 +180,10 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         clubName == Self.syntheticPenaltyClubName && penaltyCount > 0
     }
 
+    /// A stroke on the putting surface. Chips and the putter from off the
+    /// green are shots around the green, not putts.
     var isPuttStroke: Bool {
-        !isSyntheticPenalty && (puttDetail != nil || shotType == .putt || surface == .green)
+        !isSyntheticPenalty && !isShortGameShot && (puttDetail != nil || shotType == .putt || surface == .green)
     }
 }
 

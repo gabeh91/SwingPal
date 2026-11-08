@@ -728,7 +728,83 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(savedSummary.totalHoleCount, 3)
         XCTAssertEqual(savedSummary.totalStrokes, 12)
         XCTAssertEqual(savedSummary.completedHoleCount, 3)
+        XCTAssertEqual(savedSummary.holes.map(\.number), [1, 2, 3])
+        XCTAssertEqual(savedSummary.holes.map(\.par), [4, 3, 5])
+        XCTAssertEqual(savedSummary.holes.map(\.score), [4, 3, 5])
+        XCTAssertEqual(savedSummary.holes.map(\.putts), [nil, nil, nil], "Nothing logged says how many putts")
         XCTAssertEqual(state.previousRounds.first?.status, .finished)
+    }
+
+    func testSavedCardKeepsWhatHappenedAroundTheGreen() throws {
+        let historyStore = StubRoundHistoryStore()
+        let state = AppState(
+            store: StubActiveRoundStore(),
+            roundHistoryStore: historyStore
+        )
+        let liveRound = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            courseName: "Kingston Heath",
+            courseHoles: [
+                .init(number: 1, par: 4, features: []),
+                .init(number: 2, par: 3, features: []),
+            ],
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.resumeRound(id: UUID(), state: liveRound, chromeMode: .live)
+
+        // The 1st: drive, approach, then a chip and one putt in one entry.
+        liveRound.logShot(clubName: "Driver", distanceToTargetMeters: 380, surface: .tee)
+        liveRound.logShot(clubName: "8i", distanceToTargetMeters: 140, surface: .fairway)
+        liveRound.distanceToPinMeters = 40
+        liveRound.presentShotLogger()
+        XCTAssertTrue(liveRound.isPendingShotShortGame)
+        liveRound.setPendingPuttsToHoleOut(1)
+        liveRound.confirmPendingShot()
+        XCTAssertEqual(liveRound.hole.shots.count, 4)
+        XCTAssertTrue(liveRound.confirmCurrentHoleFromDerivedValues())
+
+        // The 2nd: only a score.
+        liveRound.presentHoleConfirmation()
+        liveRound.setPendingHoleScore(3)
+        XCTAssertTrue(liveRound.confirmCurrentHole())
+        state.completeActiveRound()
+
+        let savedSummary = try XCTUnwrap((historyStore.savedSnapshots.last ?? nil)?.first)
+        let first = try XCTUnwrap(savedSummary.holes.first)
+        XCTAssertEqual(first.score, 4)
+        XCTAssertEqual(first.putts, 1)
+        XCTAssertEqual(first.shortGameShots, 1)
+        XCTAssertEqual(first.upAndDown, true)
+        XCTAssertNil(first.sandSave)
+        XCTAssertNil(first.chippedIn)
+
+        let second = try XCTUnwrap(savedSummary.holes.last)
+        XCTAssertNil(second.shortGameShots)
+        XCTAssertNil(second.upAndDown)
+    }
+
+    func testCardsSavedBeforeTheShortGameWasKeptStillDecode() throws {
+        let json = """
+        {"number":4,"par":4,"score":5,"putts":2,"penalties":0,"fairwayHit":true,"greenInRegulation":false}
+        """
+        let hole = try JSONDecoder().decode(RoundHistorySummary.HoleRecord.self, from: Data(json.utf8))
+        XCTAssertEqual(hole.score, 5)
+        XCTAssertNil(hole.shortGameShots)
+        XCTAssertNil(hole.upAndDown)
+        XCTAssertNil(hole.sandSave)
+        XCTAssertNil(hole.chippedIn)
+        XCTAssertNil(hole.firstPuttMeters)
+    }
+
+    func testOldSavedRoundsWithoutACardStillDecode() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","courseName":"Medway","status":"finished","holeNumber":9,
+         "totalHoleCount":9,"playerCount":1,"totalStrokes":42,"completedHoleCount":9,
+         "totalPutts":16,"totalPenalties":0,"updatedAt":0}
+        """
+        let summary = try JSONDecoder().decode(RoundHistorySummary.self, from: Data(json.utf8))
+        XCTAssertEqual(summary.totalStrokes, 42)
+        XCTAssertEqual(summary.holes, [])
     }
 }
 

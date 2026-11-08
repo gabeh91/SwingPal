@@ -101,7 +101,10 @@ final class CoreLocationRoundLocationProvider: NSObject, CLLocationManagerDelega
     override init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        // A round needs the best fix the phone can give: shots are told apart
+        // by a few metres, and at ten-metre accuracy a short chip doesn't
+        // register as having moved at all.
+        manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.activityType = .fitness
         manager.headingFilter = 5
     }
@@ -309,8 +312,12 @@ final class LiveRoundState: ObservableObject {
         let previousLastLoggedShotTargetCoordinate: MapCoordinate?
         let previousLastLoggedShotTargetLabel: String?
         let previousBallMarkState: BallMarkState?
+        let previousEarlierBallMarks: [BallMarkState]
         let previousBallMarkSuggestionBaselineCoordinate: MapCoordinate?
         let previousReviewPlayers: [PlayerScoreState]
+        /// How many shots the last entry added. More than one when the
+        /// hole was finished in a single entry (chips and putts together).
+        var shotCount = 1
     }
 
     /// Lightweight summary of a shot used by the undo confirmation
@@ -448,6 +455,7 @@ final class LiveRoundState: ObservableObject {
         let lastLoggedShotTargetCoordinate: MapCoordinate?
         let lastLoggedShotTargetLabel: String?
         let ballMarkSuggestionBaselineCoordinate: MapCoordinate?
+        let earlierBallMarks: [BallMarkState]
 
         private enum CodingKeys: String, CodingKey {
             case hole
@@ -473,6 +481,7 @@ final class LiveRoundState: ObservableObject {
             case lastLoggedShotTargetCoordinate
             case lastLoggedShotTargetLabel
             case ballMarkSuggestionBaselineCoordinate
+            case earlierBallMarks
         }
 
         init(
@@ -498,7 +507,8 @@ final class LiveRoundState: ObservableObject {
             lastLoggedShotOriginSource: ShotOriginSource?,
             lastLoggedShotTargetCoordinate: MapCoordinate?,
             lastLoggedShotTargetLabel: String?,
-            ballMarkSuggestionBaselineCoordinate: MapCoordinate?
+            ballMarkSuggestionBaselineCoordinate: MapCoordinate?,
+            earlierBallMarks: [BallMarkState] = []
         ) {
             self.hole = hole
             self.holeSessions = holeSessions
@@ -523,6 +533,7 @@ final class LiveRoundState: ObservableObject {
             self.lastLoggedShotTargetCoordinate = lastLoggedShotTargetCoordinate
             self.lastLoggedShotTargetLabel = lastLoggedShotTargetLabel
             self.ballMarkSuggestionBaselineCoordinate = ballMarkSuggestionBaselineCoordinate
+            self.earlierBallMarks = earlierBallMarks
         }
 
         init(from decoder: Decoder) throws {
@@ -569,7 +580,8 @@ final class LiveRoundState: ObservableObject {
                 lastLoggedShotOriginSource: try container.decodeIfPresent(ShotOriginSource.self, forKey: .lastLoggedShotOriginSource),
                 lastLoggedShotTargetCoordinate: try container.decodeIfPresent(MapCoordinate.self, forKey: .lastLoggedShotTargetCoordinate),
                 lastLoggedShotTargetLabel: try container.decodeIfPresent(String.self, forKey: .lastLoggedShotTargetLabel),
-                ballMarkSuggestionBaselineCoordinate: try container.decodeIfPresent(MapCoordinate.self, forKey: .ballMarkSuggestionBaselineCoordinate)
+                ballMarkSuggestionBaselineCoordinate: try container.decodeIfPresent(MapCoordinate.self, forKey: .ballMarkSuggestionBaselineCoordinate),
+                earlierBallMarks: try container.decodeIfPresent([BallMarkState].self, forKey: .earlierBallMarks) ?? []
             )
         }
 
@@ -598,6 +610,9 @@ final class LiveRoundState: ObservableObject {
             try container.encodeIfPresent(lastLoggedShotTargetCoordinate, forKey: .lastLoggedShotTargetCoordinate)
             try container.encodeIfPresent(lastLoggedShotTargetLabel, forKey: .lastLoggedShotTargetLabel)
             try container.encodeIfPresent(ballMarkSuggestionBaselineCoordinate, forKey: .ballMarkSuggestionBaselineCoordinate)
+            if !earlierBallMarks.isEmpty {
+                try container.encode(earlierBallMarks, forKey: .earlierBallMarks)
+            }
         }
 
         private static func resolveHoleSessions(
@@ -781,9 +796,20 @@ final class LiveRoundState: ObservableObject {
             notifyRoundUpdated()
         }
     }
+    /// The most recent place the ball was marked.
     @Published private(set) var ballMarkState: BallMarkState? {
         didSet { notifyRoundUpdated() }
     }
+    /// Marks made before `ballMarkState` whose shots haven't been logged yet,
+    /// oldest first. They exist when shots are logged after the fact: hit,
+    /// walk, mark the ball, hit again, mark again, and only then log. Each
+    /// logged shot is measured from the oldest mark still waiting.
+    @Published private(set) var earlierBallMarks: [BallMarkState] = [] {
+        didSet { notifyRoundUpdated() }
+    }
+    /// True while the player is being asked whether a second mark close to
+    /// the first is a new shot or a correction.
+    @Published var isAskingAboutRemark = false
     @Published private(set) var lastLoggedShotOriginCoordinate: MapCoordinate? {
         didSet { notifyRoundUpdated() }
     }
@@ -848,6 +874,8 @@ final class LiveRoundState: ObservableObject {
     @Published private(set) var pendingShotPenaltyCount: Int = 0
     @Published private(set) var pendingShotDropCount: Int = 0
     @Published private(set) var pendingShotSurface: ShotEvent.Surface = .fairway
+    /// A full shot that finished in the hole (hole in one, chip-in).
+    @Published private(set) var pendingShotHoled = false
     @Published private(set) var pendingShotDirection: ShotEvent.DirectionResult?
     @Published private(set) var pendingShotDistance: ShotEvent.DistanceResult?
     @Published private(set) var pendingShotStrike: ShotEvent.StrikeResult?
@@ -859,6 +887,22 @@ final class LiveRoundState: ObservableObject {
     /// "Holed" / "Missed" — confirm is gated on this so we never accidentally
     /// log an ambiguous putt event.
     @Published private(set) var pendingShotPuttHoled: Bool?
+    /// Putt-context only. The number of putts being logged together to
+    /// finish the hole: the usual way, since putts get logged after holing
+    /// out, not one by one on the green. `nil` when logging a single putt.
+    @Published private(set) var pendingPuttsToHoleOut: Int?
+    /// Chips, pitches and bunker shots being logged in the same entry, ahead
+    /// of the putts. At least one when the shot being logged is itself from
+    /// off the green.
+    @Published private(set) var pendingChipsToHoleOut = 0
+    /// Whether the logger is showing "finish the hole": the shots around the
+    /// green and the putts in one entry, which is how they tend to get
+    /// logged, after holing out. Off, it takes one shot or putt at a time.
+    @Published private(set) var isFinishingHole = false
+    /// Where a single chip, pitch or bunker shot finished.
+    @Published private(set) var pendingShortGameResult: ShotEvent.ShortGameResult?
+    /// The player asked for one shot at a time in this logger session.
+    private var hasChosenShotByShot = false
     /// Putt-context only. The cardinal direction the missed putt finished
     /// in relative to the cup. Defaults to `nil` (centre / no quantitative
     /// miss); used to populate the `direction` field on the persisted event.
@@ -1100,7 +1144,8 @@ final class LiveRoundState: ObservableObject {
             lastLoggedShotOriginSource: lastLoggedShotOriginSource,
             lastLoggedShotTargetCoordinate: lastLoggedShotTargetCoordinate,
             lastLoggedShotTargetLabel: lastLoggedShotTargetLabel,
-            ballMarkSuggestionBaselineCoordinate: ballMarkSuggestionBaselineCoordinate
+            ballMarkSuggestionBaselineCoordinate: ballMarkSuggestionBaselineCoordinate,
+            earlierBallMarks: earlierBallMarks
         )
     }
 
@@ -1348,7 +1393,7 @@ final class LiveRoundState: ObservableObject {
 
     var shotLoggingTitle: String {
         if targetLabel == "Target unavailable" { return "\(pendingShotClubName) • Target unavailable" }
-        return "\(pendingShotClubName) • \(shortDistanceLabel(forMeters: displayedPinDistanceMeters)) to green centre"
+        return "\(pendingShotClubName) • \(shortDistanceLabel(forMeters: pendingShotDistanceToPinMeters)) to green centre"
     }
 
     var currentPlayerTotalPutts: Int {
@@ -1404,7 +1449,11 @@ final class LiveRoundState: ObservableObject {
                 return "Putt"
             }
             if detail.holed {
-                return "Holed"
+                guard let together = detail.puttsTogether, together > 1 else { return "Holed" }
+                if let first = detail.firstPuttDistanceMeters, first > 0 {
+                    return "\(together) putts • first from \(distanceUnit.shortLabel(forMeters: first))"
+                }
+                return "\(together) putts • Holed"
             }
             var qualifiers: [String] = []
             if shot.direction != .hit {
@@ -1421,7 +1470,26 @@ final class LiveRoundState: ObservableObject {
             }
             return "Missed • \(qualifiers.joined(separator: " · "))"
 
+        case .shot where shot.isShortGameShot:
+            var parts: [String] = [shot.shotType.map(Self.shotHistoryShotTypeLabel(for:)) ?? "Chip"]
+            if shot.distanceToTargetMeters > 0 {
+                parts.append("from \(distanceUnit.shortLabel(forMeters: shot.distanceToTargetMeters))")
+            }
+            if let result = shot.shortGameResult {
+                parts.append(Self.shotHistoryShortGameLabel(for: result))
+            } else if shot.holedOut == true {
+                parts.append("Holed")
+            }
+            if shot.penaltyCount > 0 {
+                parts.append("+\(shot.penaltyCount) penalty")
+            }
+            return parts.joined(separator: " • ")
+
         case .shot:
+            if shot.holedOut == true {
+                let ace = shot.strokeNumber == 1 && displayedHoleSession.par == 3
+                return "\(distanceUnit.shortLabel(forMeters: max(0, shot.distanceToTargetMeters))) • \(ace ? "Hole in one" : "Holed")"
+            }
             var parts: [String] = [
                 distanceUnit.shortLabel(forMeters: max(0, shot.distanceToTargetMeters)),
                 Self.shotHistoryDirectionLabel(for: shot.direction),
@@ -1455,7 +1523,8 @@ final class LiveRoundState: ObservableObject {
             return shot.note
         case .shot:
             var detail: [String] = []
-            if let shotType = shot.shotType {
+            // Short-game shots already lead with their type.
+            if let shotType = shot.shotType, !shot.isShortGameShot {
                 detail.append(Self.shotHistoryShotTypeLabel(for: shotType))
             }
             if let strike = shot.strikeResult {
@@ -1486,6 +1555,16 @@ final class LiveRoundState: ObservableObject {
         }
     }
 
+    static func shotHistoryShortGameLabel(for result: ShotEvent.ShortGameResult) -> String {
+        switch result {
+        case .holed: return "Holed"
+        case .tapIn: return "Tap-in left"
+        case .makeable: return "Makeable putt left"
+        case .longPutt: return "Long putt left"
+        case .missedGreen: return "Still off the green"
+        }
+    }
+
     private static func shotHistoryShotTypeLabel(for shotType: ShotEvent.ShotType) -> String {
         switch shotType {
         case .teeShot: return "Tee shot"
@@ -1497,6 +1576,7 @@ final class LiveRoundState: ObservableObject {
         case .pitch: return "Pitch"
         case .bunkerShot: return "Bunker shot"
         case .putt: return "Putt"
+        case .fringePutt: return "Putter from off the green"
         }
     }
 
@@ -1562,6 +1642,32 @@ final class LiveRoundState: ObservableObject {
     /// User-facing primary CTA copy. Adapts to the current context so the
     /// button feels like a verb, not a settings save.
     var pendingShotConfirmCTAText: String {
+        if let putts = pendingPuttsToHoleOut, canFinishHoleFromLogger {
+            let chips = effectiveChipsToHoleOut
+            if chips == 0 {
+                return putts == 1 ? "Hole out with 1 putt" : "Hole out with \(putts) putts"
+            }
+            let withThePutter = chips == 1 && (pendingShotType ?? inferredShortGameShotType) == .fringePutt
+                && currentShotLoggerContext == .shot
+            let chipText = withThePutter ? "1 from off the green" : (chips == 1 ? "1 chip" : "\(chips) chips")
+            if putts == 0 {
+                return chips == 1 ? "Holed it from off the green" : "Hole out: \(chipText), no putts"
+            }
+            let puttText = putts == 1 ? "1 putt" : "\(putts) putts"
+            return "Hole out: \(chipText) and \(puttText)"
+        }
+        if currentShotLoggerContext == .shot, isPendingShotShortGame, let result = pendingShortGameResult {
+            if result == .holed { return "Log it holed" }
+            switch pendingShotType ?? inferredShortGameShotType {
+            case .bunkerShot: return "Log bunker shot"
+            case .pitch: return "Log pitch"
+            case .fringePutt: return "Log putt from off the green"
+            default: return "Log chip"
+            }
+        }
+        if pendingShotHoled, currentShotLoggerContext != .putt {
+            return isPendingShotAceChance ? "Log a hole in one" : "Log it holed"
+        }
         switch currentShotLoggerContext {
         case .tee:
             return "Log tee shot"
@@ -1588,9 +1694,17 @@ final class LiveRoundState: ObservableObject {
         case .tee: return "Off the tee"
         case .fairway: return "From the fairway"
         case .rough: return "From the rough"
-        case .bunker: return "From the bunker"
+        case .bunker: return isPendingBunkerGreenside ? "From a greenside bunker" : "From a fairway bunker"
         case .green: return "On the green"
         }
+    }
+
+    /// Bunkers this close to the flag are greenside; further out, fairway bunkers.
+    static let greensideBunkerMaxMeters = 50
+
+    /// Whether the bunker lie is beside the green rather than out on the hole.
+    var isPendingBunkerGreenside: Bool {
+        pendingShotSurface == .bunker && pendingShotDistanceToPinMeters <= Self.greensideBunkerMaxMeters
     }
 
     /// Short descriptor explaining how the inferred lie was chosen — surfaces
@@ -1598,7 +1712,13 @@ final class LiveRoundState: ObservableObject {
     /// see at a glance whether it's high-confidence (GPS inside a feature
     /// polygon) or a phase fallback they may want to override.
     var pendingShotLieBannerSubtitle: String {
-        switch inferredShotSurfaceContext {
+        switch pendingShotSurfaceContext {
+        case .openingShot:
+            return "First shot of the hole"
+        case .atTheGreen:
+            return "You're at the green"
+        case .ballMark(_, let isMapped):
+            return isMapped ? "Where you marked the ball" : "Best guess from where you marked the ball — tap to override"
         case .mapped(let surface, _):
             switch surface {
             case .tee: return "GPS placed you on the teeing ground"
@@ -1749,8 +1869,51 @@ final class LiveRoundState: ObservableObject {
         isDisplayedHoleLive
     }
 
+    /// Marking the ball is offered once there's a ball in play to walk to:
+    /// after the tee shot is logged, or, when it hasn't been logged yet, once
+    /// the player has walked off the tee after it.
     var canMarkBallOnDisplayedHole: Bool {
-        canLogLiveShotOnDisplayedHole && !hole.isOpeningShot
+        guard canLogLiveShotOnDisplayedHole else { return false }
+        return !hole.isOpeningShot || hasLeftTheTee
+    }
+
+    /// How far from the tee counts as having played from it and walked on.
+    static let leftTheTeeMeters: CLLocationDistance = 40
+    /// A second mark this close to the last one corrects it; any further and
+    /// it's a new ball position, with a shot played in between.
+    static let remarkRadiusMeters: CLLocationDistance = 15
+
+    private var hasLeftTheTee: Bool {
+        guard let player = playerLocation?.coordinate.clLocationCoordinate2D else { return false }
+        return Self.meters(from: player, to: teeCoordinate) > Self.leftTheTeeMeters
+    }
+
+    private static func meters(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) -> CLLocationDistance {
+        CLLocation(latitude: start.latitude, longitude: start.longitude)
+            .distance(from: CLLocation(latitude: end.latitude, longitude: end.longitude))
+    }
+
+    /// The mark the next logged shot was played from: the oldest still waiting.
+    private var nextShotOriginMark: BallMarkState? {
+        earlierBallMarks.first ?? ballMarkState
+    }
+
+    /// Distance to the pin from where the shot being logged was played,
+    /// which isn't always where the player is standing when they log it.
+    var pendingShotDistanceToPinMeters: Int {
+        guard isDisplayedHoleLive else { return displayedPinDistanceMeters }
+        if hole.isOpeningShot {
+            // Logged on the tee, the live distance is the shot's. Logged
+            // further down the hole, it's the tee's.
+            guard hasLeftTheTee else { return displayedPinDistanceMeters }
+            let fromTee = Int(Self.meters(from: teeCoordinate, to: targetCoordinate).rounded())
+            return clampToHoleMaxReasonableDistance(fromTee)
+        }
+        if let mark = nextShotOriginMark {
+            let fromMark = Int(Self.meters(from: mark.coordinate.clLocationCoordinate2D, to: targetCoordinate).rounded())
+            return clampToHoleMaxReasonableDistance(fromMark)
+        }
+        return displayedPinDistanceMeters
     }
 
     /// Distance (in meters) the wheel is currently recommending against. We
@@ -1770,7 +1933,9 @@ final class LiveRoundState: ObservableObject {
     /// recommendation gesture.
     var isClubWheelInPutterMode: Bool {
         guard isClubAutoRecommendationEnabled else { return false }
-        if pendingShotSurface == .green { return true }
+        // The lie only says "green" once something's been hit on this hole;
+        // before that it can be left over from the last putt on the previous one.
+        if pendingShotSurface == .green, hole.strokeCount > 0 { return true }
         // Anything inside ~22 m is functionally a putt or a chip with the
         // putter for most amateurs; we use 22 to give a small buffer below
         // the shortest carry ring (25 m) so the threshold doesn't visually
@@ -1816,6 +1981,35 @@ final class LiveRoundState: ObservableObject {
             return lhs.signedGap > rhs.signedGap
         }
         return recommendation?.clubName
+    }
+
+    /// Every club the player can choose from, longest carry first: the bag
+    /// in auto mode, the full catalog plus custom clubs in manual mode.
+    /// Unlike the wheel, never trimmed to the current shot.
+    var allChoosableClubNames: [String] {
+        let names = isClubAutoRecommendationEnabled ? availableClubNames : clubWheelDisplayedClubNames
+        return names.sorted { displayCarryMeters(for: $0) > displayCarryMeters(for: $1) }
+    }
+
+    func carryMeters(forClub clubName: String) -> Int {
+        displayCarryMeters(for: clubName)
+    }
+
+    /// The club a hole starts with, chosen from the tee in both modes: the
+    /// longest full-swing club on a par 4 or 5, and on a par 3 the club whose
+    /// carry best matches the tee-to-green distance.
+    var teeClubForCurrentHole: String {
+        let fullSwing = availableClubNames.filter { !Self.isLikelyPutterCarryName($0) }
+        guard !fullSwing.isEmpty else { return selectedClubName }
+        if hole.par <= 3 {
+            let tee = teeCoordinate, green = targetCoordinate
+            let length = CLLocation(latitude: tee.latitude, longitude: tee.longitude)
+                .distance(from: CLLocation(latitude: green.latitude, longitude: green.longitude))
+            if let club = suggestedClubName(forMeters: Int(length.rounded())) {
+                return club
+            }
+        }
+        return fullSwing.max { displayCarryMeters(for: $0) < displayCarryMeters(for: $1) } ?? selectedClubName
     }
 
     /// The full-swing club whose carry best matches `meters`, using the same
@@ -1976,7 +2170,7 @@ final class LiveRoundState: ObservableObject {
         case .tee:
             return .init(latitude: teeCoordinate.latitude, longitude: teeCoordinate.longitude)
         case .ballMark:
-            return ballMarkState?.coordinate
+            return nextShotOriginMark?.coordinate
         case .currentLocationFallback:
             return playerLocation?.coordinate
         case nil:
@@ -2005,12 +2199,22 @@ final class LiveRoundState: ObservableObject {
         let hasClub = !pendingShotClubName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         guard hasClub, pendingShotStrokeNumber > 0 else { return false }
         switch currentShotLoggerContext {
-        case .tee, .shot:
+        case .tee:
+            return pendingShotDirection != nil && pendingShotDistance != nil
+        case .shot:
+            if let putts = pendingPuttsToHoleOut, isPendingShotShortGame {
+                return putts > 0 || pendingChipsToHoleOut > 0
+            }
+            if pendingShortGameResult != nil, isPendingShotShortGame {
+                return true
+            }
             return pendingShotDirection != nil && pendingShotDistance != nil
         case .putt:
-            // The user must explicitly choose holed-or-missed before we'll
-            // accept the putt — no silent default. Direction/distance fall
-            // out of that choice automatically in `confirmPendingShot`.
+            // Either the hole finished in one entry or, putt by putt, an
+            // explicit holed-or-missed. Never a silent default.
+            if let putts = pendingPuttsToHoleOut {
+                return putts > 0 || pendingChipsToHoleOut > 0
+            }
             return pendingShotPuttHoled != nil
         }
     }
@@ -2033,7 +2237,7 @@ final class LiveRoundState: ObservableObject {
     }
 
     var pendingShotDistanceLabel: String {
-        shortDistanceLabel(forMeters: displayedPinDistanceMeters)
+        shortDistanceLabel(forMeters: pendingShotDistanceToPinMeters)
     }
 
     var planningCarryDistanceMeters: Int {
@@ -2071,7 +2275,9 @@ final class LiveRoundState: ObservableObject {
     }
 
     var atBallActionTitle: String {
-        ballMarkStatus == .marked ? "Ball Marked" : "At Ball"
+        guard ballMarkStatus == .marked else { return "At Ball" }
+        // More than one mark means shots played but not logged yet.
+        return earlierBallMarks.isEmpty ? "Ball Marked" : "\(earlierBallMarks.count + 1) marks to log"
     }
 
     var holeInspectionEntries: [HoleInspectionEntry] {
@@ -2964,6 +3170,10 @@ final class LiveRoundState: ObservableObject {
     }
 
     var shotPhase: ShotPhase {
+        Self.shotPhase(distanceToPinMeters: distanceToPinMeters, strokeCount: hole.strokeCount)
+    }
+
+    static func shotPhase(distanceToPinMeters: Int, strokeCount: Int) -> ShotPhase {
         if distanceToPinMeters <= 30 {
             return .greenSide
         }
@@ -2972,7 +3182,7 @@ final class LiveRoundState: ObservableObject {
             return .scoring
         }
 
-        if hole.strokeCount == 0 && distanceToPinMeters > 110 {
+        if strokeCount == 0 && distanceToPinMeters > 110 {
             return .teeShot
         }
 
@@ -3102,6 +3312,7 @@ final class LiveRoundState: ObservableObject {
         playerLocation = snapshot.playerLocation ?? locationProvider.currentSnapshot
         refreshLivePinDistanceFromCurrentLocationIfPossible()
         ballMarkState = snapshot.ballMarkState
+        earlierBallMarks = snapshot.earlierBallMarks
         lastLoggedShotOriginCoordinate = snapshot.lastLoggedShotOriginCoordinate
         lastLoggedShotOriginSource = snapshot.lastLoggedShotOriginSource
         lastLoggedShotTargetCoordinate = snapshot.lastLoggedShotTargetCoordinate
@@ -3151,6 +3362,7 @@ final class LiveRoundState: ObservableObject {
                 guard entry.surface != .green, let surface = ShotEvent.Surface(rawValue: entry.surface.rawValue) else { return }
                 let shotCount = hole.shots.count
                 presentShotLogger()
+                setFinishingHole(false)
                 overridePendingShotClubName(entry.clubName)
                 selectShotSurface(surface)
                 if let direction = ShotEvent.DirectionResult(rawValue: entry.direction.rawValue) {
@@ -3174,6 +3386,7 @@ final class LiveRoundState: ObservableObject {
                 presentShotLogger()
                 overridePendingShotClubName(availableClubNames.first(where: Self.isLikelyPutterCarryName) ?? "Putter")
                 selectShotSurface(.green)
+                setFinishingHole(false)
                 setPendingShotPuttHoled(entry.holed)
                 if !entry.holed {
                     setPendingShotPuttMissOutcome(
@@ -3201,6 +3414,9 @@ final class LiveRoundState: ObservableObject {
             case .markBall:
                 guard canMarkBallOnDisplayedHole, playerLocation != nil else { return }
                 markBall()
+                // A second press a few steps from the last mark can't be asked
+                // about on the wrist; treat it as a better position, not a shot.
+                if isAskingAboutRemark { markBall(as: .correction) }
                 outcome = .applied
 
             case .undoLastShot:
@@ -3286,7 +3502,8 @@ final class LiveRoundState: ObservableObject {
         pendingShotStrokeNumber = max(1, hole.strokeCount + 1)
         pendingShotPenaltyCount = 0
         pendingShotDropCount = 0
-        pendingShotSurface = suggestedShotSurface
+        pendingShotSurface = pendingShotSurfaceContext.surface
+        pendingShotHoled = false
         pendingShotDirection = nil
         pendingShotDistance = nil
         pendingShotStrike = nil
@@ -3294,6 +3511,16 @@ final class LiveRoundState: ObservableObject {
         pendingShotPuttCount = nil
         pendingShotFirstPuttDistanceMeters = nil
         pendingShotPuttHoled = nil
+        pendingPuttsToHoleOut = nil
+        pendingShortGameResult = nil
+        hasChosenShotByShot = false
+        refreshFinishingHoleDefaults()
+        // Around the green, a club left selected from the approach is stale.
+        if isPendingShotShortGame,
+           let last = hole.shots.last, !last.isShortGameShot, last.shotType != .putt,
+           Self.canonicalClubName(last.clubName) == pendingShotClubName {
+            pendingShotClubName = Self.canonicalClubName(shortGameClubName)
+        }
         pendingShotPuttMissDirection = nil
         pendingShotPuttMissDistance = nil
         pendingShotPuttMissDistanceMeters = nil
@@ -3335,15 +3562,63 @@ final class LiveRoundState: ObservableObject {
     }
 
     func selectShotSurface(_ surface: ShotEvent.Surface) {
+        let contextBefore = currentShotLoggerContext
         pendingShotSurface = surface
+        if pendingShotHoled, !canPendingShotBeHoled {
+            setPendingShotHoled(false)
+        }
+        if currentShotLoggerContext != contextBefore {
+            refreshFinishingHoleDefaults()
+        } else if !canFinishHoleFromLogger {
+            isFinishingHole = false
+            pendingPuttsToHoleOut = nil
+        }
+        if !isPendingShotShortGame {
+            pendingShortGameResult = nil
+        }
     }
 
     func selectShotDirection(_ direction: ShotEvent.DirectionResult) {
+        pendingShotHoled = false
         pendingShotDirection = direction
     }
 
     func selectShotDistance(_ distance: ShotEvent.DistanceResult) {
+        pendingShotHoled = false
         pendingShotDistance = distance
+    }
+
+    /// Marks the full shot being logged as holed. It's recorded dead on line
+    /// and distance, and logging it offers to write the hole on the card.
+    func setPendingShotHoled(_ holed: Bool) {
+        pendingShotHoled = holed
+        if holed {
+            pendingShotDirection = .hit
+            pendingShotDistance = .onNumber
+        } else {
+            pendingShotDirection = nil
+            pendingShotDistance = nil
+        }
+    }
+
+    /// Whether the shot being logged would be a hole in one if it went in.
+    var isPendingShotAceChance: Bool {
+        hole.par == 3 && pendingShotStrokeNumber == 1
+    }
+
+    /// Where a full shot can be marked as holed: the first tee shot on a par 3
+    /// (a hole in one), or a shot from the fairway, rough or a greenside
+    /// bunker (a chip-in, holed approach or holed bunker shot). Not from other
+    /// tee shots, fairway bunkers or the green.
+    var canPendingShotBeHoled: Bool {
+        switch currentShotLoggerContext {
+        case .tee:
+            return isPendingShotAceChance
+        case .shot:
+            return pendingShotSurface == .fairway || pendingShotSurface == .rough || isPendingBunkerGreenside
+        case .putt:
+            return false
+        }
     }
 
     func selectShotStrike(_ strike: ShotEvent.StrikeResult) {
@@ -3355,7 +3630,14 @@ final class LiveRoundState: ObservableObject {
     }
 
     func overridePendingShotClubName(_ clubName: String) {
+        let hadPutter = Self.isLikelyPutterCarryName(pendingShotClubName)
         pendingShotClubName = Self.canonicalClubName(clubName)
+        // Swapping to or from the putter changes what kind of shot it is,
+        // so let that be read from the club again.
+        if hadPutter != Self.isLikelyPutterCarryName(pendingShotClubName) {
+            let isShortGameType = pendingShotType == .chip || pendingShotType == .pitch || pendingShotType == .fringePutt
+            if isShortGameType { pendingShotType = nil }
+        }
     }
 
     func setPendingShotStrokeNumber(_ strokeNumber: Int) {
@@ -3411,11 +3693,150 @@ final class LiveRoundState: ObservableObject {
     /// (since "holed" implies no miss to record).
     func setPendingShotPuttHoled(_ holed: Bool?) {
         pendingShotPuttHoled = holed
+        if holed != nil {
+            pendingPuttsToHoleOut = nil
+        }
         if holed == true {
             pendingShotPuttMissDirection = nil
             pendingShotPuttMissDistance = nil
             pendingShotPuttMissDistanceMeters = nil
         }
+    }
+
+    // MARK: Finishing the hole in one entry
+
+    /// Inside this distance of the flag and off the green, a shot is short game.
+    static let shortGameMaxMeters = 50
+    /// On the green, or this close to it, the logger opens on the green.
+    static let nearGreenMeters: CLLocationDistance = 10
+
+    /// A shot from close to the green but not on it: a chip, pitch or bunker shot.
+    var isPendingShotShortGame: Bool {
+        currentShotLoggerContext == .shot && pendingShotDistanceToPinMeters <= Self.shortGameMaxMeters
+    }
+
+    /// Whether the hole can be finished from here in one entry: on the
+    /// green, or a short-game shot away from it.
+    var canFinishHoleFromLogger: Bool {
+        switch currentShotLoggerContext {
+        case .tee: return false
+        case .shot: return isPendingShotShortGame
+        case .putt: return true
+        }
+    }
+
+    /// Chips counted in the entry. From off the green the shot being logged
+    /// is one of them, so there's always at least one.
+    var effectiveChipsToHoleOut: Int {
+        currentShotLoggerContext == .shot ? max(1, pendingChipsToHoleOut) : pendingChipsToHoleOut
+    }
+
+    /// Chip, pitch or bunker shot, read from the lie and the distance.
+    var inferredShortGameShotType: ShotEvent.ShotType {
+        if pendingShotSurface == .bunker { return .bunkerShot }
+        // The putter from the fringe is a shot around the green, not a putt.
+        if Self.isLikelyPutterCarryName(pendingShotClubName) { return .fringePutt }
+        return pendingShotDistanceToPinMeters < 20 ? .chip : .pitch
+    }
+
+    /// Choose what kind of shot around the green this is. Picking the
+    /// putter brings the putter with it, and leaving it puts a wedge back.
+    func setShortGameShotType(_ shotType: ShotEvent.ShotType) {
+        pendingShotType = shotType
+        let hasPutter = Self.isLikelyPutterCarryName(pendingShotClubName)
+        if shotType == .fringePutt, !hasPutter {
+            pendingShotClubName = Self.canonicalClubName(puttingClubName)
+        } else if shotType != .fringePutt, hasPutter {
+            pendingShotClubName = Self.canonicalClubName(shortGameClubName)
+        }
+    }
+
+    /// The club for a shot around the green: whatever was last chipped
+    /// with this round, otherwise the most lofted club in the bag.
+    var shortGameClubName: String {
+        let earlierShots = holeSessions.flatMap(\.shots)
+        let played = (earlierShots + hole.shots).reversed()
+        if let last = played.first(where: { $0.isShortGameShot && !Self.isLikelyPutterCarryName($0.clubName) }) {
+            return last.clubName
+        }
+        let fullSwing = availableClubNames.filter { !Self.isLikelyPutterCarryName($0) }
+        return fullSwing.min { displayCarryMeters(for: $0) < displayCarryMeters(for: $1) } ?? pendingShotClubName
+    }
+
+    /// Opens on "finish the hole" wherever that's possible, unless putts on
+    /// this green are already being logged one at a time.
+    private func refreshFinishingHoleDefaults() {
+        let context = currentShotLoggerContext
+        let alreadyPuttByPutt = context == .putt && displayedHolePuttCount > 0
+        isFinishingHole = canFinishHoleFromLogger && !hasChosenShotByShot && !alreadyPuttByPutt
+        pendingChipsToHoleOut = context == .shot ? 1 : 0
+        if !canFinishHoleFromLogger {
+            pendingPuttsToHoleOut = nil
+        }
+    }
+
+    /// Switch between finishing the hole in one entry and one shot at a time.
+    func setFinishingHole(_ finishing: Bool) {
+        if finishing, !canFinishHoleFromLogger { return }
+        hasChosenShotByShot = !finishing
+        isFinishingHole = finishing
+        if finishing {
+            pendingShortGameResult = nil
+            pendingShotPuttHoled = nil
+            pendingShotPuttMissDirection = nil
+            pendingShotPuttMissDistance = nil
+            pendingShotPuttMissDistanceMeters = nil
+        } else {
+            pendingPuttsToHoleOut = nil
+        }
+    }
+
+    /// Putts in the entry, the last of them holed. None at all means the
+    /// last chip went in. `nil` clears the choice.
+    func setPendingPuttsToHoleOut(_ putts: Int?) {
+        guard let putts else {
+            pendingPuttsToHoleOut = nil
+            return
+        }
+        pendingPuttsToHoleOut = min(max(0, putts), 10)
+        pendingShortGameResult = nil
+        pendingShotPuttHoled = nil
+        pendingShotPuttMissDirection = nil
+        pendingShotPuttMissDistance = nil
+        pendingShotPuttMissDistanceMeters = nil
+    }
+
+    /// Chips, pitches and bunker shots in the entry, before the putts.
+    func setPendingChipsToHoleOut(_ chips: Int) {
+        let minimum = currentShotLoggerContext == .shot ? 1 : 0
+        pendingChipsToHoleOut = min(max(minimum, chips), 9)
+        // No chips and no putts isn't a way to finish a hole.
+        if pendingChipsToHoleOut == 0, pendingPuttsToHoleOut == 0 {
+            pendingPuttsToHoleOut = nil
+        }
+    }
+
+    /// Where a single short-game shot finished. `nil` clears it.
+    func setPendingShortGameResult(_ result: ShotEvent.ShortGameResult?) {
+        pendingShortGameResult = result
+        if result != nil {
+            pendingPuttsToHoleOut = nil
+        }
+    }
+
+    /// Length of the first putt when it can be measured: from where the ball
+    /// was marked on the green. Logged after holing out with no mark, the
+    /// player is standing at the hole, so there's nothing to measure from.
+    var measuredFirstPuttDistanceMeters: Int? {
+        guard isDisplayedHoleLive, displayedHolePuttCount == 0, !hole.isOpeningShot else { return nil }
+        // Only a mark made on the green is the start of a putt.
+        guard currentShotLoggerContext == .putt, let mark = nextShotOriginMark else { return nil }
+        return Int(Self.meters(from: mark.coordinate.clLocationCoordinate2D, to: targetCoordinate).rounded())
+    }
+
+    /// The bag's putter, for putts logged while another club is selected.
+    private var puttingClubName: String {
+        availableClubNames.first(where: { Self.isLikelyPutterCarryName($0) }) ?? pendingShotClubName
     }
 
     func setPendingShotPuttMissDirection(_ direction: ShotEvent.DirectionResult?) {
@@ -3513,8 +3934,48 @@ final class LiveRoundState: ObservableObject {
         pendingHoleNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
     }
 
+    /// What a second mark means when the ball's already marked.
+    enum BallMarkIntent {
+        /// A shot has been played since: the ball is somewhere new, and the
+        /// earlier mark still belongs to the shot that hasn't been logged.
+        case newShot
+        /// Same ball, better position: move the mark.
+        case correction
+    }
+
+    /// Marks the ball where the player is standing. With a mark already
+    /// waiting, one well away is plainly the ball after another shot. One a
+    /// few steps away could be either that (a duffed chip) or a correction,
+    /// and GPS can't tell them apart, so the player is asked.
     func markBall() {
         guard canMarkBallOnDisplayedHole, let playerLocation else { return }
+        guard let existing = ballMarkState else {
+            placeBallMark(keepingExisting: false)
+            return
+        }
+        let moved = Self.meters(
+            from: existing.coordinate.clLocationCoordinate2D,
+            to: playerLocation.coordinate.clLocationCoordinate2D
+        )
+        if moved > Self.remarkRadiusMeters {
+            placeBallMark(keepingExisting: true)
+        } else {
+            isAskingAboutRemark = true
+        }
+    }
+
+    /// Answers the question `markBall()` asked.
+    func markBall(as intent: BallMarkIntent) {
+        isAskingAboutRemark = false
+        guard canMarkBallOnDisplayedHole, playerLocation != nil else { return }
+        placeBallMark(keepingExisting: intent == .newShot && ballMarkState != nil)
+    }
+
+    private func placeBallMark(keepingExisting: Bool) {
+        guard let playerLocation else { return }
+        if keepingExisting, let existing = ballMarkState {
+            earlierBallMarks.append(existing)
+        }
         ballMarkState = .init(
             coordinate: playerLocation.coordinate,
             headingDegrees: playerLocation.headingDegrees,
@@ -3524,6 +3985,34 @@ final class LiveRoundState: ObservableObject {
 
     func confirmPendingShot() {
         guard canConfirmPendingShot else { return }
+
+        if let putts = pendingPuttsToHoleOut, canFinishHoleFromLogger {
+            logFinishedHole(putts: putts)
+            closeShotLoggerAfterLogging()
+            return
+        }
+
+        if currentShotLoggerContext == .shot, isPendingShotShortGame, let result = pendingShortGameResult {
+            logShot(
+                clubName: pendingShotClubName,
+                distanceToTargetMeters: pendingShotDistanceToPinMeters,
+                strokeNumber: pendingShotStrokeNumber,
+                penaltyCount: pendingShotPenaltyCount,
+                dropCount: pendingShotDropCount,
+                surface: pendingShotSurface,
+                shotType: pendingShotType ?? inferredShortGameShotType,
+                strikeResult: pendingShotStrike,
+                holedOut: result == .holed,
+                shortGameResult: result,
+                note: pendingShotNote
+            )
+            if result == .holed {
+                seedPendingHoleSummaryFromDerivedValues()
+                isShowingHoleConfirmationPill = true
+            }
+            closeShotLoggerAfterLogging()
+            return
+        }
 
         switch currentShotLoggerContext {
         case .tee, .shot:
@@ -3544,7 +4033,7 @@ final class LiveRoundState: ObservableObject {
 
             logShot(
                 clubName: pendingShotClubName,
-                distanceToTargetMeters: displayedPinDistanceMeters,
+                distanceToTargetMeters: pendingShotDistanceToPinMeters,
                 strokeNumber: pendingShotStrokeNumber,
                 penaltyCount: pendingShotPenaltyCount,
                 dropCount: pendingShotDropCount,
@@ -3554,8 +4043,15 @@ final class LiveRoundState: ObservableObject {
                 shotType: pendingShotType,
                 strikeResult: pendingShotStrike,
                 puttDetail: puttDetail,
+                holedOut: pendingShotHoled,
                 note: pendingShotNote
             )
+
+            // Holed from off the green: the hole is over, as with a holed putt.
+            if pendingShotHoled {
+                seedPendingHoleSummaryFromDerivedValues()
+                isShowingHoleConfirmationPill = true
+            }
 
         case .putt:
             // Putt-context: holed/missed is a binary the user must pick. We
@@ -3583,7 +4079,7 @@ final class LiveRoundState: ObservableObject {
 
             let runningPuttCount = max(1, displayedHolePuttCount + 1)
             let firstPuttDistance = pendingShotFirstPuttDistanceMeters
-                ?? (runningPuttCount == 1 ? max(0, distanceToPinMeters) : nil)
+                ?? (runningPuttCount == 1 ? max(0, measuredFirstPuttDistanceMeters ?? distanceToPinMeters) : nil)
 
             let puttDetail = ShotEvent.PuttDetail(
                 puttCount: runningPuttCount,
@@ -3617,9 +4113,89 @@ final class LiveRoundState: ObservableObject {
             }
         }
 
+        closeShotLoggerAfterLogging()
+    }
+
+    private func closeShotLoggerAfterLogging() {
         distanceToPinMeters = max(0, distanceToPinMeters - 32)
         isShowingShotLogger = false
         shotLogConfirmationCount += 1
+    }
+
+    /// Logs the rest of the hole from one entry: the shots around the green,
+    /// then the putts, the last stroke holed.
+    private func logFinishedHole(putts: Int) {
+        let fromOffTheGreen = currentShotLoggerContext == .shot
+        let chips = effectiveChipsToHoleOut
+        // Read everything about the pending shot before logging changes it.
+        let firstChipSurface = pendingShotSurface
+        let firstChipType = pendingShotType ?? inferredShortGameShotType
+        let firstChipClub = fromOffTheGreen ? pendingShotClubName : shortGameClubName
+        let laterChipClub = shortGameClubName
+        let startDistance = pendingShotDistanceToPinMeters
+        let measuredFirstPutt = fromOffTheGreen ? nil : measuredFirstPuttDistanceMeters
+        let puttsAlreadyLogged = displayedHolePuttCount
+
+        var strokeNumber = pendingShotStrokeNumber
+        var logged = 0
+        var snapshotBeforeEntry: ShotUndoSnapshot?
+
+        for index in 0..<chips {
+            let isFirst = index == 0
+            let isLast = index == chips - 1
+            let wentIn = isLast && putts == 0
+            // Needing another chip means this one didn't reach the green.
+            let result: ShotEvent.ShortGameResult? = wentIn ? .holed : (isLast ? nil : .missedGreen)
+            let knowsTheLie = isFirst && fromOffTheGreen
+            logShot(
+                clubName: isFirst ? firstChipClub : laterChipClub,
+                distanceToTargetMeters: knowsTheLie ? startDistance : 0,
+                strokeNumber: strokeNumber,
+                penaltyCount: isFirst ? pendingShotPenaltyCount : 0,
+                dropCount: isFirst ? pendingShotDropCount : 0,
+                surface: knowsTheLie ? firstChipSurface : .rough,
+                shotType: knowsTheLie ? firstChipType : .chip,
+                holedOut: wentIn,
+                shortGameResult: result,
+                note: wentIn ? pendingShotNote : nil
+            )
+            if snapshotBeforeEntry == nil { snapshotBeforeEntry = lastShotUndoSnapshot }
+            strokeNumber += 1
+            logged += 1
+        }
+
+        if putts > 0 {
+            let firstPuttDistance: Int? = puttsAlreadyLogged == 0
+                ? (pendingShotFirstPuttDistanceMeters ?? measuredFirstPutt)
+                : nil
+            logShot(
+                clubName: puttingClubName,
+                distanceToTargetMeters: chips == 0 ? startDistance : 0,
+                strokeNumber: strokeNumber,
+                penaltyCount: chips == 0 ? pendingShotPenaltyCount : 0,
+                dropCount: chips == 0 ? pendingShotDropCount : 0,
+                surface: .green,
+                shotType: .putt,
+                strikeResult: chips == 0 ? pendingShotStrike : nil,
+                puttDetail: ShotEvent.PuttDetail(
+                    puttCount: puttsAlreadyLogged + putts,
+                    firstPuttDistanceMeters: firstPuttDistance,
+                    holed: true,
+                    puttsTogether: putts
+                ),
+                note: pendingShotNote
+            )
+            if snapshotBeforeEntry == nil { snapshotBeforeEntry = lastShotUndoSnapshot }
+            logged += 1
+        }
+
+        // One undo takes the whole entry back off.
+        if logged > 1, var snapshot = snapshotBeforeEntry {
+            snapshot.shotCount = logged
+            lastShotUndoSnapshot = snapshot
+        }
+        seedPendingHoleSummaryFromDerivedValues()
+        isShowingHoleConfirmationPill = true
     }
 
     /// Populate the `pendingHole*` state from entered values or the per-shot
@@ -3690,13 +4266,15 @@ final class LiveRoundState: ObservableObject {
         guard canUndoLastShot,
               let snapshot = lastShotUndoSnapshot,
               let removed = hole.shots.last else { return nil }
-        hole.shots.removeLast()
+        // An entry that finished the hole comes off as one.
+        hole.shots.removeLast(min(max(1, snapshot.shotCount), hole.shots.count))
         distanceToPinMeters = snapshot.previousDistanceToPinMeters
         lastLoggedShotOriginCoordinate = snapshot.previousLastLoggedShotOriginCoordinate
         lastLoggedShotOriginSource = snapshot.previousLastLoggedShotOriginSource
         lastLoggedShotTargetCoordinate = snapshot.previousLastLoggedShotTargetCoordinate
         lastLoggedShotTargetLabel = snapshot.previousLastLoggedShotTargetLabel
         ballMarkState = snapshot.previousBallMarkState
+        earlierBallMarks = snapshot.previousEarlierBallMarks
         ballMarkSuggestionBaselineCoordinate = snapshot.previousBallMarkSuggestionBaselineCoordinate
         storedReviewPlayers = snapshot.previousReviewPlayers
 
@@ -3812,6 +4390,8 @@ final class LiveRoundState: ObservableObject {
         shotType: ShotEvent.ShotType? = nil,
         strikeResult: ShotEvent.StrikeResult? = nil,
         puttDetail: ShotEvent.PuttDetail? = nil,
+        holedOut: Bool = false,
+        shortGameResult: ShotEvent.ShortGameResult? = nil,
         note: String? = nil
     ) {
         // Capture the pre-shot snapshot so a single-level undo can
@@ -3824,6 +4404,7 @@ final class LiveRoundState: ObservableObject {
             previousLastLoggedShotTargetCoordinate: lastLoggedShotTargetCoordinate,
             previousLastLoggedShotTargetLabel: lastLoggedShotTargetLabel,
             previousBallMarkState: ballMarkState,
+            previousEarlierBallMarks: earlierBallMarks,
             previousBallMarkSuggestionBaselineCoordinate: ballMarkSuggestionBaselineCoordinate,
             previousReviewPlayers: reviewPlayers
         )
@@ -3852,6 +4433,8 @@ final class LiveRoundState: ObservableObject {
             shotType: shotType,
             strikeResult: strikeResult,
             puttDetail: puttDetail,
+            holedOut: holedOut,
+            shortGameResult: shortGameResult,
             note: note
         ))
 
@@ -4079,8 +4662,12 @@ final class LiveRoundState: ObservableObject {
     }
 
     private func clearBallMarkIfNeededAfterLogging(used originSource: ShotOriginSource?) {
-        if originSource == .ballMark {
+        guard originSource == .ballMark else { return }
+        // The shot used the oldest waiting mark; later marks are later balls.
+        if earlierBallMarks.isEmpty {
             ballMarkState = nil
+        } else {
+            earlierBallMarks.removeFirst()
         }
     }
 
@@ -4211,10 +4798,15 @@ final class LiveRoundState: ObservableObject {
         displayedHoleIndex = nextIndex
         hole = holeSessions[nextIndex]
         distanceToPinMeters = 152
-        selectedClubName = "7i"
+        // A new hole starts on the tee, with the club for the tee shot, not
+        // whatever lie or club finished the last hole.
+        pendingShotSurface = .tee
+        selectedClubName = Self.canonicalClubName(teeClubForCurrentHole)
         isShowingClubWheel = false
         launcherDetent = .collapsed
         ballMarkState = nil
+        earlierBallMarks = []
+        isAskingAboutRemark = false
         ballMarkSuggestionBaselineCoordinate = nil
         lastLoggedShotOriginCoordinate = nil
         lastLoggedShotOriginSource = nil
@@ -4280,22 +4872,117 @@ final class LiveRoundState: ObservableObject {
     private enum ShotSurfaceContext {
         case mapped(surface: ShotEvent.Surface, featureLabel: String)
         case phaseFallback(surface: ShotEvent.Surface, phase: ShotPhase)
+        /// The first shot of a hole is from the tee wherever it's logged from.
+        case openingShot
+        /// Read at the place the ball was marked, not where the player is now.
+        case ballMark(surface: ShotEvent.Surface, isMapped: Bool)
+        /// Standing on the green or right beside it: most likely logging
+        /// after holing out, so the logger opens on the green.
+        case atTheGreen
 
         var surface: ShotEvent.Surface {
             switch self {
-            case .mapped(let surface, _), .phaseFallback(let surface, _):
+            case .mapped(let surface, _), .phaseFallback(let surface, _), .ballMark(let surface, _):
                 return surface
+            case .openingShot:
+                return .tee
+            case .atTheGreen:
+                return .green
             }
         }
     }
 
+    /// The lie under the player's feet right now.
     private var inferredShotSurfaceContext: ShotSurfaceContext {
-        let coordinate = playerCoordinate
+        surfaceContext(at: playerCoordinate, phase: shotPhase)
+    }
+
+    /// The lie the shot about to be logged was played from. A shot is often
+    /// logged after it's hit (at the ball, having marked it), so this reads
+    /// the place it was played from: the tee for the first shot, then the
+    /// oldest mark still waiting, and only then where the player stands.
+    private var pendingShotSurfaceContext: ShotSurfaceContext {
+        if hole.isOpeningShot {
+            return .openingShot
+        }
+        if let mark = nextShotOriginMark {
+            let coordinate = mark.coordinate.clLocationCoordinate2D
+            let toPin = Int(Self.meters(from: coordinate, to: targetCoordinate).rounded())
+            let phase = Self.shotPhase(distanceToPinMeters: toPin, strokeCount: hole.strokeCount)
+            switch surfaceContext(at: coordinate, phase: phase) {
+            case .mapped(let surface, _):
+                return .ballMark(surface: surface, isMapped: true)
+            case .phaseFallback(let surface, _):
+                return .ballMark(surface: surface, isMapped: false)
+            case .openingShot, .ballMark, .atTheGreen:
+                return .ballMark(surface: .fairway, isMapped: false)
+            }
+        }
+        let underfoot = inferredShotSurfaceContext
+        // In a bunker is in a bunker, however close to the green it is.
+        if case .mapped(let surface, _) = underfoot, surface == .bunker || surface == .green {
+            return underfoot
+        }
+        if let player = playerLocation?.coordinate.clLocationCoordinate2D,
+           metersFromGreen(player) <= Self.nearGreenMeters {
+            return .atTheGreen
+        }
+        return underfoot
+    }
+
+    /// Distance from a point to the green: to the edge of its outline when
+    /// the green is mapped (nothing, if the point is on it), otherwise to its
+    /// centre. The app knows the green, not where the flag is cut on it.
+    private func metersFromGreen(_ point: CLLocationCoordinate2D) -> CLLocationDistance {
+        let greens = currentHoleFeatures.filter { $0.kind == .green && $0.coordinates.count >= 3 }
+        guard !greens.isEmpty else {
+            return Self.meters(from: point, to: targetCoordinate)
+        }
+        var nearest = CLLocationDistance.greatestFiniteMagnitude
+        for green in greens {
+            if Self.featureContainsCoordinate(green, coordinate: point) { return 0 }
+            nearest = min(nearest, Self.metersToOutline(of: green.coordinates, from: point))
+        }
+        return nearest
+    }
+
+    private static func metersToOutline(of outline: [SwingPalCourse.Coordinate], from point: CLLocationCoordinate2D) -> CLLocationDistance {
+        let metersPerDegreeLatitude: Double = 110_540
+        let metersPerDegreeLongitude: Double = 111_320 * cos(point.latitude * Double.pi / 180)
+        var nearest = CLLocationDistance.greatestFiniteMagnitude
+        for index in outline.indices {
+            let start = outline[index]
+            let end = outline[(index + 1) % outline.count]
+            // Local flat coordinates in metres, with the point at the origin.
+            let startX: Double = (start.longitude - point.longitude) * metersPerDegreeLongitude
+            let startY: Double = (start.latitude - point.latitude) * metersPerDegreeLatitude
+            let endX: Double = (end.longitude - point.longitude) * metersPerDegreeLongitude
+            let endY: Double = (end.latitude - point.latitude) * metersPerDegreeLatitude
+            let edgeX: Double = endX - startX
+            let edgeY: Double = endY - startY
+            let edgeLengthSquared: Double = edgeX * edgeX + edgeY * edgeY
+            var along: Double = 0
+            if edgeLengthSquared > 0 {
+                let projection: Double = -(startX * edgeX + startY * edgeY) / edgeLengthSquared
+                along = min(max(projection, 0), 1)
+            }
+            let closestX: Double = startX + along * edgeX
+            let closestY: Double = startY + along * edgeY
+            let distance: Double = (closestX * closestX + closestY * closestY).squareRoot()
+            nearest = min(nearest, distance)
+        }
+        return nearest
+    }
+
+    private func surfaceContext(at coordinate: CLLocationCoordinate2D, phase: ShotPhase) -> ShotSurfaceContext {
         let prioritizedKinds: [SwingPalCourse.Hole.FeatureKind] = [.tee, .bunker, .green, .fairway]
 
         for kind in prioritizedKinds {
-            guard let feature = currentHoleFeatures.first(where: { $0.kind == kind }) else { continue }
-            guard Self.featureContainsCoordinate(feature, coordinate: coordinate) else { continue }
+            // Any feature of the kind counts: a hole has several bunkers, and
+            // often more than one piece of fairway.
+            guard let feature = currentHoleFeatures.first(where: {
+                $0.kind == kind && Self.featureContainsCoordinate($0, coordinate: coordinate)
+            }) else { continue }
 
             switch kind {
             case .tee:
@@ -4311,7 +4998,13 @@ final class LiveRoundState: ObservableObject {
             }
         }
 
-        switch shotPhase {
+        // On a hole whose fairway is mapped, being on none of the mapped
+        // surfaces means the rough, not a guess at fairway.
+        if phase != .teeShot, currentHoleFeatures.contains(where: { $0.kind == .fairway }) {
+            return .mapped(surface: .rough, featureLabel: "Rough")
+        }
+
+        switch phase {
         case .teeShot:
             return .phaseFallback(surface: .tee, phase: .teeShot)
         case .greenSide:

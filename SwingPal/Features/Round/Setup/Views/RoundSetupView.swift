@@ -104,8 +104,14 @@ struct RoundSetupView: View {
                 }
                 .onChange(of: state.selectedTeeName, initial: false) { _, newValue in
                     guard newValue != nil else { return }
-                    withAnimation(reduceMotion ? nil : .snappy(duration: 0.35)) {
-                        proxy.scrollTo(playerSectionID, anchor: .top)
+                    // The players section only joins the page in this same
+                    // update, so wait a beat for it to exist, then bring the
+                    // whole of it (including the add buttons) above Tee off.
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(80))
+                        withAnimation(reduceMotion ? nil : .snappy(duration: 0.35)) {
+                            proxy.scrollTo(playerSectionID, anchor: .bottom)
+                        }
                     }
                 }
             }

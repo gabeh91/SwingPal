@@ -98,7 +98,7 @@ struct FreshLiveRoundHoleConfirmationSheet: View {
         let options: [(String, Int)] = [("Eagle", -2), ("Birdie", -1), ("Par", 0), ("Bogey", 1), ("Double", 2), ("Triple", 3)]
         return ScrollView(.horizontal) {
             HStack(spacing: 8) {
-                ForEach(options.filter { par + $0.1 >= 1 }, id: \.0) { option in
+                ForEach(options.filter { par + $0.1 >= 1 }.map { par + $0.1 == 1 ? ("Ace", $0.1) : $0 }, id: \.0) { option in
                     let value = par + option.1
                     let selected = value == score
                     Button { state.setPendingHoleScore(value) } label: {

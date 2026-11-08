@@ -39,6 +39,8 @@ struct AuthFlowView: View {
                                 buttonTitle: "Back to sign in",
                                 buttonAction: { viewModel.goTo(.email(.signIn)) }
                             )
+                        case .confirmEmail(let email):
+                            confirmEmailStep(email: email)
                         }
                     }
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -94,6 +96,7 @@ struct AuthFlowView: View {
         case .forgotPassword: return "Reset your password"
         case .magicLinkSent: return "Almost there"
         case .passwordResetSent: return "Check your email"
+        case .confirmEmail: return "Confirm your email"
         }
     }
 
@@ -111,6 +114,8 @@ struct AuthFlowView: View {
             return "Enter your account email and we'll send a reset link."
         case .magicLinkSent, .passwordResetSent:
             return "You can close this screen and tap the link from your inbox."
+        case .confirmEmail:
+            return "One more step and your account is ready."
         }
     }
 
@@ -119,9 +124,11 @@ struct AuthFlowView: View {
     private var entryStep: some View {
         cardContainer {
             VStack(spacing: 10) {
-                appleButton
-                googleButton
-                divider
+                if AuthViewModel.showsSocialSignIn {
+                    appleButton
+                    googleButton
+                    divider
+                }
                 primaryButton(
                     title: "Sign in with email",
                     systemImage: "envelope.fill",
@@ -153,7 +160,7 @@ struct AuthFlowView: View {
             .allowsHitTesting(false)
             .overlay {
                 Button {
-                    Task { await viewModel.signInWithApple() }
+                    viewModel.launch { await $0.signInWithApple() }
                 } label: {
                     Color.clear
                 }
@@ -166,7 +173,7 @@ struct AuthFlowView: View {
 
     private var googleButton: some View {
         Button {
-            Task { await viewModel.signInWithGoogle() }
+            viewModel.launch { await $0.signInWithGoogle() }
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "g.circle.fill")
@@ -220,7 +227,7 @@ struct AuthFlowView: View {
                     isLoading: viewModel.isBusy,
                     isEnabled: viewModel.canSubmitEmail
                 ) {
-                    Task { await viewModel.submitEmail() }
+                    viewModel.launch { await $0.submitEmail() }
                 }
 
                 if mode == .signIn {
@@ -261,7 +268,7 @@ struct AuthFlowView: View {
                     isLoading: viewModel.isBusy,
                     isEnabled: viewModel.canSubmitMagicLink
                 ) {
-                    Task { await viewModel.submitMagicLink() }
+                    viewModel.launch { await $0.submitMagicLink() }
                 }
                 Button("Back") { viewModel.goTo(.entry) }
                     .font(.subheadline.weight(.medium))
@@ -289,7 +296,7 @@ struct AuthFlowView: View {
                     isLoading: viewModel.isBusy,
                     isEnabled: viewModel.canSubmitForgotPassword
                 ) {
-                    Task { await viewModel.submitForgotPassword() }
+                    viewModel.launch { await $0.submitForgotPassword() }
                 }
                 Button("Back") { viewModel.goTo(.email(.signIn)) }
                     .font(.subheadline.weight(.medium))
@@ -323,6 +330,48 @@ struct AuthFlowView: View {
                     style: .secondary,
                     action: buttonAction
                 )
+            }
+        }
+    }
+
+    // MARK: - Confirm email
+
+    private func confirmEmailStep(email: String) -> some View {
+        cardContainer {
+            VStack(alignment: .leading, spacing: 14) {
+                Image(systemName: "envelope.badge")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(Book.stamp)
+                Text("We sent a link to **\(email)**. Tap it on this phone and you'll be signed in. If you open it somewhere else, come back here afterwards.")
+                    .font(.subheadline)
+                    .foregroundStyle(Book.pencil)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                primaryButton(
+                    title: "I've confirmed, sign me in",
+                    systemImage: nil,
+                    style: .primary,
+                    isLoading: viewModel.isBusy
+                ) {
+                    viewModel.launch { await $0.signInAfterConfirming() }
+                }
+                primaryButton(
+                    title: "Send the email again",
+                    systemImage: "arrow.clockwise",
+                    style: .secondary,
+                    isEnabled: !viewModel.isBusy
+                ) {
+                    viewModel.launch { await $0.resendConfirmation() }
+                }
+                if let notice = viewModel.noticeMessage {
+                    Text(notice)
+                        .font(.footnote)
+                        .foregroundStyle(Book.pencil)
+                }
+                Button("Use a different email") { viewModel.goTo(.email(.signUp)) }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Book.stamp)
+                    .frame(maxWidth: .infinity)
             }
         }
     }

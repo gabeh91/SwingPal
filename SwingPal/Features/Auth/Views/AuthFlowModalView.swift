@@ -19,7 +19,10 @@ struct AuthFlowModalView: View {
         ZStack(alignment: .topLeading) {
             AuthFlowView(viewModel: viewModel)
 
-            Button(action: onDismiss) {
+            Button {
+                viewModel.cancelInFlight()
+                onDismiss()
+            } label: {
                 Image(systemName: "xmark")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(Book.ink)
@@ -36,5 +39,7 @@ struct AuthFlowModalView: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+        // Swiping the sheet away closes it too; don't leave a request running.
+        .onDisappear { viewModel.cancelInFlight() }
     }
 }

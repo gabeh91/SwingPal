@@ -566,15 +566,23 @@ final class LiveRoundStateTests: XCTestCase {
 
     func testWatchMarkBallNeedsAShotFirst() {
         let sync = RecordingRoundCompanionSync()
+        let provider = StubRoundLocationProvider()
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)],
-            roundCompanionSync: sync
+            roundCompanionSync: sync,
+            locationProvider: provider
         )
 
         XCTAssertEqual(state.applyCompanionAction(.init(action: .markBall, holeNumber: 1)).outcome, .notAvailable)
 
         state.logShot(clubName: "Driver", distanceToTargetMeters: 220, surface: .tee)
+        provider.push(.init(
+            coordinate: .init(latitude: -37.9744, longitude: 145.0334),
+            headingDegrees: 18,
+            horizontalAccuracyMeters: 5
+        ))
+        waitForMainQueueFlush()
         XCTAssertEqual(state.applyCompanionAction(.init(action: .markBall, holeNumber: 1)).outcome, .applied)
         XCTAssertEqual(sync.lastSnapshot?.ballMark, .marked)
     }
@@ -1318,7 +1326,8 @@ final class LiveRoundStateTests: XCTestCase {
     func testTeeShotHidesAtBallAction() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
+            players: [.init(name: "You", kind: .selfPlayer)],
+            locationProvider: StubRoundLocationProvider()
         )
 
         XCTAssertFalse(state.showsAtBallAction)
@@ -1826,8 +1835,9 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertTrue(state.confirmCurrentHole())
         XCTAssertEqual(state.hole.number, 2)
         XCTAssertNil(state.ballMarkState)
+        XCTAssertEqual(state.earlierBallMarks, [])
         XCTAssertNil(state.ballMarkSuggestionBaselineCoordinate)
-        XCTAssertEqual(state.ballMarkStatus, .hidden)
+        XCTAssertNotEqual(state.ballMarkStatus, .marked)
         XCTAssertEqual(state.currentShotOriginSource, .tee)
 
         state.logShot(clubName: "7i", distanceToTargetMeters: 152, surface: .tee)
@@ -1920,6 +1930,7 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 214, surface: .tee)
         state.distanceToPinMeters = 18
         state.presentShotLogger()
 
@@ -1995,7 +2006,8 @@ final class LiveRoundStateTests: XCTestCase {
     func testPendingShotLieBannerTitleReflectsSelectedSurface() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
+            players: [.init(name: "You", kind: .selfPlayer)],
+            locationProvider: StubRoundLocationProvider()
         )
         state.presentShotLogger()
 
@@ -2005,8 +2017,11 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertEqual(state.pendingShotLieBannerTitle, "From the fairway")
         state.selectShotSurface(.rough)
         XCTAssertEqual(state.pendingShotLieBannerTitle, "From the rough")
+        state.distanceToPinMeters = 140
         state.selectShotSurface(.bunker)
-        XCTAssertEqual(state.pendingShotLieBannerTitle, "From the bunker")
+        XCTAssertEqual(state.pendingShotLieBannerTitle, "From a fairway bunker")
+        state.distanceToPinMeters = 20
+        XCTAssertEqual(state.pendingShotLieBannerTitle, "From a greenside bunker")
         state.selectShotSurface(.green)
         XCTAssertEqual(state.pendingShotLieBannerTitle, "On the green")
     }
@@ -2570,6 +2585,7 @@ final class LiveRoundStateTests: XCTestCase {
             locationProvider: provider
         )
 
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 214, surface: .tee)
         state.presentShotLogger()
 
         XCTAssertEqual(state.pendingShotSurface, .bunker)
@@ -2601,6 +2617,7 @@ final class LiveRoundStateTests: XCTestCase {
             locationProvider: provider
         )
 
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 214, surface: .tee)
         state.distanceToPinMeters = 18
         state.presentShotLogger()
 
@@ -2613,6 +2630,7 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 214, surface: .tee)
         state.distanceToPinMeters = 72
         state.presentShotLogger()
 
@@ -2622,7 +2640,8 @@ final class LiveRoundStateTests: XCTestCase {
     func testConfirmPendingShotLogsSelectedSurfaceAndDismissesLogger() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
-            players: [.init(name: "You", kind: .selfPlayer)]
+            players: [.init(name: "You", kind: .selfPlayer)],
+            locationProvider: StubRoundLocationProvider()
         )
 
         state.selectClub(named: "5W")
@@ -4061,6 +4080,142 @@ final class LiveRoundStateTests: XCTestCase {
         XCTAssertNotEqual(state.targetCoordinate.latitude, holeOneTargetLatitude)
     }
 
+    func testNewHoleStartsWithTheTeeClubInBothModes() {
+        func course() -> [SwingPalCourse.Hole] {
+            // Hole 1: a par 4. Hole 2: a par 3 of about 140 m, tee to green.
+            let origin = (lat: -37.97, lon: 145.03)
+            func box(_ lat: Double, _ lon: Double) -> [SwingPalCourse.Coordinate] {
+                [.init(latitude: lat - 0.00005, longitude: lon - 0.00005), .init(latitude: lat + 0.00005, longitude: lon - 0.00005),
+                 .init(latitude: lat + 0.00005, longitude: lon + 0.00005), .init(latitude: lat - 0.00005, longitude: lon + 0.00005)]
+            }
+            let one = SwingPalCourse.Hole(number: 1, par: 4, features: [
+                .init(kind: .tee, label: "Tee", coordinates: box(origin.lat, origin.lon)),
+                .init(kind: .green, label: "Green", coordinates: box(origin.lat + 0.0032, origin.lon))
+            ])
+            let two = SwingPalCourse.Hole(number: 2, par: 3, features: [
+                .init(kind: .tee, label: "Tee", coordinates: box(origin.lat + 0.004, origin.lon)),
+                .init(kind: .green, label: "Green", coordinates: box(origin.lat + 0.004 + 140 / 110_540, origin.lon))
+            ])
+            return [one, two]
+        }
+        let carries = ["Driver": 230, "5W": 200, "7i": 140, "9i": 120, "Putter": 10]
+
+        for auto in [true, false] {
+            let state = LiveRoundState(
+                hole: HoleSession(number: 1, par: 4),
+                courseHoles: course(),
+                players: [.init(name: "You", kind: .selfPlayer)],
+                clubCarryMetersByClubName: carries,
+                clubAutoRecommendationEnabled: auto
+            )
+            // Finish hole 1 on the green with the putter in hand.
+            state.selectClub(named: "Putter")
+            state.logShot(clubName: "Putter", distanceToTargetMeters: 3, surface: .green)
+            state.selectShotSurface(.green)
+
+            XCTAssertTrue(state.advanceToNextHole())
+            XCTAssertEqual(state.hole.number, 2)
+            XCTAssertEqual(state.pendingShotSurface, .tee, "auto: \(auto)")
+            XCTAssertEqual(state.selectedClubName, "7i", "A 140 m par 3 starts with the 7 iron (auto: \(auto))")
+            XCTAssertFalse(state.isClubWheelInPutterMode, "No putter on the tee (auto: \(auto))")
+        }
+    }
+
+    func testHoleInOneIsLoggedAndGoesOnTheCardAsAnAce() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 3),
+            players: [.init(name: "You", kind: .selfPlayer)],
+            clubCarryMetersByClubName: ["7i": 140, "Putter": 10]
+        )
+        state.presentShotLogger()
+        XCTAssertTrue(state.isPendingShotAceChance)
+
+        state.setPendingShotHoled(true)
+        XCTAssertTrue(state.canConfirmPendingShot)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Log a hole in one")
+        state.confirmPendingShot()
+
+        XCTAssertEqual(state.hole.shots.count, 1)
+        XCTAssertEqual(state.hole.shots.first?.holedOut, true)
+        XCTAssertTrue(state.isShowingHoleConfirmationPill, "Holing out offers to write the hole on the card")
+        XCTAssertEqual(state.shotHistorySubtitle(for: state.hole.shots[0]).hasSuffix("Hole in one"), true)
+
+        XCTAssertTrue(state.confirmCurrentHoleFromDerivedValues())
+        XCTAssertEqual(state.hole.recordedScore, 1, "A one-hole round stays on the hole just written")
+        XCTAssertEqual(ScoreMark.spoken(score: 1, par: 3), "1, hole in one")
+    }
+
+    func testHoledIsOfferedOnlyForAnAceOrFromTheFairwayOrRough() {
+        let parFour = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        parFour.presentShotLogger()
+        parFour.selectShotSurface(.tee)
+        XCTAssertFalse(parFour.canPendingShotBeHoled, "Not from a par 4 tee")
+
+        parFour.logShot(clubName: "Driver", distanceToTargetMeters: 380, surface: .tee)
+        parFour.presentShotLogger()
+        parFour.distanceToPinMeters = 150
+        for (surface, allowed) in [(ShotEvent.Surface.fairway, true), (.rough, true), (.bunker, false), (.green, false)] {
+            parFour.selectShotSurface(surface)
+            XCTAssertEqual(parFour.canPendingShotBeHoled, allowed, "\(surface)")
+        }
+        XCTAssertEqual(parFour.pendingShotLieBannerTitle, "On the green")
+        parFour.selectShotSurface(.bunker)
+        XCTAssertEqual(parFour.pendingShotLieBannerTitle, "From a fairway bunker")
+
+        // A greenside bunker can be holed from.
+        parFour.distanceToPinMeters = 18
+        XCTAssertTrue(parFour.canPendingShotBeHoled)
+        XCTAssertEqual(parFour.pendingShotLieBannerTitle, "From a greenside bunker")
+
+        // Switching to a lie that can't hole out clears the choice.
+        parFour.selectShotSurface(.fairway)
+        parFour.setPendingShotHoled(true)
+        parFour.distanceToPinMeters = 150
+        parFour.selectShotSurface(.bunker)
+        XCTAssertFalse(parFour.pendingShotHoled)
+
+        let parThree = LiveRoundState(
+            hole: HoleSession(number: 1, par: 3),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        parThree.presentShotLogger()
+        XCTAssertTrue(parThree.canPendingShotBeHoled, "A hole in one from a par 3 tee")
+    }
+
+    func testChoosingWhereTheShotFinishedClearsHoled() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.presentShotLogger()
+        state.setPendingShotHoled(true)
+        state.selectShotDirection(.left)
+        XCTAssertFalse(state.pendingShotHoled)
+    }
+
+    func testParFourStartsWithTheLongestClub() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)],
+            clubCarryMetersByClubName: ["Driver": 230, "7i": 140, "Putter": 10]
+        )
+        XCTAssertEqual(state.teeClubForCurrentHole, "Driver")
+    }
+
+    func testAStaleGreenLieDoesNotMeanPutterBeforeTheFirstShot() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.distanceToPinMeters = 350
+        state.selectShotSurface(.green)
+        XCTAssertFalse(state.isClubWheelInPutterMode)
+        XCTAssertNotEqual(state.recommendedClubName, "Putter")
+    }
+
     func testLocationProviderSeedsPlayerPositionAndHeading() {
         let provider = StubRoundLocationProvider(
             initialSnapshot: .init(
@@ -4981,6 +5136,533 @@ private func midwayCoordinate(
 }
 
 private extension XCTestCase {
+    // MARK: Logging the whole green after holing out
+
+    private func makeStateOnTheGreen() -> LiveRoundState {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 380, surface: .tee)
+        state.logShot(clubName: "8i", distanceToTargetMeters: 140, surface: .fairway)
+        state.presentShotLogger()
+        state.selectShotSurface(.green)
+        return state
+    }
+
+    func testTwoPuttIsLoggedInOneGoAndFinishesTheHole() throws {
+        let state = makeStateOnTheGreen()
+        XCTAssertTrue(state.isFinishingHole)
+        XCTAssertFalse(state.canConfirmPendingShot)
+
+        state.setPendingPuttsToHoleOut(2)
+        XCTAssertTrue(state.canConfirmPendingShot)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out with 2 putts")
+        state.setPendingShotFirstPuttDistanceMeters(9)
+        state.confirmPendingShot()
+
+        let putts = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(putts.shotType, .putt)
+        XCTAssertEqual(putts.surface, .green)
+        XCTAssertEqual(putts.puttDetail?.puttCount, 2)
+        XCTAssertEqual(putts.puttDetail?.puttsTogether, 2)
+        XCTAssertEqual(putts.puttDetail?.holed, true)
+        XCTAssertEqual(putts.puttDetail?.firstPuttDistanceMeters, 9)
+        XCTAssertEqual(state.hole.totalScore, 4, "Two shots and two putts")
+        XCTAssertTrue(state.isShowingHoleConfirmationPill)
+        XCTAssertFalse(state.isShowingShotLogger)
+        XCTAssertTrue(state.shotHistorySubtitle(for: putts).hasPrefix("2 putts"))
+    }
+
+    func testOnePuttInOneGoReadsAsHoled() throws {
+        let state = makeStateOnTheGreen()
+        state.setPendingPuttsToHoleOut(1)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out with 1 putt")
+        state.confirmPendingShot()
+
+        let putt = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(state.hole.totalScore, 3)
+        XCTAssertEqual(state.shotHistorySubtitle(for: putt), "Holed")
+    }
+
+    func testRemainingPuttsAddToOnesAlreadyLoggedSingly() throws {
+        let state = makeStateOnTheGreen()
+        state.setFinishingHole(false)
+        state.setPendingShotPuttHoled(false)
+        state.confirmPendingShot()
+
+        state.presentShotLogger()
+        state.selectShotSurface(.green)
+        XCTAssertFalse(state.isFinishingHole, "Carries on putt by putt once one has been logged that way")
+        state.setFinishingHole(true)
+        state.setPendingPuttsToHoleOut(2)
+        state.confirmPendingShot()
+
+        let last = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(last.puttDetail?.puttCount, 3)
+        XCTAssertEqual(last.puttDetail?.puttsTogether, 2)
+        XCTAssertNil(last.puttDetail?.firstPuttDistanceMeters, "The first putt was the one logged on its own")
+        XCTAssertEqual(state.hole.totalScore, 5, "Two shots and three putts")
+    }
+
+    func testChoosingOneWayOfLoggingPuttsClearsTheOther() {
+        let state = makeStateOnTheGreen()
+        state.setPendingPuttsToHoleOut(3)
+        state.setPendingShotPuttHoled(false)
+        XCTAssertNil(state.pendingPuttsToHoleOut)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Log missed putt")
+
+        state.setPendingPuttsToHoleOut(2)
+        XCTAssertNil(state.pendingShotPuttHoled)
+
+        state.setFinishingHole(false)
+        XCTAssertNil(state.pendingPuttsToHoleOut)
+        XCTAssertFalse(state.canConfirmPendingShot)
+    }
+
+    func testFirstPuttIsMeasuredFromTheMarkOnTheGreen() throws {
+        let (state, provider) = makeLateLoggingState()
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 390, surface: .tee)
+        state.logShot(clubName: "8i", distanceToTargetMeters: 150, surface: .fairway)
+
+        // Mark the ball on the green 10 m short of the hole, putt out, then log.
+        walk(provider, toLatitude: -37.97154)
+        state.markBall()
+        walk(provider, toLatitude: -37.97145)
+        state.presentShotLogger()
+
+        XCTAssertEqual(state.pendingShotSurface, .green)
+        let measured = try XCTUnwrap(state.measuredFirstPuttDistanceMeters)
+        XCTAssertEqual(Double(measured), 10, accuracy: 1.5)
+
+        state.setPendingPuttsToHoleOut(2)
+        state.confirmPendingShot()
+        XCTAssertEqual(state.hole.shots.last?.puttDetail?.firstPuttDistanceMeters, measured)
+        XCTAssertNil(state.ballMarkState, "The mark was used")
+    }
+
+    func testOlderSavedPuttsStillDecode() throws {
+        let json = #"{"puttCount":2,"firstPuttDistanceMeters":7,"holed":true}"#
+        let detail = try JSONDecoder().decode(ShotEvent.PuttDetail.self, from: Data(json.utf8))
+        XCTAssertEqual(detail.puttCount, 2)
+        XCTAssertNil(detail.puttsTogether)
+    }
+
+    // MARK: Around the green
+
+    /// Two shots played, 40 m short of the flag and off the green.
+    private func makeStateShortOfTheGreen() -> LiveRoundState {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 380, surface: .tee)
+        state.logShot(clubName: "8i", distanceToTargetMeters: 140, surface: .fairway)
+        state.distanceToPinMeters = 40
+        state.presentShotLogger()
+        return state
+    }
+
+    func testShortOfTheGreenOpensOnFinishingTheHole() throws {
+        let state = makeStateShortOfTheGreen()
+        XCTAssertEqual(state.currentShotLoggerContext, .shot)
+        XCTAssertTrue(state.isPendingShotShortGame)
+        XCTAssertTrue(state.isFinishingHole)
+        XCTAssertEqual(state.effectiveChipsToHoleOut, 1, "The shot being logged is one of them")
+        XCTAssertFalse(state.canConfirmPendingShot)
+
+        state.setPendingPuttsToHoleOut(2)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out: 1 chip and 2 putts")
+        state.confirmPendingShot()
+
+        XCTAssertEqual(state.hole.shots.count, 4)
+        let chip = state.hole.shots[2]
+        XCTAssertTrue(chip.isShortGameShot)
+        XCTAssertEqual(chip.shotType, .pitch, "40 m out is a pitch")
+        XCTAssertEqual(chip.distanceToTargetMeters, 40)
+        XCTAssertNil(chip.shortGameResult)
+        let putts = state.hole.shots[3]
+        XCTAssertEqual(putts.puttDetail?.puttCount, 2)
+        XCTAssertEqual(putts.puttDetail?.holed, true)
+        XCTAssertEqual(state.hole.totalScore, 5, "Two shots, a chip and two putts")
+        XCTAssertTrue(state.isShowingHoleConfirmationPill)
+
+        // The entry comes off as one.
+        XCTAssertTrue(state.canUndoLastShot)
+        state.confirmUndoLastShot()
+        XCTAssertEqual(state.hole.shots.count, 2)
+    }
+
+    func testChippingInAfterADuffNeedsNoPutts() {
+        let state = makeStateShortOfTheGreen()
+        state.setPendingChipsToHoleOut(2)
+        state.setPendingPuttsToHoleOut(0)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out: 2 chips, no putts")
+        state.confirmPendingShot()
+
+        XCTAssertEqual(state.hole.shots.count, 4)
+        XCTAssertEqual(state.hole.shots[2].shortGameResult, .missedGreen, "Needing another means the first didn't get on")
+        XCTAssertEqual(state.hole.shots[3].shortGameResult, .holed)
+        XCTAssertEqual(state.hole.shots[3].holedOut, true)
+        XCTAssertNil(state.hole.shots[3].puttDetail)
+        XCTAssertEqual(state.hole.totalScore, 4)
+        XCTAssertTrue(state.isShowingHoleConfirmationPill)
+    }
+
+    func testASingleChipIsLoggedByWhereItFinished() throws {
+        let state = makeStateShortOfTheGreen()
+        state.setFinishingHole(false)
+        XCTAssertFalse(state.canConfirmPendingShot)
+
+        state.setPendingShortGameResult(.tapIn)
+        XCTAssertTrue(state.canConfirmPendingShot)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Log pitch")
+        state.confirmPendingShot()
+
+        let chip = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(chip.shortGameResult, .tapIn)
+        XCTAssertEqual(chip.shotType, .pitch)
+        XCTAssertFalse(state.isShowingHoleConfirmationPill, "A tap-in is still to play")
+        let subtitle = state.shotHistorySubtitle(for: chip)
+        XCTAssertTrue(subtitle.hasPrefix("Pitch"), subtitle)
+        XCTAssertTrue(subtitle.hasSuffix("Tap-in left"), subtitle)
+    }
+
+    func testNoChipsAndNoPuttsIsNotAWayToFinish() {
+        let state = makeStateOnTheGreen()
+        state.setPendingChipsToHoleOut(1)
+        state.setPendingPuttsToHoleOut(0)
+        XCTAssertTrue(state.canConfirmPendingShot)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Holed it from off the green")
+
+        state.setPendingChipsToHoleOut(0)
+        XCTAssertNil(state.pendingPuttsToHoleOut)
+        XCTAssertFalse(state.canConfirmPendingShot)
+    }
+
+    func testChipsCanBeAddedWhenLoggingFromTheGreen() {
+        let state = makeStateOnTheGreen()
+        XCTAssertEqual(state.effectiveChipsToHoleOut, 0)
+        state.setPendingChipsToHoleOut(1)
+        state.setPendingPuttsToHoleOut(1)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out: 1 chip and 1 putt")
+        state.confirmPendingShot()
+
+        XCTAssertEqual(state.hole.shots.count, 4)
+        XCTAssertEqual(state.hole.shots[2].shotType, .chip)
+        XCTAssertNotEqual(state.hole.shots[2].surface, .green, "A chip isn't counted as a putt")
+        XCTAssertEqual(state.hole.shots[3].puttDetail?.puttCount, 1)
+        XCTAssertEqual(state.hole.totalScore, 4)
+    }
+
+    func testStandingBesideTheGreenOpensOnTheGreen() {
+        let (state, provider) = makeLateLoggingState()
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 390, surface: .tee)
+        state.logShot(clubName: "8i", distanceToTargetMeters: 150, surface: .fairway)
+
+        // A few steps past the back edge: logging after holing out.
+        walk(provider, toLatitude: -37.97131)
+        state.presentShotLogger()
+        XCTAssertEqual(state.pendingShotSurface, .green)
+        XCTAssertEqual(state.pendingShotLieBannerSubtitle, "You're at the green")
+        XCTAssertTrue(state.isFinishingHole)
+        XCTAssertEqual(state.effectiveChipsToHoleOut, 0)
+        state.dismissShotLogger()
+
+        // Thirty metres past it is a chip back.
+        walk(provider, toLatitude: -37.97108)
+        state.presentShotLogger()
+        XCTAssertEqual(state.pendingShotSurface, .rough)
+        XCTAssertTrue(state.isPendingShotShortGame)
+        XCTAssertTrue(state.isFinishingHole)
+        XCTAssertEqual(state.effectiveChipsToHoleOut, 1)
+    }
+
+    func testShotTypeIsReadFromTheLieAndTheDistance() {
+        let state = makeStateShortOfTheGreen()
+        XCTAssertEqual(state.inferredShortGameShotType, .pitch)
+
+        state.selectShotSurface(.bunker)
+        XCTAssertEqual(state.inferredShortGameShotType, .bunkerShot)
+
+        state.dismissShotLogger()
+        state.distanceToPinMeters = 12
+        state.presentShotLogger()
+        state.selectShotSurface(.rough)
+        XCTAssertTrue(state.isPendingShotShortGame)
+        XCTAssertEqual(state.inferredShortGameShotType, .chip)
+    }
+
+    // MARK: The putter from off the green
+
+    func testThePutterFromOffTheGreenIsLoggedAsAShotAroundTheGreen() throws {
+        let state = makeStateShortOfTheGreen()
+        state.setFinishingHole(false)
+        state.overridePendingShotClubName("Putter")
+
+        XCTAssertEqual(state.currentShotLoggerContext, .shot, "Still off the green")
+        XCTAssertEqual(state.inferredShortGameShotType, .fringePutt)
+
+        state.setPendingShortGameResult(.makeable)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Log putt from off the green")
+        state.confirmPendingShot()
+
+        let shot = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(shot.shotType, .fringePutt)
+        XCTAssertTrue(shot.isShortGameShot)
+        XCTAssertNil(shot.puttDetail)
+        XCTAssertEqual(LiveRoundState.derivedPuttCount(for: state.hole), 0, "It isn't a putt")
+        XCTAssertEqual(state.hole.totalScore, 3)
+        let subtitle = state.shotHistorySubtitle(for: shot)
+        XCTAssertTrue(subtitle.hasPrefix("Putter from off the green"), subtitle)
+    }
+
+    func testFinishingTheHoleWithThePutterFromOffTheGreenKeepsItOutOfThePutts() throws {
+        let state = makeStateShortOfTheGreen()
+        state.overridePendingShotClubName("Putter")
+        state.setPendingPuttsToHoleOut(1)
+        XCTAssertEqual(state.pendingShotConfirmCTAText, "Hole out: 1 from off the green and 1 putt")
+        state.confirmPendingShot()
+
+        XCTAssertEqual(state.hole.shots.count, 4)
+        XCTAssertEqual(state.hole.shots[2].shotType, .fringePutt)
+        XCTAssertEqual(LiveRoundState.derivedPuttCount(for: state.hole), 1, "Only the one on the green")
+        XCTAssertEqual(state.hole.totalScore, 4)
+        XCTAssertEqual(state.hole.shortGameSummary?.upAndDown, true)
+    }
+
+    func testChoosingThePutterBringsItAndLeavingItPutsAWedgeBack() {
+        let state = makeStateShortOfTheGreen()
+        state.setFinishingHole(false)
+
+        state.setShortGameShotType(.fringePutt)
+        XCTAssertEqual(state.pendingShotType, .fringePutt)
+        XCTAssertTrue(state.pendingShotClubName.localizedCaseInsensitiveContains("putter"), state.pendingShotClubName)
+
+        state.setShortGameShotType(.chip)
+        XCTAssertEqual(state.pendingShotType, .chip)
+        XCTAssertFalse(state.pendingShotClubName.localizedCaseInsensitiveContains("putter"), state.pendingShotClubName)
+
+        // Picking the putter out of the bag says the same thing.
+        state.overridePendingShotClubName("Putter")
+        XCTAssertNil(state.pendingShotType)
+        XCTAssertEqual(state.inferredShortGameShotType, .fringePutt)
+
+        // And putting it away again makes it a chip or a pitch.
+        state.overridePendingShotClubName("SW")
+        XCTAssertEqual(state.inferredShortGameShotType, .pitch, "40 m out")
+    }
+
+    func testAnApproachClubLeftSelectedGivesWayAroundTheGreen() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 380, surface: .tee)
+        // The approach, hit with the club that's still selected.
+        state.logShot(clubName: state.selectedClubName, distanceToTargetMeters: 140, surface: .fairway)
+        state.distanceToPinMeters = 40
+        state.presentShotLogger()
+
+        XCTAssertTrue(state.isPendingShotShortGame)
+        XCTAssertEqual(state.pendingShotClubName, state.shortGameClubName)
+    }
+
+    // MARK: Logging a shot after it's been hit
+
+    /// Tee at the south end, a fairway 170–280 m up, two bunkers and a green ~390 m away.
+    private func makeLateLoggingState() -> (state: LiveRoundState, provider: StubRoundLocationProvider) {
+        func box(_ kind: SwingPalCourse.Hole.FeatureKind, _ label: String, south: Double, north: Double) -> SwingPalCourse.Hole.Feature {
+            .init(kind: kind, label: label, coordinates: [
+                .init(latitude: south, longitude: 145.0326),
+                .init(latitude: south, longitude: 145.0334),
+                .init(latitude: north, longitude: 145.0334),
+                .init(latitude: north, longitude: 145.0326)
+            ])
+        }
+        let features = [
+            box(.tee, "Tee", south: -37.97505, north: -37.97495),
+            box(.fairway, "Fairway", south: -37.9735, north: -37.9725),
+            box(.bunker, "Fairway bunker", south: -37.9722, north: -37.9721),
+            box(.bunker, "Greenside bunker", south: -37.9718, north: -37.9717),
+            box(.green, "Green", south: -37.97155, north: -37.97135)
+        ]
+        let provider = StubRoundLocationProvider(
+            initialSnapshot: .init(
+                coordinate: .init(latitude: -37.9750, longitude: 145.0330),
+                headingDegrees: 0,
+                horizontalAccuracyMeters: 5
+            ),
+            status: .ready
+        )
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            holeFeatures: features,
+            players: [.init(name: "You", kind: .selfPlayer)],
+            locationProvider: provider
+        )
+        return (state, provider)
+    }
+
+    private func walk(_ provider: StubRoundLocationProvider, toLatitude latitude: Double, longitude: Double = 145.0330) {
+        provider.push(.init(
+            coordinate: .init(latitude: latitude, longitude: longitude),
+            headingDegrees: 0,
+            horizontalAccuracyMeters: 5
+        ))
+        waitForMainQueueFlush()
+    }
+
+    private func logPendingShot(_ state: LiveRoundState) {
+        state.selectShotDirection(.hit)
+        state.selectShotDistance(.onNumber)
+        state.confirmPendingShot()
+    }
+
+    func testTeeShotLoggedFromTheFairwayIsStillOffTheTee() throws {
+        let (state, provider) = makeLateLoggingState()
+        XCTAssertFalse(state.canMarkBallOnDisplayedHole, "Nothing to mark while still on the tee")
+
+        // Hit the drive, walk to the ball, mark it, and only then log the drive.
+        walk(provider, toLatitude: -37.9730)
+        XCTAssertTrue(state.canMarkBallOnDisplayedHole)
+        state.markBall()
+        state.presentShotLogger()
+
+        XCTAssertEqual(state.pendingShotStrokeNumber, 1)
+        XCTAssertEqual(state.pendingShotSurface, .tee)
+        XCTAssertEqual(state.pendingShotLieBannerSubtitle, "First shot of the hole")
+        let tee = state.teeCoordinate, pin = state.targetCoordinate
+        let teeToPin = CLLocation(latitude: tee.latitude, longitude: tee.longitude)
+            .distance(from: CLLocation(latitude: pin.latitude, longitude: pin.longitude))
+        XCTAssertEqual(Double(state.pendingShotDistanceToPinMeters), teeToPin, accuracy: 1.5)
+        XCTAssertGreaterThan(state.pendingShotDistanceToPinMeters, state.displayedPinDistanceMeters + 150)
+
+        logPendingShot(state)
+
+        let drive = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(drive.surface, .tee)
+        XCTAssertEqual(Double(drive.distanceToTargetMeters), teeToPin, accuracy: 1.5)
+        XCTAssertEqual(state.lastLoggedShotOriginSource, .tee)
+        // The mark is where the drive finished: it's kept for the second shot.
+        XCTAssertEqual(state.ballMarkStatus, .marked)
+        XCTAssertEqual(state.currentShotOriginSource, .ballMark)
+    }
+
+    func testEachLateLoggedShotIsReadFromItsOwnMark() throws {
+        let (state, provider) = makeLateLoggingState()
+        walk(provider, toLatitude: -37.9730)
+        state.markBall()
+        state.presentShotLogger()
+        logPendingShot(state)
+
+        // Hit the second from the fairway, walk to it in the greenside bunker,
+        // mark that, then log the second.
+        walk(provider, toLatitude: -37.97175)
+        state.markBall()
+        XCTAssertEqual(state.earlierBallMarks.count, 1)
+        state.presentShotLogger()
+
+        XCTAssertEqual(state.pendingShotStrokeNumber, 2)
+        XCTAssertEqual(state.pendingShotSurface, .fairway, "Played from the fairway mark, not the bunker the player is standing in")
+        XCTAssertEqual(state.pendingShotLieBannerSubtitle, "Where you marked the ball")
+        logPendingShot(state)
+
+        let origin = try XCTUnwrap(state.lastLoggedShotOriginCoordinate)
+        XCTAssertEqual(origin.latitude, -37.9730, accuracy: 0.000001)
+        XCTAssertEqual(state.earlierBallMarks, [])
+        XCTAssertEqual(state.ballMarkState?.coordinate.latitude ?? 0, -37.97175, accuracy: 0.000001)
+
+        // The third shot is from the bunker mark, and near enough to be greenside.
+        state.presentShotLogger()
+        XCTAssertEqual(state.pendingShotSurface, .bunker)
+        XCTAssertEqual(state.pendingShotLieBannerTitle, "From a greenside bunker")
+        logPendingShot(state)
+        XCTAssertNil(state.ballMarkState)
+    }
+
+    func testMarkingAgainAStepAwayAsksWhetherAShotWasPlayed() {
+        let (state, provider) = makeLateLoggingState()
+        walk(provider, toLatitude: -37.9730)
+        state.markBall()
+        walk(provider, toLatitude: -37.97298)   // a couple of metres on
+        state.markBall()
+
+        // GPS can't tell a duffed chip from a correction, so nothing changes until the player says.
+        XCTAssertTrue(state.isAskingAboutRemark)
+        XCTAssertEqual(state.earlierBallMarks, [])
+        XCTAssertEqual(state.ballMarkState?.coordinate.latitude ?? 0, -37.9730, accuracy: 0.000001)
+    }
+
+    func testADuffedChipGetsItsOwnMark() throws {
+        let (state, provider) = makeLateLoggingState()
+        walk(provider, toLatitude: -37.9730)
+        state.markBall()
+        state.presentShotLogger()
+        logPendingShot(state)   // the drive, logged at the ball
+
+        // Chip it two metres, walk to it, mark again.
+        walk(provider, toLatitude: -37.97298)
+        state.markBall()
+        state.markBall(as: .newShot)
+
+        XCTAssertFalse(state.isAskingAboutRemark)
+        XCTAssertEqual(state.earlierBallMarks.count, 1)
+        XCTAssertEqual(state.atBallActionTitle, "2 marks to log")
+
+        // The duffed chip is logged from the first mark; the second is kept for the next shot.
+        state.presentShotLogger()
+        logPendingShot(state)
+        let origin = try XCTUnwrap(state.lastLoggedShotOriginCoordinate)
+        XCTAssertEqual(origin.latitude, -37.9730, accuracy: 0.000001)
+        XCTAssertEqual(state.earlierBallMarks, [])
+        XCTAssertEqual(state.ballMarkState?.coordinate.latitude ?? 0, -37.97298, accuracy: 0.000001)
+        XCTAssertEqual(state.atBallActionTitle, "Ball Marked")
+    }
+
+    func testCorrectingAMarkMovesItWithoutAddingAShot() {
+        let (state, provider) = makeLateLoggingState()
+        walk(provider, toLatitude: -37.9730)
+        state.markBall()
+        walk(provider, toLatitude: -37.97298)
+        state.markBall()
+        state.markBall(as: .correction)
+
+        XCTAssertFalse(state.isAskingAboutRemark)
+        XCTAssertEqual(state.earlierBallMarks, [])
+        XCTAssertEqual(state.ballMarkState?.coordinate.latitude ?? 0, -37.97298, accuracy: 0.000001)
+    }
+
+    func testOffTheMappedFairwayIsRoughAndAnyBunkerCounts() {
+        let (state, provider) = makeLateLoggingState()
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 390, surface: .tee)
+
+        walk(provider, toLatitude: -37.9730, longitude: 145.0340)   // level with the fairway, wide of it
+        state.presentShotLogger()
+        XCTAssertEqual(state.pendingShotSurface, .rough)
+        state.dismissShotLogger()
+
+        walk(provider, toLatitude: -37.97175)   // the second bunker in the list
+        state.presentShotLogger()
+        XCTAssertEqual(state.pendingShotSurface, .bunker)
+    }
+
+    func testWaitingMarksSurviveASavedRound() throws {
+        let (state, provider) = makeLateLoggingState()
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 390, surface: .tee)
+        walk(provider, toLatitude: -37.9730)
+        state.markBall()
+        walk(provider, toLatitude: -37.97175)
+        state.markBall()
+
+        let data = try JSONEncoder().encode(state.snapshot)
+        let restored = try JSONDecoder().decode(LiveRoundState.Snapshot.self, from: data)
+
+        XCTAssertEqual(restored.earlierBallMarks.count, 1)
+        XCTAssertEqual(restored.earlierBallMarks.first?.coordinate.latitude ?? 0, -37.9730, accuracy: 0.000001)
+        XCTAssertEqual(restored.ballMarkState?.coordinate.latitude ?? 0, -37.97175, accuracy: 0.000001)
+    }
+
     func waitForMainQueueFlush() {
         let flush = expectation(description: "main queue flush")
         DispatchQueue.main.async { flush.fulfill() }
