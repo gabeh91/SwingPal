@@ -11,7 +11,6 @@
 		C92800000000000000000003 /* AddClubSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92800000000000000000004 /* AddClubSheet.swift */; };
 		C92800000000000000000001 /* AddClubSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92800000000000000000002 /* AddClubSelection.swift */; };
 		A00000000000000000000030 /* SwingPalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* SwingPalApp.swift */; };
-		A00000000000000000000251 /* SwingPalLaunchLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000250 /* SwingPalLaunchLogo.swift */; };
 		A00000000000000000000032 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* AppIdentity.swift */; };
 		A00000000000000000000033 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* Assets.xcassets */; };
 		A00000000000000000000410 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000411 /* LaunchScreen.storyboard */; };
@@ -57,7 +56,6 @@
 		C1521E65B91DADC3ECE6D3C6 /* OverpassClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2521E65B91DADC3ECE6D3C6 /* OverpassClient.swift */; };
 		C1D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */; };
 		C15B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift */; };
-		C1ECC87BDB38966BA1D630BC /* YardageBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2ECC87BDB38966BA1D630BC /* YardageBook.swift */; };
 		A00000000000000000000112 /* PremiumGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000113 /* PremiumGateView.swift */; };
 		A00000000000000000000120 /* SocialViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000121 /* SocialViewModelTests.swift */; };
 		A00000000000000000000122 /* ProfileViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000123 /* ProfileViewModelTests.swift */; };
@@ -139,6 +137,29 @@
 		A00000000000000000000527 /* AuthFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000517 /* AuthFlowView.swift */; };
 		A00000000000000000000602 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000601 /* Supabase */; };
 		A00000000000000000000700 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000701 /* Assets.xcassets */; };
+		B5E436DF55903370393DA14A /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B41ADFC7A83762E6DFF524 /* Book.swift */; };
+		B55B9D307B2B0CBE40C63902 /* BookNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BBF54B49309551F038EE2C /* BookNote.swift */; };
+		B51E7A515372B7584F5879EE /* BookHairline.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CD23445226D9454C455C10 /* BookHairline.swift */; };
+		B5798FE243430A06902D2236 /* BookStampButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52CE95D67D8B74A39828950 /* BookStampButtonStyle.swift */; };
+		B5CEA3DED7654505B84FA6A1 /* BookRowButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B588C46FA64830414E383B76 /* BookRowButtonStyle.swift */; };
+		B5167C9ED58FE5EFA3EEF915 /* ScoreMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F3738A9EA14DBBE9CEBDFC /* ScoreMark.swift */; };
+		B5A35DBAC29703196036A086 /* View+BookLeaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E47FE241BE5A482B5F5999 /* View+BookLeaf.swift */; };
+		B55590436EB1D778B2DA85D3 /* View+BookSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B1D325106FAF2714CAA68 /* View+BookSheet.swift */; };
+		B5A4CE6472EFD1761C45CF0E /* BookSectionRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5392E854CAFB0DCAA42AE0C /* BookSectionRule.swift */; };
+		B50B264EA438532F710FAF88 /* BookCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A03196DA0789815C3B1D69 /* BookCounter.swift */; };
+		B5EC2E932E24F435523E0CEF /* BookGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DCABCBB0F52B906AD7297C /* BookGroup.swift */; };
+		B5176CF6808EFA7DD357A9D0 /* ThumbIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = B512C2FD0EAD015BAFB17705 /* ThumbIndex.swift */; };
+		B547ABCE0F720110D49C5867 /* HoleProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B575810966DBC4F797CB0157 /* HoleProjection.swift */; };
+		B5082EA37F12793D39411D92 /* HolePageFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BFD6FD38CB8F3FEAC82110 /* HolePageFrame.swift */; };
+		B5E664B7010F53B6ACE214C0 /* HolePageDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5829BDA3C8DB693BE1D098B /* HolePageDrawing.swift */; };
+		B5DED033938F04CDFBCCB9AD /* HolePageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5ACE17588EDAEAF01A9C898 /* HolePageRenderer.swift */; };
+		B547B368D2A7786732D9B488 /* CourseStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571BDD635B3D2297CE8528D /* CourseStyle.swift */; };
+		B5F93522E0279846FDAE3762 /* HoleMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A3DF8A5FE5F6760CD2915C /* HoleMark.swift */; };
+		B5B63F429D30D07BA435B767 /* HoleMarkColorway.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AAEB8CE2BC0CFE14B25F1A /* HoleMarkColorway.swift */; };
+		B5E71B56964E85C992C512D3 /* SwingPalMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = B572980126C9788FED694BFC /* SwingPalMark.swift */; };
+		B51FC8773F6705A2CF37670D /* SwingPalMarkTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FD5C7AD4C4ADCECBAEB91B /* SwingPalMarkTile.swift */; };
+		B551BD6391149F445F157DC7 /* LaunchSplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C291AF096B5429389FEFF4 /* LaunchSplashView.swift */; };
+		B52907DBD0663800F4D26D08 /* ScorecardStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53348A9BC31E09954468D1D /* ScorecardStub.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -178,7 +199,6 @@
 		C92800000000000000000004 /* AddClubSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClubSheet.swift; sourceTree = "<group>"; };
 		C92800000000000000000002 /* AddClubSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClubSelection.swift; sourceTree = "<group>"; };
 		A00000000000000000000020 /* SwingPalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalApp.swift; sourceTree = "<group>"; };
-		A00000000000000000000250 /* SwingPalLaunchLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalLaunchLogo.swift; sourceTree = "<group>"; };
 		A00000000000000000000022 /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		A00000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000411 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -226,7 +246,6 @@
 		C2521E65B91DADC3ECE6D3C6 /* OverpassClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverpassClient.swift; sourceTree = "<group>"; };
 		C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimPlanOverlay.swift; sourceTree = "<group>"; };
 		C25B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleMapGeometry.swift; sourceTree = "<group>"; };
-		C2ECC87BDB38966BA1D630BC /* YardageBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YardageBook.swift; sourceTree = "<group>"; };
 		A00000000000000000000113 /* PremiumGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumGateView.swift; sourceTree = "<group>"; };
 		A00000000000000000000121 /* SocialViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialViewModelTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000123 /* ProfileViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModelTests.swift; sourceTree = "<group>"; };
@@ -306,6 +325,29 @@
 		A00000000000000000000516 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000517 /* AuthFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowView.swift; sourceTree = "<group>"; };
 		A00000000000000000000701 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B5B41ADFC7A83762E6DFF524 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
+		B5BBF54B49309551F038EE2C /* BookNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookNote.swift; sourceTree = "<group>"; };
+		B5CD23445226D9454C455C10 /* BookHairline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHairline.swift; sourceTree = "<group>"; };
+		B52CE95D67D8B74A39828950 /* BookStampButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookStampButtonStyle.swift; sourceTree = "<group>"; };
+		B588C46FA64830414E383B76 /* BookRowButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookRowButtonStyle.swift; sourceTree = "<group>"; };
+		B5F3738A9EA14DBBE9CEBDFC /* ScoreMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreMark.swift; sourceTree = "<group>"; };
+		B5E47FE241BE5A482B5F5999 /* View+BookLeaf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+BookLeaf.swift"; sourceTree = "<group>"; };
+		B54B1D325106FAF2714CAA68 /* View+BookSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+BookSheet.swift"; sourceTree = "<group>"; };
+		B5392E854CAFB0DCAA42AE0C /* BookSectionRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSectionRule.swift; sourceTree = "<group>"; };
+		B5A03196DA0789815C3B1D69 /* BookCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCounter.swift; sourceTree = "<group>"; };
+		B5DCABCBB0F52B906AD7297C /* BookGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookGroup.swift; sourceTree = "<group>"; };
+		B512C2FD0EAD015BAFB17705 /* ThumbIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbIndex.swift; sourceTree = "<group>"; };
+		B575810966DBC4F797CB0157 /* HoleProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleProjection.swift; sourceTree = "<group>"; };
+		B5BFD6FD38CB8F3FEAC82110 /* HolePageFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolePageFrame.swift; sourceTree = "<group>"; };
+		B5829BDA3C8DB693BE1D098B /* HolePageDrawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolePageDrawing.swift; sourceTree = "<group>"; };
+		B5ACE17588EDAEAF01A9C898 /* HolePageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolePageRenderer.swift; sourceTree = "<group>"; };
+		B571BDD635B3D2297CE8528D /* CourseStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseStyle.swift; sourceTree = "<group>"; };
+		B5A3DF8A5FE5F6760CD2915C /* HoleMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleMark.swift; sourceTree = "<group>"; };
+		B5AAEB8CE2BC0CFE14B25F1A /* HoleMarkColorway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleMarkColorway.swift; sourceTree = "<group>"; };
+		B572980126C9788FED694BFC /* SwingPalMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalMark.swift; sourceTree = "<group>"; };
+		B5FD5C7AD4C4ADCECBAEB91B /* SwingPalMarkTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalMarkTile.swift; sourceTree = "<group>"; };
+		B5C291AF096B5429389FEFF4 /* LaunchSplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchSplashView.swift; sourceTree = "<group>"; };
+		B53348A9BC31E09954468D1D /* ScorecardStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScorecardStub.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -356,7 +398,6 @@
 				B56202B28D7BF2A59342E9B9 /* Resources */,
 				A00000000000000000000023 /* Assets.xcassets */,
 				A00000000000000000000411 /* LaunchScreen.storyboard */,
-				A00000000000000000000250 /* SwingPalLaunchLogo.swift */,
 			);
 			path = SwingPal;
 			sourceTree = "<group>";
@@ -364,6 +405,7 @@
 		B5463A86D669BC5CE80AA869 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				B52309FAFE3F9FBABC53590C /* Launch */,
 				B56793EAE003EA93E07B3D67 /* Shell */,
 				A00000000000000000000022 /* AppIdentity.swift */,
 				A0000000000000000000002B /* AppState.swift */,
@@ -373,6 +415,14 @@
 				A00000000000000000000020 /* SwingPalApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		B52309FAFE3F9FBABC53590C /* Launch */ = {
+			isa = PBXGroup;
+			children = (
+				B5C291AF096B5429389FEFF4 /* LaunchSplashView.swift */,
+			);
+			path = Launch;
 			sourceTree = "<group>";
 		};
 		B56793EAE003EA93E07B3D67 /* Shell */ = {
@@ -424,15 +474,76 @@
 		B596C635EAEF85C798B3F27A /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
+				B500BF6AA5980D6981C3D5D0 /* Atoms */,
+				B5E6D55EF3595B92C5F97AB3 /* Brand */,
+				B5D8485FD334A10782097B54 /* Molecules */,
+				B5DADBF5D8886490580CA8E6 /* Organisms */,
 				B57BA9EC6AB2CE70714B60CE /* Tokens */,
-				C2ECC87BDB38966BA1D630BC /* YardageBook.swift */,
 			);
 			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		B500BF6AA5980D6981C3D5D0 /* Atoms */ = {
+			isa = PBXGroup;
+			children = (
+				B5CD23445226D9454C455C10 /* BookHairline.swift */,
+				B5BBF54B49309551F038EE2C /* BookNote.swift */,
+				B588C46FA64830414E383B76 /* BookRowButtonStyle.swift */,
+				B52CE95D67D8B74A39828950 /* BookStampButtonStyle.swift */,
+				B5F3738A9EA14DBBE9CEBDFC /* ScoreMark.swift */,
+				B5E47FE241BE5A482B5F5999 /* View+BookLeaf.swift */,
+				B54B1D325106FAF2714CAA68 /* View+BookSheet.swift */,
+			);
+			path = Atoms;
+			sourceTree = "<group>";
+		};
+		B5E6D55EF3595B92C5F97AB3 /* Brand */ = {
+			isa = PBXGroup;
+			children = (
+				B5A3DF8A5FE5F6760CD2915C /* HoleMark.swift */,
+				B5AAEB8CE2BC0CFE14B25F1A /* HoleMarkColorway.swift */,
+				B572980126C9788FED694BFC /* SwingPalMark.swift */,
+				B5FD5C7AD4C4ADCECBAEB91B /* SwingPalMarkTile.swift */,
+			);
+			path = Brand;
+			sourceTree = "<group>";
+		};
+		B5D8485FD334A10782097B54 /* Molecules */ = {
+			isa = PBXGroup;
+			children = (
+				B5A03196DA0789815C3B1D69 /* BookCounter.swift */,
+				B5DCABCBB0F52B906AD7297C /* BookGroup.swift */,
+				B5392E854CAFB0DCAA42AE0C /* BookSectionRule.swift */,
+				B53348A9BC31E09954468D1D /* ScorecardStub.swift */,
+				B512C2FD0EAD015BAFB17705 /* ThumbIndex.swift */,
+			);
+			path = Molecules;
+			sourceTree = "<group>";
+		};
+		B5DADBF5D8886490580CA8E6 /* Organisms */ = {
+			isa = PBXGroup;
+			children = (
+				B53A0D1CC754C0FD6AAEED6E /* HolePage */,
+			);
+			path = Organisms;
+			sourceTree = "<group>";
+		};
+		B53A0D1CC754C0FD6AAEED6E /* HolePage */ = {
+			isa = PBXGroup;
+			children = (
+				B5829BDA3C8DB693BE1D098B /* HolePageDrawing.swift */,
+				B5BFD6FD38CB8F3FEAC82110 /* HolePageFrame.swift */,
+				B5ACE17588EDAEAF01A9C898 /* HolePageRenderer.swift */,
+				B575810966DBC4F797CB0157 /* HoleProjection.swift */,
+			);
+			path = HolePage;
 			sourceTree = "<group>";
 		};
 		B57BA9EC6AB2CE70714B60CE /* Tokens */ = {
 			isa = PBXGroup;
 			children = (
+				B5B41ADFC7A83762E6DFF524 /* Book.swift */,
+				B571BDD635B3D2297CE8528D /* CourseStyle.swift */,
 				A00000000000000000000111 /* ShellTokens.swift */,
 			);
 			path = Tokens;
@@ -1245,13 +1356,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000030 /* SwingPalApp.swift in Sources */,
-				A00000000000000000000251 /* SwingPalLaunchLogo.swift in Sources */,
+				B5F93522E0279846FDAE3762 /* HoleMark.swift in Sources */,
+				B5B63F429D30D07BA435B767 /* HoleMarkColorway.swift in Sources */,
+				B5E71B56964E85C992C512D3 /* SwingPalMark.swift in Sources */,
+				B51FC8773F6705A2CF37670D /* SwingPalMarkTile.swift in Sources */,
+				B551BD6391149F445F157DC7 /* LaunchSplashView.swift in Sources */,
 				A00000000000000000000032 /* AppIdentity.swift in Sources */,
 				A00000000000000000000037 /* AppTab.swift in Sources */,
 				A00000000000000000000038 /* AuthState.swift in Sources */,
 				A00000000000000000000039 /* AppState.swift in Sources */,
 				A0000000000000000000003A /* AppShellView.swift in Sources */,
 				A0000000000000000000003C /* HomeView.swift in Sources */,
+				B52907DBD0663800F4D26D08 /* ScorecardStub.swift in Sources */,
 				A0000000000000000000003D /* HomeViewModel.swift in Sources */,
 				A00000000000000000000162 /* StatsView.swift in Sources */,
 				A00000000000000000000164 /* StatsViewModel.swift in Sources */,
@@ -1329,10 +1445,26 @@
 				A00000000000000000000136 /* PreviewRoundWeatherLoader.swift in Sources */,
 				A00000000000000000000137 /* AppleWeatherKitLoader.swift in Sources */,
 				A00000000000000000000110 /* ShellTokens.swift in Sources */,
+				B547B368D2A7786732D9B488 /* CourseStyle.swift in Sources */,
 				C1521E65B91DADC3ECE6D3C6 /* OverpassClient.swift in Sources */,
 				C1D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift in Sources */,
 				C15B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift in Sources */,
-				C1ECC87BDB38966BA1D630BC /* YardageBook.swift in Sources */,
+				B5E436DF55903370393DA14A /* Book.swift in Sources */,
+				B55B9D307B2B0CBE40C63902 /* BookNote.swift in Sources */,
+				B51E7A515372B7584F5879EE /* BookHairline.swift in Sources */,
+				B5798FE243430A06902D2236 /* BookStampButtonStyle.swift in Sources */,
+				B5CEA3DED7654505B84FA6A1 /* BookRowButtonStyle.swift in Sources */,
+				B5167C9ED58FE5EFA3EEF915 /* ScoreMark.swift in Sources */,
+				B5A35DBAC29703196036A086 /* View+BookLeaf.swift in Sources */,
+				B55590436EB1D778B2DA85D3 /* View+BookSheet.swift in Sources */,
+				B5A4CE6472EFD1761C45CF0E /* BookSectionRule.swift in Sources */,
+				B50B264EA438532F710FAF88 /* BookCounter.swift in Sources */,
+				B5EC2E932E24F435523E0CEF /* BookGroup.swift in Sources */,
+				B5176CF6808EFA7DD357A9D0 /* ThumbIndex.swift in Sources */,
+				B547ABCE0F720110D49C5867 /* HoleProjection.swift in Sources */,
+				B5082EA37F12793D39411D92 /* HolePageFrame.swift in Sources */,
+				B5E664B7010F53B6ACE214C0 /* HolePageDrawing.swift in Sources */,
+				B5DED033938F04CDFBCCB9AD /* HolePageRenderer.swift in Sources */,
 				A00000000000000000000112 /* PremiumGateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
