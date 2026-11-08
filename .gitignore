@@ -6,6 +6,8 @@
 *.xcscmblueprint
 .DS_Store
 DerivedData/
+.derivedData/
+.derivedDataWatch/
 .derivedData-clean*
 build/*
 *.xcresult

@@ -31,6 +31,9 @@ struct ProfileView: View {
     @State private var isHandicapPresented = false
     @State private var handicapText: String = ""
     @State private var isPublicProfileEditorPresented = false
+    #if DEBUG
+    @State private var isGreenScanTestPresented = false
+    #endif
 
     init(
         authState: AuthState,
@@ -94,6 +97,9 @@ struct ProfileView: View {
                     settingsSection(model: model)
                     companionSection(model: model)
                     accountSection
+                    #if DEBUG
+                    developerSection
+                    #endif
                 }
                 .frame(maxWidth: 640, alignment: .leading)
                 .padding(.horizontal, 20)
@@ -408,6 +414,29 @@ struct ProfileView: View {
             BookHairline()
         }
     }
+
+    #if DEBUG
+    /// Bench tests that only exist in Debug builds.
+    private var developerSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BookSectionRule(title: "Developer", trailing: "DEBUG").padding(.bottom, 4)
+            Button { isGreenScanTestPresented = true } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Green scan test").font(.body)
+                        Text("Read a surface's slope with LiDAR").font(.subheadline).foregroundStyle(Book.pencil)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Book.pencil)
+                }
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(BookRowButtonStyle())
+            BookHairline()
+        }
+        .fullScreenCover(isPresented: $isGreenScanTestPresented) { GreenScanTestView() }
+    }
+    #endif
 
     @ViewBuilder private var accountSection: some View {
         if authState == .authenticated {

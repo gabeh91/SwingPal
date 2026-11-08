@@ -216,6 +216,8 @@
 		C306E7A85D960782FB3C7B18 /* WatchCompanionOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3476D0B7E08A78D19DB7292 /* WatchCompanionOutbox.swift */; };
 		C38EDD6341F5C64FFD0530AF /* WatchRoundPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32926C7DC211E77D025C9DB /* WatchRoundPresentation.swift */; };
 		C38A2B66B5A5B98526CB95BA /* WatchCompanionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C371887B84EE445599FA4200 /* WatchCompanionTests.swift */; };
+		D4BB68958C838C4C137771A6 /* GreenScanTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4499F359FB0C63A4A549FE1 /* GreenScanTestView.swift */; };
+		D43FD8771F09C65CDAD91C1A /* RoundCardTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EBEB676ECF344E42D5B595 /* RoundCardTable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -456,6 +458,8 @@
 		C3CA453B89455D18C363041B /* WatchHoleScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleScoreView.swift; sourceTree = "<group>"; };
 		C3AADA7A27ADCF3C98FA9AE1 /* WatchRoundRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundRootView.swift; sourceTree = "<group>"; };
 		C371887B84EE445599FA4200 /* WatchCompanionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCompanionTests.swift; sourceTree = "<group>"; };
+		D4499F359FB0C63A4A549FE1 /* GreenScanTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreenScanTestView.swift; sourceTree = "<group>"; };
+		D4EBEB676ECF344E42D5B595 /* RoundCardTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundCardTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -663,6 +667,7 @@
 			isa = PBXGroup;
 			children = (
 				B5ACDC9EE37748FE1D94ABAF /* Auth */,
+				D44D6BB6422A66626A6FE519 /* GreenReader */,
 				B5D35E7E7809202C55782FF3 /* Home */,
 				B5923DE85CF6495102EBA088 /* Premium */,
 				B5BE8AD4043D5AE5373F6455 /* Profile */,
@@ -734,6 +739,7 @@
 				B54E267A3E7421748DF36094 /* BlankScorecardGlyph.swift */,
 				B591BB3F983CAEB66560D06E /* HomeRoundAnalysisDetailView.swift */,
 				A0000000000000000000002E /* HomeView.swift */,
+				D4EBEB676ECF344E42D5B595 /* RoundCardTable.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1521,6 +1527,22 @@
 			path = Watch;
 			sourceTree = "<group>";
 		};
+		D44D6BB6422A66626A6FE519 /* GreenReader */ = {
+			isa = PBXGroup;
+			children = (
+				D4C702F6340D91DBBA2D364D /* Views */,
+			);
+			path = GreenReader;
+			sourceTree = "<group>";
+		};
+		D4C702F6340D91DBBA2D364D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D4499F359FB0C63A4A549FE1 /* GreenScanTestView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1723,6 +1745,8 @@
 				B580B0D8B913B6A1A27565D8 /* LiveMapDrawingCache.swift in Sources */,
 				A0000000000000000000014C /* RoundCompanionSyncing.swift in Sources */,
 				A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */,
+				D4BB68958C838C4C137771A6 /* GreenScanTestView.swift in Sources */,
+				D43FD8771F09C65CDAD91C1A /* RoundCardTable.swift in Sources */,
 				C3E1344160D895F766B5C5CD /* WatchBookLabels.swift in Sources */,
 				C31ADB0E212868A5622B709E /* WatchShotEntry.swift in Sources */,
 				C306E7A85D960782FB3C7B18 /* WatchCompanionOutbox.swift in Sources */,
@@ -1957,6 +1981,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SwingPal discovers nearby golfers on your local network when you use Nearby.";
 				INFOPLIST_KEY_NFCReaderUsageDescription = "SwingPal reads NFC tags programmed with a golfer follow link.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "SwingPal uses the camera and LiDAR sensor to scan the slope of a green.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -1996,6 +2021,7 @@
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SwingPal discovers nearby golfers on your local network when you use Nearby.";
 				INFOPLIST_KEY_NFCReaderUsageDescription = "SwingPal reads NFC tags programmed with a golfer follow link.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "SwingPal uses the camera and LiDAR sensor to scan the slope of a green.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

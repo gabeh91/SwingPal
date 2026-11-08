@@ -89,3 +89,32 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertTrue(detail.improvements.isEmpty)
     }
 }
+
+@MainActor
+final class RoundCardTableTests: XCTestCase {
+    func testNineHoleRoundIsOneNineWithEveryColumn() {
+        let nines = RoundCardTable.nines(for: RoundRecapWriterTests.sampleCard())
+        XCTAssertEqual(nines.map(\.title), ["Out"])
+        XCTAssertEqual(nines.first?.numbers, Array(1...9))
+        XCTAssertEqual(nines.first?.played.count, 9)
+    }
+
+    func testPartPlayedBackNineStillShowsAllItsColumns() {
+        var card = RoundRecapWriterTests.sampleCard()
+        card.append(.init(number: 10, par: 4, score: 4))
+        card.append(.init(number: 11, par: 3, score: 4))
+        let nines = RoundCardTable.nines(for: card)
+        XCTAssertEqual(nines.map(\.title), ["Out", "In"])
+        XCTAssertEqual(nines.last?.numbers, Array(10...18))
+        XCTAssertEqual(nines.last?.played.map(\.number), [10, 11])
+    }
+
+    func testTotalAndSpokenHole() {
+        let card = RoundRecapWriterTests.sampleCard()
+        XCTAssertEqual(RoundCardTable.totalLine(for: card), "38 (+2)")
+        XCTAssertEqual(
+            RoundCardTable.spoken(card[6]),
+            "Hole 7, par 4, 6, double bogey, 3 putts, 1 penalty stroke, fairway missed, green missed"
+        )
+    }
+}

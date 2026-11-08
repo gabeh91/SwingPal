@@ -305,7 +305,27 @@ final class UserDataSyncService {
         let total_putts: Int
         let total_penalties: Int
         let is_shared: Bool
+        let payload: RoundPayload?
         let updated_at: Date
+    }
+
+    /// What goes in the `rounds.payload` column: the hole-by-hole card, so
+    /// the round's notes can be written on any device. Decoding is lenient —
+    /// a missing, null or unexpected payload just means no card.
+    struct RoundPayload: Codable, Equatable {
+        let holes: [RoundHistorySummary.HoleRecord]
+
+        init(holes: [RoundHistorySummary.HoleRecord]) {
+            self.holes = holes
+        }
+
+        init(from decoder: Decoder) throws {
+            guard let container = try? decoder.container(keyedBy: CodingKeys.self) else {
+                holes = []
+                return
+            }
+            holes = (try? container.decodeIfPresent([RoundHistorySummary.HoleRecord].self, forKey: .holes)) ?? []
+        }
     }
 
     private struct RoundUpsert: Encodable {
@@ -321,7 +341,7 @@ final class UserDataSyncService {
         let total_putts: Int
         let total_penalties: Int
         let is_shared: Bool
-        let payload: AnyJSON?
+        let payload: RoundPayload?
         let updated_at: Date
     }
 
@@ -348,7 +368,8 @@ final class UserDataSyncService {
                 completedHoleCount: row.completed_hole_count,
                 totalPutts: row.total_putts,
                 totalPenalties: row.total_penalties,
-                updatedAt: row.updated_at
+                updatedAt: row.updated_at,
+                holes: row.payload?.holes ?? []
             )
         }
 
@@ -367,7 +388,13 @@ final class UserDataSyncService {
         }
         for round in remote {
             if let existing = byId[round.id] {
-                byId[round.id] = round.updatedAt >= existing.updatedAt ? round : existing
+                let newer = round.updatedAt >= existing.updatedAt ? round : existing
+                let older = newer == round ? existing : round
+                // Keep the card if only one side has it (a row pushed before
+                // the card was synced shouldn't wipe the local one).
+                byId[round.id] = newer.holes.isEmpty && !older.holes.isEmpty
+                    ? newer.withHoles(older.holes)
+                    : newer
             } else {
                 byId[round.id] = round
             }
@@ -389,7 +416,7 @@ final class UserDataSyncService {
             total_putts: summary.totalPutts,
             total_penalties: summary.totalPenalties,
             is_shared: true,
-            payload: nil,
+            payload: summary.holes.isEmpty ? nil : RoundPayload(holes: summary.holes),
             updated_at: summary.updatedAt
         )
         try await client

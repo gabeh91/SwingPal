@@ -77,14 +77,11 @@ struct ProfileViewModel {
     }
 
     static func previousRoundAnalysisModel(for summary: RoundHistorySummary) -> PreviousRoundAnalysisModel {
-        let strengths = legacyStrengths(for: summary)
-        let improvements = legacyImprovements(for: summary)
-
-        return .init(
+        .init(
             heading: "Round insights",
-            summary: legacySummary(for: summary),
-            strengths: strengths,
-            improvements: improvements
+            summary: RoundRecapWriter.summaryLine(for: summary),
+            strengths: RoundRecapWriter.strengths(for: summary),
+            improvements: RoundRecapWriter.needsWork(for: summary)
         )
     }
 
@@ -139,65 +136,5 @@ struct ProfileViewModel {
         items
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-    }
-
-    static func legacySummary(for summary: RoundHistorySummary) -> String {
-        if summary.status == .finished {
-            return "This completed round shows the scoring patterns that mattered most over all \(summary.totalHoleCount) holes."
-        }
-
-        if summary.completedHoleCount > 0 {
-            return "This saved round captured enough scoring context to show where the round was trending before you stopped."
-        }
-
-        return "This saved round only captured a small checkpoint, so the analysis focuses on the limited data logged so far."
-    }
-
-    static func legacyStrengths(for summary: RoundHistorySummary) -> [String] {
-        var strengths: [String] = []
-
-        if summary.completedHoleCount > 0 {
-            strengths.append("You completed \(summary.completedHoleCount) hole\(summary.completedHoleCount == 1 ? "" : "s") before saving, giving the round a useful scoring baseline.")
-        }
-
-        if summary.totalPenalties == 0 {
-            strengths.append("No penalties were logged, which kept the card cleaner than most mid-round saves.")
-        }
-
-        if summary.totalPutts > 0 {
-            strengths.append("You tracked \(summary.totalPutts) putt\(summary.totalPutts == 1 ? "" : "s"), which gives the round useful short-game context.")
-        }
-
-        if summary.totalStrokes > 0 {
-            strengths.append("You logged \(summary.totalStrokes) total stroke\(summary.totalStrokes == 1 ? "" : "s"), so this recap has enough context to be worth reviewing.")
-        }
-
-        return Array(strengths.prefix(3))
-    }
-
-    static func legacyImprovements(for summary: RoundHistorySummary) -> [String] {
-        var improvements: [String] = []
-
-        if summary.totalPenalties > 0 {
-            improvements.append("\(summary.totalPenalties) penalty stroke\(summary.totalPenalties == 1 ? "" : "s") were logged, so keeping the next ball in play is the clearest scoring gain.")
-        }
-
-        if summary.status == .unfinished {
-            improvements.append("Finishing more holes will make the pattern data more reliable than this saved checkpoint alone.")
-        }
-
-        if summary.completedHoleCount == 0 {
-            improvements.append("Confirming holes as you go will make later round summaries much easier to trust.")
-        }
-
-        if improvements.count < 2 {
-            improvements.append("Keep logging each hole cleanly so the next recap can separate real scoring trends from noise.")
-        }
-
-        if improvements.count < 3 {
-            improvements.append("Sharper distance control on approach shots would make the next summary more actionable than this saved checkpoint.")
-        }
-
-        return Array(improvements.prefix(3))
     }
 }

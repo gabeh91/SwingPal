@@ -29,18 +29,43 @@ final class MockAuthService: AuthService {
         // No-op; mock just trusts the value passed in `init`.
     }
 
-    func signUp(email: String, password: String, displayName: String?) async throws {
+    /// When true, sign-up behaves like Supabase with email confirmation on:
+    /// the account is made but nobody is signed in.
+    var requiresEmailConfirmation = false
+    /// Accounts that exist but haven't been confirmed; signing in to one fails.
+    var unconfirmedEmails: Set<String> = []
+    /// Makes sign-up and sign-in take a while, to exercise closing mid-request.
+    var responseDelay: Duration = .zero
+    private(set) var resentConfirmations: [String] = []
+
+    @discardableResult
+    func signUp(email: String, password: String, displayName: String?) async throws -> AuthSignUpOutcome {
+        try await wait()
         try checkBehaviour()
+        if requiresEmailConfirmation {
+            unconfirmedEmails.insert(email)
+            return .confirmationRequired
+        }
         let user = AuthSessionUser(
             id: UUID().uuidString,
             email: email,
             displayName: displayName ?? Self.fallbackDisplayName(for: email)
         )
         subject.send(user)
+        return .signedIn
+    }
+
+    func resendConfirmation(email: String) async throws {
+        try checkBehaviour()
+        resentConfirmations.append(email)
     }
 
     func signIn(email: String, password: String) async throws {
+        try await wait()
         try checkBehaviour()
+        if unconfirmedEmails.contains(email) {
+            throw AuthServiceError.emailNotConfirmed
+        }
         let user = AuthSessionUser(
             id: UUID().uuidString,
             email: email,
@@ -85,6 +110,12 @@ final class MockAuthService: AuthService {
         _ = url
     }
 
+    private func wait() async throws {
+        if responseDelay > .zero {
+            try await Task.sleep(for: responseDelay)
+        }
+    }
+
     private func checkBehaviour() throws {
         switch behaviour {
         case .alwaysSucceed:
@@ -113,8 +144,13 @@ final class MissingConfigurationAuthService: AuthService {
 
     func bootstrap() async {}
 
-    func signUp(email: String, password: String, displayName: String?) async throws {
+    func signUp(email: String, password: String, displayName: String?) async throws -> AuthSignUpOutcome {
         _ = (email, password, displayName)
+        throw AuthServiceError.missingConfiguration
+    }
+
+    func resendConfirmation(email: String) async throws {
+        _ = email
         throw AuthServiceError.missingConfiguration
     }
 

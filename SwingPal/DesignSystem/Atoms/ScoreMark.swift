@@ -40,6 +40,7 @@ struct ScoreMark: View {
 
     static func spoken(score: Int?, par: Int) -> String {
         guard let score else { return "No score" }
+        if score == 1 { return "1, hole in one" }
         let name: String
         switch score - par {
         case ...(-3): name = "albatross or better"

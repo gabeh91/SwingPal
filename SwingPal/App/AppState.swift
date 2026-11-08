@@ -181,6 +181,64 @@ struct RoundHistorySummary: Identifiable, Equatable, Hashable, Codable {
     let totalPutts: Int
     let totalPenalties: Int
     let updatedAt: Date
+    /// The card, hole by hole: confirmed, scored holes only, in play order.
+    /// Empty for rounds saved before the card was kept (and for rows synced
+    /// from a device that didn't send it), which the recap handles by working
+    /// from the totals alone.
+    let holes: [HoleRecord]
+
+    struct HoleRecord: Equatable, Hashable, Codable {
+        let number: Int
+        let par: Int
+        let score: Int
+        /// `nil` when nothing was logged that says how many putts there were.
+        let putts: Int?
+        let penalties: Int
+        /// `nil` on par 3s, or when the tee shot's finish wasn't logged.
+        let fairwayHit: Bool?
+        let greenInRegulation: Bool?
+        /// Chips, pitches, bunker shots and putts from off the green. `nil`
+        /// when none were logged (and in rounds saved before they were kept).
+        let shortGameShots: Int?
+        /// Down in two or fewer from beside the green. `nil` when there was
+        /// no such shot, or the logged shots don't show how the hole ended.
+        let upAndDown: Bool?
+        /// The same, when the first of those shots was from a bunker.
+        let sandSave: Bool?
+        /// A shot from off the green went in.
+        let chippedIn: Bool?
+        let firstPuttMeters: Int?
+
+        init(
+            number: Int,
+            par: Int,
+            score: Int,
+            putts: Int? = nil,
+            penalties: Int = 0,
+            fairwayHit: Bool? = nil,
+            greenInRegulation: Bool? = nil,
+            shortGameShots: Int? = nil,
+            upAndDown: Bool? = nil,
+            sandSave: Bool? = nil,
+            chippedIn: Bool? = nil,
+            firstPuttMeters: Int? = nil
+        ) {
+            self.number = number
+            self.par = par
+            self.score = score
+            self.putts = putts
+            self.penalties = penalties
+            self.fairwayHit = fairwayHit
+            self.greenInRegulation = greenInRegulation
+            self.shortGameShots = shortGameShots
+            self.upAndDown = upAndDown
+            self.sandSave = sandSave
+            self.chippedIn = chippedIn
+            self.firstPuttMeters = firstPuttMeters
+        }
+
+        var toPar: Int { score - par }
+    }
 
     init(
         id: UUID,
@@ -193,7 +251,8 @@ struct RoundHistorySummary: Identifiable, Equatable, Hashable, Codable {
         completedHoleCount: Int = 0,
         totalPutts: Int = 0,
         totalPenalties: Int = 0,
-        updatedAt: Date
+        updatedAt: Date,
+        holes: [HoleRecord] = []
     ) {
         self.id = id
         self.courseName = courseName
@@ -206,6 +265,24 @@ struct RoundHistorySummary: Identifiable, Equatable, Hashable, Codable {
         self.totalPutts = totalPutts
         self.totalPenalties = totalPenalties
         self.updatedAt = updatedAt
+        self.holes = holes
+    }
+
+    func withHoles(_ holes: [HoleRecord]) -> RoundHistorySummary {
+        RoundHistorySummary(
+            id: id,
+            courseName: courseName,
+            status: status,
+            holeNumber: holeNumber,
+            totalHoleCount: totalHoleCount,
+            playerCount: playerCount,
+            totalStrokes: totalStrokes,
+            completedHoleCount: completedHoleCount,
+            totalPutts: totalPutts,
+            totalPenalties: totalPenalties,
+            updatedAt: updatedAt,
+            holes: holes
+        )
     }
 
     init(from decoder: Decoder) throws {
@@ -221,6 +298,7 @@ struct RoundHistorySummary: Identifiable, Equatable, Hashable, Codable {
         totalPutts = try container.decodeIfPresent(Int.self, forKey: .totalPutts) ?? 0
         totalPenalties = try container.decodeIfPresent(Int.self, forKey: .totalPenalties) ?? 0
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        holes = (try? container.decodeIfPresent([HoleRecord].self, forKey: .holes)) ?? []
     }
 }
 
@@ -966,7 +1044,32 @@ final class AppState: ObservableObject {
             completedHoleCount: completedHoleCount,
             totalPutts: totalPutts,
             totalPenalties: totalPenalties,
-            updatedAt: now()
+            updatedAt: now(),
+            holes: snapshot.holeSessions.compactMap(roundHistoryHoleRecord(for:))
+        )
+    }
+
+    private func roundHistoryHoleRecord(for hole: HoleSession) -> RoundHistorySummary.HoleRecord? {
+        guard hole.isConfirmed, let score = hole.recordedScore, score > 0 else { return nil }
+        // A hole scored without logging any shots is saved with 0 putts by
+        // default; that's "not recorded", not a chip-in, so leave it blank
+        // rather than let the card and the notes count it as putting.
+        let hasPuttRecord = !hole.shots.isEmpty || (hole.recordedPutts ?? 0) > 0
+        let putts: Int? = hasPuttRecord ? resolvedPutts(for: hole) : nil
+        let shortGame = hole.shortGameSummary
+        return .init(
+            number: hole.number,
+            par: hole.par,
+            score: score,
+            putts: putts,
+            penalties: resolvedPenalties(for: hole),
+            fairwayHit: LiveRoundState.derivedFairwayInRegulation(for: hole),
+            greenInRegulation: LiveRoundState.derivedGreenInRegulation(for: hole),
+            shortGameShots: shortGame?.shots,
+            upAndDown: shortGame?.upAndDown,
+            sandSave: shortGame?.fromSand == true ? shortGame?.upAndDown : nil,
+            chippedIn: shortGame?.chippedIn == true ? true : nil,
+            firstPuttMeters: hole.shots.compactMap { $0.puttDetail?.firstPuttDistanceMeters }.first(where: { $0 > 0 })
         )
     }
 

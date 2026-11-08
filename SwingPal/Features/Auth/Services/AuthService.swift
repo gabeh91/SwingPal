@@ -22,10 +22,20 @@ enum AuthOAuthProvider: String, Equatable {
     case google
 }
 
+/// What a sign-up did. With email confirmation switched on in Supabase,
+/// sign-up creates the account but doesn't sign in until the emailed link
+/// is tapped (or the player signs in after confirming).
+enum AuthSignUpOutcome: Equatable {
+    case signedIn
+    case confirmationRequired
+}
+
 /// Errors surfaced to the UI. We keep them coarse on purpose: views
 /// should render `localizedDescription` and not branch on cause.
 enum AuthServiceError: LocalizedError, Equatable {
     case invalidCredentials
+    case emailNotConfirmed
+    case emailRateLimited
     case emailAlreadyRegistered
     case userNotFound
     case rateLimited
@@ -38,6 +48,10 @@ enum AuthServiceError: LocalizedError, Equatable {
         switch self {
         case .invalidCredentials:
             return "Email or password is incorrect."
+        case .emailNotConfirmed:
+            return "This email hasn't been confirmed yet. Tap the link we emailed you, then sign in."
+        case .emailRateLimited:
+            return "Too many emails sent to this address for now. Wait a while before asking for another."
         case .emailAlreadyRegistered:
             return "An account with that email already exists."
         case .userNotFound:
@@ -71,8 +85,11 @@ protocol AuthService: AnyObject {
     /// Restores any persisted session (e.g. on cold launch). Idempotent.
     func bootstrap() async
 
-    func signUp(email: String, password: String, displayName: String?) async throws
+    @discardableResult
+    func signUp(email: String, password: String, displayName: String?) async throws -> AuthSignUpOutcome
     func signIn(email: String, password: String) async throws
+    /// Sends the sign-up confirmation email again.
+    func resendConfirmation(email: String) async throws
     func sendMagicLink(email: String) async throws
     func sendPasswordReset(email: String) async throws
 

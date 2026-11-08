@@ -12,6 +12,9 @@ struct RoundSummaryAnalysis: Equatable, Codable, Identifiable {
 
         init(summary: RoundHistorySummary) {
             rawValue = [
+                // Bump when the notes' inputs or rules change, so notes
+                // written under the old rules are rewritten.
+                Self.version,
                 summary.id.uuidString,
                 summary.status.rawValue,
                 "\(summary.holeNumber)",
@@ -21,9 +24,12 @@ struct RoundSummaryAnalysis: Equatable, Codable, Identifiable {
                 "\(summary.completedHoleCount)",
                 "\(summary.totalPutts)",
                 "\(summary.totalPenalties)",
-                "\(summary.updatedAt.timeIntervalSince1970)"
+                "\(summary.updatedAt.timeIntervalSince1970)",
+                "\(summary.holes.count)"
             ].joined(separator: "|")
         }
+
+        static let version = "notes-v3"
     }
 
     let roundID: UUID

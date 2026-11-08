@@ -15,7 +15,13 @@ final class AuthViewModel: ObservableObject {
         case forgotPassword
         case magicLinkSent(email: String)
         case passwordResetSent(email: String)
+        /// The account exists but the address isn't confirmed yet.
+        case confirmEmail(email: String)
     }
+
+    /// Apple and Google sign-in stay hidden until their OAuth providers are
+    /// set up in Supabase.
+    static let showsSocialSignIn = false
 
     @Published var step: Step = .entry
     @Published var email: String = ""
@@ -23,9 +29,13 @@ final class AuthViewModel: ObservableObject {
     @Published var displayName: String = ""
     @Published var isBusy: Bool = false
     @Published var errorMessage: String?
+    /// A short confirmation shown on the confirm-email step (e.g. "sent again").
+    @Published var noticeMessage: String?
 
     private let authService: AuthService
     private let appleCoordinatorFactory: () -> AppleSignInCoordinator
+    /// The request the screen is waiting on, so closing the sheet can stop it.
+    private var inFlight: Task<Void, Never>?
 
     init(
         authService: AuthService,
@@ -50,33 +60,92 @@ final class AuthViewModel: ObservableObject {
 
     func goTo(_ next: Step) {
         errorMessage = nil
+        noticeMessage = nil
         step = next
+    }
+
+    /// Starts a request from a button. Only one runs at a time.
+    func launch(_ work: @escaping @MainActor (AuthViewModel) async -> Void) {
+        inFlight?.cancel()
+        inFlight = Task { [weak self] in
+            guard let self else { return }
+            await work(self)
+        }
+    }
+
+    /// The sheet is closing: stop waiting on whatever was in flight so it
+    /// can't land on a screen nobody's looking at.
+    func cancelInFlight() {
+        inFlight?.cancel()
+        inFlight = nil
+        isBusy = false
+    }
+
+    private var trimmedEmail: String {
+        email.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     func submitEmail() async {
         guard canSubmitEmail else { return }
         let mode: Mode
         if case .email(let m) = step { mode = m } else { return }
+        let address = trimmedEmail
 
         await run {
             switch mode {
             case .signIn:
-                try await self.authService.signIn(email: self.email, password: self.password)
+                do {
+                    try await self.authService.signIn(email: address, password: self.password)
+                } catch AuthServiceError.emailNotConfirmed {
+                    self.step = .confirmEmail(email: address)
+                }
             case .signUp:
-                try await self.authService.signUp(
-                    email: self.email,
-                    password: self.password,
-                    displayName: self.displayName.trimmingCharacters(in: .whitespaces).isEmpty
-                        ? nil
-                        : self.displayName.trimmingCharacters(in: .whitespaces)
-                )
+                let name = self.displayName.trimmingCharacters(in: .whitespaces)
+                do {
+                    let outcome = try await self.authService.signUp(
+                        email: address,
+                        password: self.password,
+                        displayName: name.isEmpty ? nil : name
+                    )
+                    if outcome == .confirmationRequired {
+                        self.step = .confirmEmail(email: address)
+                    }
+                } catch AuthServiceError.emailAlreadyRegistered {
+                    self.step = .email(.signIn)
+                    throw AuthServiceError.underlying("You already have an account with that email. Sign in instead.")
+                }
             }
+        }
+    }
+
+    /// From the confirm-email step: they've tapped the link (perhaps on
+    /// another device), so try signing in with what they typed.
+    func signInAfterConfirming() async {
+        guard case .confirmEmail(let address) = step else { return }
+        guard !password.isEmpty else {
+            goTo(.email(.signIn))
+            return
+        }
+        await run {
+            do {
+                try await self.authService.signIn(email: address, password: self.password)
+            } catch AuthServiceError.emailNotConfirmed {
+                throw AuthServiceError.underlying("Not confirmed yet. Tap the link in the email first, then try again.")
+            }
+        }
+    }
+
+    func resendConfirmation() async {
+        guard case .confirmEmail(let address) = step else { return }
+        await run {
+            try await self.authService.resendConfirmation(email: address)
+            self.noticeMessage = "Sent again to \(address). It can take a minute to arrive."
         }
     }
 
     func submitMagicLink() async {
         guard canSubmitMagicLink else { return }
-        let trimmed = email
+        let trimmed = trimmedEmail
         await run {
             try await self.authService.sendMagicLink(email: trimmed)
             await MainActor.run {
@@ -87,7 +156,7 @@ final class AuthViewModel: ObservableObject {
 
     func submitForgotPassword() async {
         guard canSubmitForgotPassword else { return }
-        let trimmed = email
+        let trimmed = trimmedEmail
         await run {
             try await self.authService.sendPasswordReset(email: trimmed)
             await MainActor.run {
@@ -114,18 +183,21 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
-    private func run(_ work: @escaping () async throws -> Void) async {
+    private func run(_ work: @escaping @MainActor () async throws -> Void) async {
         isBusy = true
         errorMessage = nil
+        noticeMessage = nil
         defer { isBusy = false }
         do {
             try await work()
-        } catch let error as AuthServiceError {
-            errorMessage = error.localizedDescription
-        } catch is CancellationError {
-            errorMessage = AuthServiceError.userCancelled.localizedDescription
         } catch {
-            errorMessage = error.localizedDescription
+            // Closed mid-request: nothing to tell anyone.
+            if Task.isCancelled { return }
+            if error is CancellationError {
+                errorMessage = AuthServiceError.userCancelled.localizedDescription
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
