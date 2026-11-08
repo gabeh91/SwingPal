@@ -316,13 +316,17 @@ struct AppShellView: View {
         }
 
         let connectionBadge: String
-        switch snapshot.connectionState {
-        case .connected:
+        switch appState.watchCompanionInstallState {
+        case .ready:
             connectionBadge = "Connected"
-        case .syncing:
-            connectionBadge = "Syncing"
-        case .disconnected:
-            connectionBadge = "Offline"
+        case .installedButNotReachable:
+            connectionBadge = "Watch not reachable"
+        case .watchAppNotInstalled:
+            connectionBadge = "Install SwingPal on Apple Watch"
+        case .notPaired:
+            connectionBadge = "No Apple Watch paired"
+        case .unsupported:
+            connectionBadge = "Not available"
         }
 
         let mutationSourceText: String
@@ -375,7 +379,7 @@ private struct WatchCompanionLandingView: View {
                         .font(.body)
                         .foregroundStyle(Book.pencil)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("On your wrist: hole, distance, club, quick shot and hole finish. Changes are confirmed on iPhone.")
+                    Text("On your wrist: the hole drawn to scale, green distances, your club, shots, putts, penalties, undo and the hole score. Each change counts once iPhone confirms it.")
                         .font(.subheadline)
                         .foregroundStyle(Book.pencil)
                         .fixedSize(horizontal: false, vertical: true)
