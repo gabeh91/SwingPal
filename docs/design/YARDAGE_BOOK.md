@@ -24,7 +24,7 @@ SwingPal feels like **a caddie's yardage book**: every hole is drawn to scale fr
 
 - **Paper and ink.** Light "day book": paper `#F2EFE6`, leaf `#FBFAF5`, ink `#17261F`, pencil `#596159` (5.6:1 on paper), rule `#D8D2C2`, stamp `#1E3B2F`. Dark "night book": paper `#101714`, leaf `#18211D`, ink `#ECE7DA`, pencil `#A4AAA0` (7.6:1), stamp `#CFE3C4`. These live in the existing `Course*` colour assets, so every screen inherits them.
 - **Flag.** `#D4462A` / `#FF7452`, reserved for the target, the player's position, the pin pennant and scores under par. Never used for text-only emphasis.
-- **Terrain inks** (drawings only): fairway with mown stripes, green with contour rings, stippled sand, hatched water, a solid tee block. Defined in `Book` in `DesignSystem/YardageBook.swift`.
+- **Terrain inks** (drawings only): fairway with mown stripes, green with contour rings, stippled sand, hatched water, a solid tee block. Defined in `Book` in `DesignSystem/Tokens/Book.swift`.
 - **Type.** SF Pro Condensed for the book's voice (folio numerals, headings, figures); SF Pro for reading; expanded small capitals for pencil notes. All sizes derive from text styles and scale with Dynamic Type, apart from the fixed folio numerals and tiny map labels.
 - **Depth.** Three layers only: paper (ground), leaf (the page or a floating control, with a hairline edge), and the stamp (the one committed action). No glass. Floating map controls are paper chips.
 - **Shape.** Hairline rules instead of cards; 14–18 pt continuous corners for leaves and stamps; circles and squares carry score meaning.
@@ -44,7 +44,7 @@ SwingPal feels like **a caddie's yardage book**: every hole is drawn to scale fr
 
 ## The mark, icon and launch
 
-- **The mark is a hole drawn as an S.** A tee block at the tail; a fairway that swells through the landing zones and pinches at the approach (the thick–thin rhythm of a typeset S); a contoured green with the flag at the head; yardage rings radiating from the pin. One geometry, defined twice from the same numbers: `HoleMark` in `SwingPalLaunchLogo.swift` (drawn live with `Canvas`) and `Tools/brand/render_brand.py` (renders the PNG assets).
+- **The mark is a hole drawn as an S.** A tee block at the tail; a fairway that swells through the landing zones and pinches at the approach (the thick–thin rhythm of a typeset S); a contoured green with the flag at the head; yardage rings radiating from the pin. One geometry, defined twice from the same numbers: `HoleMark` in `DesignSystem/Brand/HoleMark.swift` (drawn live with `Canvas`) and `Tools/brand/render_brand.py` (renders the PNG assets).
 - **Icon.** Stamp-green ground `#1E3B2F`, fairway and green in the day-book terrain inks, the flag in `#D4462A`. Single-size 1024 px set with Light, Dark (night-book ground `#0F1714`) and Tinted (greyscale) appearances. The watch icon is the light icon, which reads within the circular mask.
 - **Launch.** `LaunchScreen.storyboard` is the book's cover: `CourseGround` paper and the page-coloured mark (`LaunchMark`, day and night) centred at 200 pt, nothing else.
 - **Splash.** `LaunchSplashView` starts on that exact frame and plays the hole once: the ball leaves the tee, runs the S with its line pencilled in behind it and drops at the pin while "SwingPal / Your yardage book" is set beneath, then the page lifts away (≈1.3 s, no loop, touches pass through). Reduce Motion drops the ball and shortens the hold. Review with `SWINGPAL_DESIGN_REVIEW=splash` (6× slower, tap to replay) or `=brand`.
@@ -52,7 +52,7 @@ SwingPal feels like **a caddie's yardage book**: every hole is drawn to scale fr
 
 ## Where things live
 
-- `DesignSystem/YardageBook.swift`: the `Book` tokens and type, `HolePageDrawing` / `HoleProjection` (geometry projection and rendering), `ScoreMark`, `ThumbIndex`, `BookCounter`, `BookStampButtonStyle`, rules and notes.
+- `DesignSystem/`: the `Book` tokens and type in `Tokens/`; `ScoreMark`, `BookStampButtonStyle`, rules and notes in `Atoms/`; `ThumbIndex`, `BookCounter` and `ScorecardStub` in `Molecules/`; `HolePageDrawing` / `HoleProjection` (geometry projection and rendering) in `Organisms/HolePage/`; `HoleMark` and `SwingPalMark` in `Brand/`.
 - Home: `HomeView` (book, thumb index, scorecard stubs, round record). Setup: `RoundSetupView` (course contents strip and thumbnails). Live: `FreshLiveRoundScreen` (header, dock, club sequence, drawn map mode with arcs, hole score sheet). Review: `RoundReviewView`. Stats: `StatsView` (stroke line, book tabs). Social: `SocialView` (clubhouse board). Profile: `ProfileView` (carry ladder).
 
 ## Evidence and limits
