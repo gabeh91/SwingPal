@@ -298,10 +298,11 @@ final class LiveRoundStateTests: XCTestCase {
 
         XCTAssertEqual(sync.lastSnapshot?.selectedClubName, "5i")
         XCTAssertEqual(sync.lastSnapshot?.holeNumber, 1)
-        XCTAssertEqual(sync.lastSnapshot?.loggedShotCount, 0)
+        XCTAssertEqual(sync.lastSnapshot?.strokeNumber, 1)
+        XCTAssertEqual(sync.lastSnapshot?.shotContext, .tee)
     }
 
-    func testCompanionSnapshotCarriesBagDrivenClubOptions() {
+    func testCompanionSnapshotCarriesBagDrivenClubsWithCarrySource() {
         let sync = RecordingRoundCompanionSync()
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
@@ -315,56 +316,12 @@ final class LiveRoundStateTests: XCTestCase {
             roundCompanionSync: sync
         )
 
-        XCTAssertEqual(sync.lastSnapshot?.availableClubNames, ["5W", "7i", "Putter", "Driving Iron", "Driver"])
-    }
-
-    func testPreviewCorridorBoundsIgnoreWideHazardOutliers() throws {
-        let hole = SwingPalCourse.Hole(
-            number: 1,
-            par: 4,
-            features: [
-                .init(
-                    kind: .tee,
-                    label: "Tee",
-                    coordinates: [
-                        .init(latitude: -37.9000, longitude: 145.0000),
-                        .init(latitude: -37.9001, longitude: 145.0001),
-                    ]
-                ),
-                .init(
-                    kind: .fairway,
-                    label: "Fairway",
-                    coordinates: [
-                        .init(latitude: -37.8994, longitude: 145.0002),
-                        .init(latitude: -37.8988, longitude: 145.0005),
-                        .init(latitude: -37.8980, longitude: 145.0007),
-                    ]
-                ),
-                .init(
-                    kind: .green,
-                    label: "Green",
-                    coordinates: [
-                        .init(latitude: -37.8973, longitude: 145.0006),
-                        .init(latitude: -37.8972, longitude: 145.0008),
-                    ]
-                ),
-                .init(
-                    kind: .bunker,
-                    label: "Far bunker",
-                    coordinates: [
-                        .init(latitude: -37.8983, longitude: 145.0038),
-                        .init(latitude: -37.8981, longitude: 145.0040),
-                    ]
-                ),
-            ]
-        )
-
-        let fullBounds = try XCTUnwrap(hole.bounds)
-        let previewBounds = try XCTUnwrap(RoundCompanionPreviewCorridorBounds.resolve(for: hole))
-
-        XCTAssertLessThan(previewBounds.maxLongitude, fullBounds.maxLongitude)
-        let previewLongitudeDelta = previewBounds.maxLongitude - previewBounds.minLongitude
-        XCTAssertLessThan(previewLongitudeDelta, fullBounds.longitudeDelta)
+        let clubs = sync.lastSnapshot?.clubs ?? []
+        XCTAssertEqual(clubs.map(\.name), ["5W", "7i", "Putter", "Driving Iron", "Driver"])
+        XCTAssertEqual(clubs.first { $0.name == "7i" }?.carryMeters, 150)
+        XCTAssertEqual(clubs.first { $0.name == "7i" }?.isEstimated, false)
+        XCTAssertEqual(clubs.first { $0.name == "Driver" }?.isEstimated, true)
+        _ = state
     }
 
     func testLoggingShotPublishesUpdatedCompanionSnapshot() {
@@ -380,12 +337,14 @@ final class LiveRoundStateTests: XCTestCase {
         state.selectShotDistance(.onNumber)
         state.confirmPendingShot()
 
-        XCTAssertEqual(sync.lastSnapshot?.loggedShotCount, 1)
+        XCTAssertEqual(sync.lastSnapshot?.strokeNumber, 2)
         XCTAssertEqual(sync.lastSnapshot?.holeNumber, 1)
-        XCTAssertFalse(sync.lastSnapshot?.isInspectingHole ?? true)
+        XCTAssertNil(sync.lastSnapshot?.inspectedHoleNumber)
+        XCTAssertEqual(sync.lastSnapshot?.lastShot?.clubName, "Driver")
+        XCTAssertEqual(sync.lastSnapshot?.canUndoLastShot, true)
     }
 
-    func testCompanionSnapshotIncludesFrontPinAndBackYardages() {
+    func testCompanionSnapshotWithholdsYardageWithoutGreenGeometry() {
         let sync = RecordingRoundCompanionSync()
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
@@ -395,9 +354,30 @@ final class LiveRoundStateTests: XCTestCase {
 
         state.distanceToPinMeters = 144
 
-        XCTAssertEqual(sync.lastSnapshot?.frontDistanceMeters, state.displayedFrontDistanceMeters)
-        XCTAssertEqual(sync.lastSnapshot?.distanceToTargetMeters, 144)
-        XCTAssertEqual(sync.lastSnapshot?.backDistanceMeters, state.displayedBackDistanceMeters)
+        XCTAssertNil(sync.lastSnapshot?.yardage)
+        XCTAssertEqual(sync.lastSnapshot?.yardageStatus, .noGreen)
+        XCTAssertNil(sync.lastSnapshot?.sketch)
+    }
+
+    func testCompanionSnapshotCarriesLiveGreenReadingsAndSketch() throws {
+        let sync = RecordingRoundCompanionSync()
+        let state = makeCompanionGeometryState(sync: sync)
+
+        let snapshot = try XCTUnwrap(sync.lastSnapshot)
+        let yardage = try XCTUnwrap(snapshot.yardage)
+        XCTAssertEqual(snapshot.yardageStatus, .live)
+        XCTAssertEqual(yardage.centreMeters, state.displayedPinDistanceMeters)
+        XCTAssertEqual(yardage.frontMeters, state.displayedFrontDistanceMeters)
+        XCTAssertEqual(yardage.backMeters, state.displayedBackDistanceMeters)
+        XCTAssertLessThanOrEqual(yardage.frontMeters, yardage.centreMeters)
+        XCTAssertGreaterThanOrEqual(yardage.backMeters, yardage.centreMeters)
+
+        let sketch = try XCTUnwrap(snapshot.sketch)
+        let tee = try XCTUnwrap(sketch.tee)
+        let green = try XCTUnwrap(sketch.green)
+        XCTAssertGreaterThan(green.y, tee.y, "The page is turned so the green is up")
+        XCTAssertEqual(Set(sketch.features.map(\.kind)), [.tee, .fairway, .green])
+        XCTAssertNotNil(sketch.player)
     }
 
     func testCompanionSnapshotReflectsHoleScoringAndShotCounts() {
@@ -417,14 +397,13 @@ final class LiveRoundStateTests: XCTestCase {
             puttDetail: .init(puttCount: 1, firstPuttDistanceMeters: 3)
         )
 
-        XCTAssertEqual(sync.lastSnapshot?.shotNumber, 2)
+        XCTAssertEqual(sync.lastSnapshot?.strokeNumber, 2)
         XCTAssertEqual(sync.lastSnapshot?.puttCount, 1)
         XCTAssertEqual(sync.lastSnapshot?.penaltyCount, 1)
         XCTAssertEqual(sync.lastSnapshot?.holeScore, 2)
-        XCTAssertEqual(sync.lastSnapshot?.currentSurface, ShotEvent.Surface.green.rawValue)
     }
 
-    func testPresentingHoleConfirmationPublishesFinishHoleReadiness() {
+    func testCompanionSnapshotMarksPhoneBusyWhileHoleScoreIsOpen() {
         let sync = RecordingRoundCompanionSync()
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
@@ -432,12 +411,12 @@ final class LiveRoundStateTests: XCTestCase {
             roundCompanionSync: sync
         )
 
-        state.logShot(clubName: "7i", distanceToTargetMeters: 152)
-        XCTAssertFalse(sync.lastSnapshot?.canFinishHole ?? true)
+        XCTAssertEqual(sync.lastSnapshot?.isPhoneBusy, false)
+        XCTAssertEqual(sync.lastSnapshot?.proposedHoleScore, 4, "Nothing logged yet: the card starts at par")
 
         state.presentHoleConfirmation()
 
-        XCTAssertTrue(sync.lastSnapshot?.canFinishHole ?? false)
+        XCTAssertEqual(sync.lastSnapshot?.isPhoneBusy, true)
     }
 
     func testWatchIntentCanChangeSelectedClub() {
@@ -446,24 +425,241 @@ final class LiveRoundStateTests: XCTestCase {
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        state.applyCompanionAction(.changeClub(name: "7i"), source: .watch)
+        let receipt = state.applyCompanionAction(.init(action: .selectClub(name: "7i"), holeNumber: 1))
 
+        XCTAssertEqual(receipt.outcome, .applied)
         XCTAssertEqual(state.selectedClubName, "7i")
     }
 
-    func testWatchIntentCanAddPuttWithoutOpeningPhoneLogger() {
+    func testWatchPuttIsLoggedThroughThePhoneLoggerWithoutOpeningIt() {
         let state = LiveRoundState(
             hole: HoleSession(number: 1, par: 4),
             players: [.init(name: "You", kind: .selfPlayer)]
         )
 
-        state.applyCompanionAction(.addPutt, source: .watch)
+        let receipt = state.applyCompanionAction(.init(
+            action: .logPutt(.init(holed: false, missDirection: .left, missDistance: .long)),
+            holeNumber: 1
+        ))
 
+        XCTAssertEqual(receipt.outcome, .applied)
         XCTAssertEqual(state.currentPlayerTotalPutts, 1)
         XCTAssertFalse(state.isShowingShotLogger)
+        let putt = state.hole.shots.last
+        XCTAssertEqual(putt?.shotType, .putt)
+        XCTAssertEqual(putt?.puttDetail?.holed, false)
+        XCTAssertEqual(putt?.direction, .left)
+        XCTAssertEqual(putt?.distanceResult, .long)
     }
 
-    func testInspectingPreviousHolePublishesInspectionCompanionSnapshot() {
+    func testWatchHoledPuttRecordsAHoleOut() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+
+        state.applyCompanionAction(.init(action: .logPutt(.init(holed: true)), holeNumber: 1))
+
+        XCTAssertEqual(state.hole.shots.last?.puttDetail?.holed, true)
+        XCTAssertTrue(state.isShowingHoleConfirmationPill)
+    }
+
+    func testWatchShotEntryLogsThroughThePhoneLogger() throws {
+        let sync = RecordingRoundCompanionSync()
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)],
+            roundCompanionSync: sync
+        )
+
+        let receipt = state.applyCompanionAction(.init(
+            action: .logShot(.init(clubName: "Driver", surface: .tee, direction: .farLeft, distance: .long)),
+            holeNumber: 1
+        ))
+
+        XCTAssertEqual(receipt.outcome, .applied)
+        let shot = try XCTUnwrap(state.hole.shots.last)
+        XCTAssertEqual(shot.clubName, "Driver")
+        XCTAssertEqual(shot.surface, .tee)
+        XCTAssertEqual(shot.direction, .farLeft)
+        XCTAssertEqual(shot.distanceResult, .long)
+        XCTAssertEqual(shot.strokeNumber, 1)
+        XCTAssertFalse(state.isShowingShotLogger)
+        XCTAssertEqual(state.shotLogConfirmationCount, 1)
+        XCTAssertEqual(sync.lastSnapshot?.lastMutationSource, .watch)
+    }
+
+    func testWatchProvisionalTeeShotIsMarkedProvisional() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+
+        state.applyCompanionAction(.init(
+            action: .logShot(.init(clubName: "Driver", surface: .tee, direction: .right, distance: .onNumber, isProvisional: true)),
+            holeNumber: 1
+        ))
+
+        XCTAssertEqual(state.hole.shots.last?.shotType, .provisionalBall)
+    }
+
+    func testWatchActionForAHoleTheRoundHasLeftIsRefused() {
+        let state = makeStateWithThreeHoles(activeHoleNumber: 2)
+
+        let receipt = state.applyCompanionAction(.init(action: .quickPenalty(.water), holeNumber: 1))
+
+        XCTAssertEqual(receipt.outcome, .holeChanged)
+        XCTAssertTrue(state.hole.shots.isEmpty)
+    }
+
+    func testWatchActionWhilePhoneLoggerIsOpenLeavesThePhoneEntryAlone() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.presentShotLogger()
+        state.selectShotDirection(.right)
+
+        let receipt = state.applyCompanionAction(.init(
+            action: .logShot(.init(clubName: "7i", surface: .fairway, direction: .hit, distance: .onNumber)),
+            holeNumber: 1
+        ))
+
+        XCTAssertEqual(receipt.outcome, .phoneBusy)
+        XCTAssertTrue(state.isShowingShotLogger)
+        XCTAssertEqual(state.pendingShotDirection, .right)
+        XCTAssertTrue(state.hole.shots.isEmpty)
+    }
+
+    func testWatchShotWhileInspectingIsRefusedUntilReturningToLiveHole() {
+        let state = makeStateWithThreeHoles(activeHoleNumber: 2)
+        state.inspectPreviousHole()
+
+        let refused = state.applyCompanionAction(.init(action: .retee, holeNumber: 2))
+        XCTAssertEqual(refused.outcome, .inspectingOtherHole)
+
+        let returned = state.applyCompanionAction(.init(action: .returnToLiveHole, holeNumber: 2))
+        XCTAssertEqual(returned.outcome, .applied)
+        XCTAssertFalse(state.isInspectingHole)
+
+        let retee = state.applyCompanionAction(.init(action: .retee, holeNumber: 2))
+        XCTAssertEqual(retee.outcome, .applied)
+    }
+
+    func testWatchUndoUsesThePhoneUndoAndOnlyGoesBackOneShot() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.applyCompanionAction(.init(
+            action: .logShot(.init(clubName: "Driver", surface: .tee, direction: .hit, distance: .onNumber)),
+            holeNumber: 1
+        ))
+
+        let undo = state.applyCompanionAction(.init(action: .undoLastShot, holeNumber: 1))
+        let secondUndo = state.applyCompanionAction(.init(action: .undoLastShot, holeNumber: 1))
+
+        XCTAssertEqual(undo.outcome, .applied)
+        XCTAssertTrue(state.hole.shots.isEmpty)
+        XCTAssertEqual(secondUndo.outcome, .notAvailable)
+    }
+
+    func testWatchMarkBallNeedsAShotFirst() {
+        let sync = RecordingRoundCompanionSync()
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)],
+            roundCompanionSync: sync
+        )
+
+        XCTAssertEqual(state.applyCompanionAction(.init(action: .markBall, holeNumber: 1)).outcome, .notAvailable)
+
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 220, surface: .tee)
+        XCTAssertEqual(state.applyCompanionAction(.init(action: .markBall, holeNumber: 1)).outcome, .applied)
+        XCTAssertEqual(sync.lastSnapshot?.ballMark, .marked)
+    }
+
+    func testWatchFinishHoleWritesTheScoreAndAdvances() {
+        let sync = RecordingRoundCompanionSync()
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            courseHoles: [
+                .init(number: 1, par: 4, features: []),
+                .init(number: 2, par: 5, features: [])
+            ],
+            players: [.init(name: "You", kind: .selfPlayer)],
+            roundCompanionSync: sync
+        )
+
+        let receipt = state.applyCompanionAction(.init(action: .finishHole(score: 5, putts: 9), holeNumber: 1))
+
+        XCTAssertEqual(receipt.outcome, .applied)
+        XCTAssertEqual(state.holeInspectionEntries.first?.score, 5)
+        XCTAssertEqual(state.holeInspectionEntries.first?.putts, 5, "Putts cannot exceed the score")
+        XCTAssertEqual(state.hole.number, 2)
+        XCTAssertFalse(state.isShowingHoleConfirmation)
+        XCTAssertEqual(sync.lastSnapshot?.holeNumber, 2)
+        XCTAssertEqual(sync.lastSnapshot?.confirmedHoleCount, 1)
+        XCTAssertEqual(sync.lastSnapshot?.roundScoreToPar, 1)
+    }
+
+    func testWatchFinishingTheLastHoleCompletesTheCard() {
+        let sync = RecordingRoundCompanionSync()
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 3),
+            players: [.init(name: "You", kind: .selfPlayer)],
+            roundCompanionSync: sync
+        )
+
+        state.applyCompanionAction(.init(action: .finishHole(score: 3, putts: 2), holeNumber: 1))
+
+        XCTAssertTrue(state.canCompleteRound)
+        XCTAssertEqual(sync.lastSnapshot?.isRoundComplete, true)
+        XCTAssertEqual(state.applyCompanionAction(.init(action: .markBall, holeNumber: 1)).outcome, .holeChanged)
+    }
+
+    func testQuickPenaltyAddsOneStrokeNotTwo() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 220, surface: .tee)
+
+        state.logQuickPenalty(.lostBall)
+
+        XCTAssertEqual(state.hole.totalScore, 2)
+        XCTAssertEqual(state.hole.strokeCount + 1, 3, "The replayed shot is stroke 3")
+    }
+
+    func testReteeAddsOnePenaltyStroke() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 220, surface: .tee)
+
+        state.applyCompanionAction(.init(action: .retee, holeNumber: 1))
+
+        XCTAssertEqual(state.hole.totalScore, 2)
+    }
+
+    func testPenaltyLoggedOnTheGreenIsNotCountedAsAPutt() {
+        let state = LiveRoundState(
+            hole: HoleSession(number: 1, par: 4),
+            players: [.init(name: "You", kind: .selfPlayer)]
+        )
+        state.logShot(clubName: "Driver", distanceToTargetMeters: 220, surface: .tee)
+        state.presentShotLogger()
+        state.selectShotSurface(.green)
+        state.dismissShotLogger()
+
+        state.logQuickPenalty(.unplayable)
+
+        XCTAssertEqual(state.currentPlayerTotalPutts, 0)
+        XCTAssertEqual(state.hole.totalScore, 2)
+    }
+
+    func testInspectingPreviousHoleKeepsTheWatchOnTheLiveHole() {
         let sync = RecordingRoundCompanionSync()
         let state = LiveRoundState(
             hole: HoleSession(number: 2, par: 4),
@@ -478,8 +674,10 @@ final class LiveRoundStateTests: XCTestCase {
 
         state.inspectPreviousHole()
 
-        XCTAssertEqual(sync.lastSnapshot?.holeNumber, 1)
-        XCTAssertTrue(sync.lastSnapshot?.isInspectingHole ?? false)
+        XCTAssertEqual(sync.lastSnapshot?.holeNumber, 2)
+        XCTAssertEqual(sync.lastSnapshot?.inspectedHoleNumber, 1)
+        XCTAssertEqual(sync.lastSnapshot?.yardageStatus, .inspectingOtherHole)
+        XCTAssertNil(sync.lastSnapshot?.yardage)
     }
 
     func testRestoringFromSnapshotPublishesOnlyFinalCompanionSnapshot() {
@@ -4788,6 +4986,36 @@ private extension XCTestCase {
         DispatchQueue.main.async { flush.fulfill() }
         wait(for: [flush], timeout: 2.0)
     }
+}
+
+/// One hole drawn around the preview location: the player stands between the
+/// tee and the green, about 150 m out.
+private func makeCompanionGeometryState(sync: RoundCompanionSyncing) -> LiveRoundState {
+    let tee = SwingPalCourse.Hole.Feature(kind: .tee, label: "Tee", coordinates: [
+        .init(latitude: -37.97580, longitude: 145.03330),
+        .init(latitude: -37.97580, longitude: 145.03350),
+        .init(latitude: -37.97570, longitude: 145.03350),
+        .init(latitude: -37.97570, longitude: 145.03330),
+    ])
+    let fairway = SwingPalCourse.Hole.Feature(kind: .fairway, label: "Fairway", coordinates: [
+        .init(latitude: -37.97550, longitude: 145.03310),
+        .init(latitude: -37.97550, longitude: 145.03370),
+        .init(latitude: -37.97330, longitude: 145.03370),
+        .init(latitude: -37.97330, longitude: 145.03310),
+    ])
+    let green = SwingPalCourse.Hole.Feature(kind: .green, label: "Green", coordinates: [
+        .init(latitude: -37.97320, longitude: 145.03325),
+        .init(latitude: -37.97320, longitude: 145.03355),
+        .init(latitude: -37.97290, longitude: 145.03355),
+        .init(latitude: -37.97290, longitude: 145.03325),
+    ])
+    return LiveRoundState(
+        hole: HoleSession(number: 1, par: 4),
+        courseCoordinate: .init(latitude: -37.9744, longitude: 145.0334),
+        courseHoles: [.init(number: 1, par: 4, features: [tee, fairway, green])],
+        players: [.init(name: "You", kind: .selfPlayer)],
+        roundCompanionSync: sync
+    )
 }
 
 private func makeStateWithThreeHoles(activeHoleNumber: Int) -> LiveRoundState {

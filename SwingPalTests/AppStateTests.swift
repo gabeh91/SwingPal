@@ -533,8 +533,9 @@ final class AppStateTests: XCTestCase {
             chromeMode: .live
         )
 
-        state.handleRoundCompanionAction(.changeClub(name: "7i"))
+        let receipt = state.handleRoundCompanionAction(.init(action: .selectClub(name: "7i"), holeNumber: 1))
 
+        XCTAssertEqual(receipt.outcome, .applied)
         XCTAssertEqual(state.activeRoundState?.selectedClubName, "7i")
         XCTAssertEqual(sync.lastSnapshot?.lastMutationSource, .watch)
     }
@@ -546,8 +547,9 @@ final class AppStateTests: XCTestCase {
             roundCompanionSync: sync
         )
 
-        state.handleRoundCompanionAction(.changeClub(name: "7i"))
+        let receipt = state.handleRoundCompanionAction(.init(action: .selectClub(name: "7i"), holeNumber: 1))
 
+        XCTAssertEqual(receipt.outcome, .noActiveRound)
         XCTAssertNil(state.activeRoundState)
         XCTAssertTrue(sync.publishedSnapshots.isEmpty)
     }
@@ -568,8 +570,9 @@ final class AppStateTests: XCTestCase {
             chromeMode: .live
         )
 
-        transport.deliverIncomingAction(.changeClub(name: "7i"))
+        let receipt = transport.deliverIncomingAction(.init(action: .selectClub(name: "7i"), holeNumber: 1))
 
+        XCTAssertEqual(receipt?.outcome, .applied)
         XCTAssertEqual(state.activeRoundState?.selectedClubName, "7i")
         XCTAssertEqual(transport.lastSnapshot?.selectedClubName, "7i")
     }
@@ -868,7 +871,7 @@ final class RecordingRoundCompanionSync: RoundCompanionSyncing {
 
 final class RecordingRoundCompanionTransport: RoundCompanionSyncing, RoundCompanionActionReceiving {
     private(set) var publishedSnapshots: [RoundCompanionSnapshot] = []
-    private var actionHandler: ((RoundCompanionAction) -> Void)?
+    private var actionHandler: ((RoundCompanionActionEnvelope) -> RoundCompanionActionReceipt)?
 
     var lastSnapshot: RoundCompanionSnapshot? {
         publishedSnapshots.last
@@ -882,11 +885,11 @@ final class RecordingRoundCompanionTransport: RoundCompanionSyncing, RoundCompan
         publishedSnapshots.removeAll()
     }
 
-    func setIncomingActionHandler(_ handler: @escaping (RoundCompanionAction) -> Void) {
+    func setIncomingActionHandler(_ handler: @escaping (RoundCompanionActionEnvelope) -> RoundCompanionActionReceipt) {
         actionHandler = handler
     }
 
-    func deliverIncomingAction(_ action: RoundCompanionAction) {
-        actionHandler?(action)
+    func deliverIncomingAction(_ envelope: RoundCompanionActionEnvelope) -> RoundCompanionActionReceipt? {
+        actionHandler?(envelope)
     }
 }
