@@ -131,7 +131,6 @@
 		A00000000000000000000564 /* FollowDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000565 /* FollowDeepLink.swift */; };
 		A00000000000000000000566 /* NearbyDiscoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000567 /* NearbyDiscoveryCoordinator.swift */; };
 		A00000000000000000000568 /* NFCFollowScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000569 /* NFCFollowScanner.swift */; };
-		A00000000000000000000570 /* SocialDiscoveryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000571 /* SocialDiscoveryViews.swift */; };
 		A00000000000000000000572 /* SocialFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000573 /* SocialFeedService.swift */; };
 		A00000000000000000000526 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000516 /* AuthViewModel.swift */; };
 		A00000000000000000000527 /* AuthFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000517 /* AuthFlowView.swift */; };
@@ -172,6 +171,26 @@
 		B528A8395698BB7F5C9AF66D /* FreshLiveRoundEndRoundSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5224AB6357089747830E139 /* FreshLiveRoundEndRoundSheet.swift */; };
 		B5E7509536F591EE72299DDA /* FreshLiveRoundHoleConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AA8F5D6C82C1AC91A20524 /* FreshLiveRoundHoleConfirmationSheet.swift */; };
 		B580B0D8B913B6A1A27565D8 /* LiveMapDrawingCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FB3BC0FF291CB48FD8C3EF /* LiveMapDrawingCache.swift */; };
+		B5A226949CA5B427D5304190 /* BlankScorecardGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E267A3E7421748DF36094 /* BlankScorecardGlyph.swift */; };
+		B57F465A3F29EB850D0F5A7C /* HomeRoundAnalysisDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B591BB3F983CAEB66560D06E /* HomeRoundAnalysisDetailView.swift */; };
+		B56E12BC0669D1468BE7AEAF /* WatchCompanionLandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52C5B101987FF4174717482 /* WatchCompanionLandingView.swift */; };
+		B51CE06BCCCF932F806D58F0 /* RoundResumePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B531D4F3549BA9584CCFAD7B /* RoundResumePromptView.swift */; };
+		B5600CB0CA90EEF1459BD2F5 /* ProfileBagManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B556FEC3C2FB52B1E8C84B0C /* ProfileBagManagementView.swift */; };
+		B5F06F50813BF68B6FA8E0AF /* ProfileEditClubSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5856A0CD292C39E1D4EADB6 /* ProfileEditClubSheet.swift */; };
+		B544C9ED80C2AD045D8AFA2C /* CarryLadder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B573761C7DDDA2832060AFF1 /* CarryLadder.swift */; };
+		B5636958FA1C1349DB90E214 /* PublicProfileEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53DBA4B223FC8310F51C3CF /* PublicProfileEditorSheet.swift */; };
+		B5F06F71BEA73EC30EB524C7 /* SocialPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BC6F2E3A67A3FEA8CD161A /* SocialPalette.swift */; };
+		B5F0BBE35D8ED9F1841BA5FF /* SocialScorecardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5835129F7A777B9554B3167 /* SocialScorecardDetailView.swift */; };
+		B56DF8C2836415BCB3A4C328 /* FollowInviteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F161FFA4F2564AD515FDFC /* FollowInviteSheet.swift */; };
+		B5A58AADB02B2B60E8B06714 /* PeopleSearchSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E5689055A4FC9C80AECA9A /* PeopleSearchSheet.swift */; };
+		B55CABFE0E83ECBEEB1E4EFA /* NearbyConnectSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50025EF04E401A99E759F6C /* NearbyConnectSheet.swift */; };
+		B54DF0DB02CFDDF46604A38A /* RoundReviewHoleEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5EE090C7B8BBE573A56FE77 /* RoundReviewHoleEditor.swift */; };
+		B500A3E7334266C87DC1BE7B /* CourseContentsStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F1E57A0939F25072931A10 /* CourseContentsStrip.swift */; };
+		B52795F4514792079DBDB2DA /* CourseThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59EB90E7611551D77B0139C /* CourseThumbnail.swift */; };
+		B50483C6639412D25DF4297E /* BookTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56C7F1A268F47A35C1F2202 /* BookTabs.swift */; };
+		B511F26694739E6818AA06C2 /* StrokeLineChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51F6594C7AD6ECF5B23BB62 /* StrokeLineChart.swift */; };
+		B57B127C31C0521BA7ED768F /* GraphPaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53ECA97C713D01BF634F67A /* GraphPaper.swift */; };
+		B509CF91CD045EFA487FD178 /* AuthFlowModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AB87C399E35C5AD226A4EC /* AuthFlowModalView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -332,7 +351,6 @@
 		A00000000000000000000565 /* FollowDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowDeepLink.swift; sourceTree = "<group>"; };
 		A00000000000000000000567 /* NearbyDiscoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyDiscoveryCoordinator.swift; sourceTree = "<group>"; };
 		A00000000000000000000569 /* NFCFollowScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCFollowScanner.swift; sourceTree = "<group>"; };
-		A00000000000000000000571 /* SocialDiscoveryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialDiscoveryViews.swift; sourceTree = "<group>"; };
 		A00000000000000000000573 /* SocialFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialFeedService.swift; sourceTree = "<group>"; };
 		A00000000000000000000516 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000517 /* AuthFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowView.swift; sourceTree = "<group>"; };
@@ -372,6 +390,26 @@
 		B5224AB6357089747830E139 /* FreshLiveRoundEndRoundSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundEndRoundSheet.swift; sourceTree = "<group>"; };
 		B5AA8F5D6C82C1AC91A20524 /* FreshLiveRoundHoleConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundHoleConfirmationSheet.swift; sourceTree = "<group>"; };
 		B5FB3BC0FF291CB48FD8C3EF /* LiveMapDrawingCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMapDrawingCache.swift; sourceTree = "<group>"; };
+		B54E267A3E7421748DF36094 /* BlankScorecardGlyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlankScorecardGlyph.swift; sourceTree = "<group>"; };
+		B591BB3F983CAEB66560D06E /* HomeRoundAnalysisDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRoundAnalysisDetailView.swift; sourceTree = "<group>"; };
+		B52C5B101987FF4174717482 /* WatchCompanionLandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCompanionLandingView.swift; sourceTree = "<group>"; };
+		B531D4F3549BA9584CCFAD7B /* RoundResumePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundResumePromptView.swift; sourceTree = "<group>"; };
+		B556FEC3C2FB52B1E8C84B0C /* ProfileBagManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileBagManagementView.swift; sourceTree = "<group>"; };
+		B5856A0CD292C39E1D4EADB6 /* ProfileEditClubSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditClubSheet.swift; sourceTree = "<group>"; };
+		B573761C7DDDA2832060AFF1 /* CarryLadder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarryLadder.swift; sourceTree = "<group>"; };
+		B53DBA4B223FC8310F51C3CF /* PublicProfileEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicProfileEditorSheet.swift; sourceTree = "<group>"; };
+		B5BC6F2E3A67A3FEA8CD161A /* SocialPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPalette.swift; sourceTree = "<group>"; };
+		B5835129F7A777B9554B3167 /* SocialScorecardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialScorecardDetailView.swift; sourceTree = "<group>"; };
+		B5F161FFA4F2564AD515FDFC /* FollowInviteSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowInviteSheet.swift; sourceTree = "<group>"; };
+		B5E5689055A4FC9C80AECA9A /* PeopleSearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleSearchSheet.swift; sourceTree = "<group>"; };
+		B50025EF04E401A99E759F6C /* NearbyConnectSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyConnectSheet.swift; sourceTree = "<group>"; };
+		B5EE090C7B8BBE573A56FE77 /* RoundReviewHoleEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundReviewHoleEditor.swift; sourceTree = "<group>"; };
+		B5F1E57A0939F25072931A10 /* CourseContentsStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseContentsStrip.swift; sourceTree = "<group>"; };
+		B59EB90E7611551D77B0139C /* CourseThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseThumbnail.swift; sourceTree = "<group>"; };
+		B56C7F1A268F47A35C1F2202 /* BookTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookTabs.swift; sourceTree = "<group>"; };
+		B51F6594C7AD6ECF5B23BB62 /* StrokeLineChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeLineChart.swift; sourceTree = "<group>"; };
+		B53ECA97C713D01BF634F67A /* GraphPaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphPaper.swift; sourceTree = "<group>"; };
+		B5AB87C399E35C5AD226A4EC /* AuthFlowModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowModalView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -453,6 +491,8 @@
 			isa = PBXGroup;
 			children = (
 				A0000000000000000000002C /* AppShellView.swift */,
+				B531D4F3549BA9584CCFAD7B /* RoundResumePromptView.swift */,
+				B52C5B101987FF4174717482 /* WatchCompanionLandingView.swift */,
 			);
 			path = Shell;
 			sourceTree = "<group>";
@@ -619,6 +659,7 @@
 		B5A9E34345A1BFC3C6CB9B0F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B5AB87C399E35C5AD226A4EC /* AuthFlowModalView.swift */,
 				A00000000000000000000517 /* AuthFlowView.swift */,
 			);
 			path = Views;
@@ -644,6 +685,8 @@
 		B5A39BB37D6394C84246BC6A /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B54E267A3E7421748DF36094 /* BlankScorecardGlyph.swift */,
+				B591BB3F983CAEB66560D06E /* HomeRoundAnalysisDetailView.swift */,
 				A0000000000000000000002E /* HomeView.swift */,
 			);
 			path = Views;
@@ -749,6 +792,9 @@
 			isa = PBXGroup;
 			children = (
 				C92800000000000000000004 /* AddClubSheet.swift */,
+				B573761C7DDDA2832060AFF1 /* CarryLadder.swift */,
+				B556FEC3C2FB52B1E8C84B0C /* ProfileBagManagementView.swift */,
+				B5856A0CD292C39E1D4EADB6 /* ProfileEditClubSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -781,6 +827,7 @@
 			isa = PBXGroup;
 			children = (
 				A000000000000000000000D6 /* ProfileView.swift */,
+				B53DBA4B223FC8310F51C3CF /* PublicProfileEditorSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -949,6 +996,7 @@
 		B590AB6425F3C6FB992CC730 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B5EE090C7B8BBE573A56FE77 /* RoundReviewHoleEditor.swift */,
 				A000000000000000000000D0 /* RoundReviewView.swift */,
 			);
 			path = Views;
@@ -985,6 +1033,8 @@
 			children = (
 				A000000000000000000000C6 /* AddGuestPlayerSheet.swift */,
 				A00000000000000000000621 /* AddPlayerSearchSheet.swift */,
+				B5F1E57A0939F25072931A10 /* CourseContentsStrip.swift */,
+				B59EB90E7611551D77B0139C /* CourseThumbnail.swift */,
 				A000000000000000000000CF /* RoundSetupView.swift */,
 			);
 			path = Views;
@@ -1050,8 +1100,12 @@
 		B5F2F3F79BAE588E42068D4D /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000571 /* SocialDiscoveryViews.swift */,
+				B5F161FFA4F2564AD515FDFC /* FollowInviteSheet.swift */,
+				B50025EF04E401A99E759F6C /* NearbyConnectSheet.swift */,
+				B5E5689055A4FC9C80AECA9A /* PeopleSearchSheet.swift */,
+				B5BC6F2E3A67A3FEA8CD161A /* SocialPalette.swift */,
 				A000000000000000000000A3 /* SocialPostCard.swift */,
+				B5835129F7A777B9554B3167 /* SocialScorecardDetailView.swift */,
 				A000000000000000000000A0 /* SocialView.swift */,
 			);
 			path = Views;
@@ -1077,7 +1131,10 @@
 		B524BA4BC2145CE5CF1A5D6C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B56C7F1A268F47A35C1F2202 /* BookTabs.swift */,
+				B53ECA97C713D01BF634F67A /* GraphPaper.swift */,
 				A00000000000000000000163 /* StatsView.swift */,
+				B51F6594C7AD6ECF5B23BB62 /* StrokeLineChart.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1418,12 +1475,21 @@
 				A00000000000000000000038 /* AuthState.swift in Sources */,
 				A00000000000000000000039 /* AppState.swift in Sources */,
 				A0000000000000000000003A /* AppShellView.swift in Sources */,
+				B56E12BC0669D1468BE7AEAF /* WatchCompanionLandingView.swift in Sources */,
+				B51CE06BCCCF932F806D58F0 /* RoundResumePromptView.swift in Sources */,
 				A0000000000000000000003C /* HomeView.swift in Sources */,
 				B52907DBD0663800F4D26D08 /* ScorecardStub.swift in Sources */,
+				B5A226949CA5B427D5304190 /* BlankScorecardGlyph.swift in Sources */,
+				B57F465A3F29EB850D0F5A7C /* HomeRoundAnalysisDetailView.swift in Sources */,
 				A0000000000000000000003D /* HomeViewModel.swift in Sources */,
 				A00000000000000000000162 /* StatsView.swift in Sources */,
+				B50483C6639412D25DF4297E /* BookTabs.swift in Sources */,
+				B511F26694739E6818AA06C2 /* StrokeLineChart.swift in Sources */,
+				B57B127C31C0521BA7ED768F /* GraphPaper.swift in Sources */,
 				A00000000000000000000164 /* StatsViewModel.swift in Sources */,
 				A000000000000000000000B0 /* SocialView.swift in Sources */,
+				B5F06F71BEA73EC30EB524C7 /* SocialPalette.swift in Sources */,
+				B5F0BBE35D8ED9F1841BA5FF /* SocialScorecardDetailView.swift in Sources */,
 				A000000000000000000000B1 /* SocialPost.swift in Sources */,
 				A000000000000000000000B3 /* SocialPostCard.swift in Sources */,
 				A00000000000000000000124 /* SocialViewModel.swift in Sources */,
@@ -1467,8 +1533,11 @@
 				A000000000000000000000EA /* PlayerScoreState.swift in Sources */,
 				A000000000000000000000EB /* LiveRoundState.swift in Sources */,
 				A000000000000000000000EF /* RoundSetupView.swift in Sources */,
+				B500A3E7334266C87DC1BE7B /* CourseContentsStrip.swift in Sources */,
+				B52795F4514792079DBDB2DA /* CourseThumbnail.swift in Sources */,
 				A00000000000000000000620 /* AddPlayerSearchSheet.swift in Sources */,
 				A000000000000000000000F0 /* RoundReviewView.swift in Sources */,
+				B54DF0DB02CFDDF46604A38A /* RoundReviewHoleEditor.swift in Sources */,
 				A000000000000000000000F1 /* RoundRootView.swift in Sources */,
 				A000000000000000000000F2 /* Club.swift in Sources */,
 				A000000000000000000000F3 /* Bag.swift in Sources */,
@@ -1478,6 +1547,10 @@
 				A00000000000000000000152 /* RoundSummaryAnalysisService.swift in Sources */,
 				A00000000000000000000154 /* FoundationModelsRoundSummaryAnalyzer.swift in Sources */,
 				A000000000000000000000F6 /* ProfileView.swift in Sources */,
+				B5600CB0CA90EEF1459BD2F5 /* ProfileBagManagementView.swift in Sources */,
+				B5F06F50813BF68B6FA8E0AF /* ProfileEditClubSheet.swift in Sources */,
+				B544C9ED80C2AD045D8AFA2C /* CarryLadder.swift in Sources */,
+				B5636958FA1C1349DB90E214 /* PublicProfileEditorSheet.swift in Sources */,
 				C92800000000000000000001 /* AddClubSelection.swift in Sources */,
 				C92800000000000000000003 /* AddClubSheet.swift in Sources */,
 				C92800000000000000000005 /* ClubCatalogStore.swift in Sources */,
@@ -1493,7 +1566,9 @@
 				A00000000000000000000610 /* RoundSummaryAnalysisCloudStore.swift in Sources */,
 				A00000000000000000000541 /* UserProfileService.swift in Sources */,
 				A00000000000000000000560 /* PublicProfile.swift in Sources */,
-				A00000000000000000000570 /* SocialDiscoveryViews.swift in Sources */,
+				B56DF8C2836415BCB3A4C328 /* FollowInviteSheet.swift in Sources */,
+				B5A58AADB02B2B60E8B06714 /* PeopleSearchSheet.swift in Sources */,
+				B55CABFE0E83ECBEEB1E4EFA /* NearbyConnectSheet.swift in Sources */,
 				A00000000000000000000562 /* SocialGraphService.swift in Sources */,
 				A00000000000000000000572 /* SocialFeedService.swift in Sources */,
 				A00000000000000000000564 /* FollowDeepLink.swift in Sources */,
@@ -1501,6 +1576,7 @@
 				A00000000000000000000568 /* NFCFollowScanner.swift in Sources */,
 				A00000000000000000000526 /* AuthViewModel.swift in Sources */,
 				A00000000000000000000527 /* AuthFlowView.swift in Sources */,
+				B509CF91CD045EFA487FD178 /* AuthFlowModalView.swift in Sources */,
 				A000000000000000000000F8 /* EntitlementState.swift in Sources */,
 				A000000000000000000000F9 /* PremiumFeature.swift in Sources */,
 				A000000000000000000000FA /* GatedActionResolver.swift in Sources */,
