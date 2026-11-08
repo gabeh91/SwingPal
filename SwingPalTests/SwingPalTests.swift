@@ -12,7 +12,20 @@ final class SwingPalTests: XCTestCase {
             "SwingPal/Features/Social/Views/SocialView.swift",
             "SwingPal/Features/Stats/Views/StatsView.swift",
             "SwingPal/Features/Profile/Views/ProfileView.swift",
-            "SwingPal/Features/Round/Live/Views/FreshLiveRoundScreen.swift"
+            "SwingPal/Features/Round/Live/Views/FreshLiveRoundScreen.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundHoleInspectorSheet.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundCurrentHoleEditorSheet.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundShotHistorySheet.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundConditionsSheet.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundEndRoundSheet.swift",
+            "SwingPal/Features/Round/Live/Views/Sheets/FreshLiveRoundHoleConfirmationSheet.swift",
+            "SwingPal/Features/Round/Live/Views/ShotLogger/FreshLiveRoundShotLoggerSheet.swift",
+            "SwingPal/Features/Round/Live/Views/ShotLogger/FreshLiveRoundShotOutcomeNode.swift",
+            "SwingPal/Features/Round/Live/Views/ShotLogger/FreshLiveRoundShotOutcomeIntensity.swift",
+            "SwingPal/Features/Round/Live/Views/ShotLogger/FreshLiveRoundShotOutcomeLayout.swift",
+            "SwingPal/Features/Round/Live/Views/ShotLogger/FreshLiveRoundAnnularSegmentShape.swift",
+            "SwingPal/Features/Round/Live/Views/LiveMapDrawingCache.swift",
+            "SwingPal/DesignSystem/Molecules/ScorecardStub.swift"
         ]
 
         let offenders = try screenPaths.compactMap { relativePath -> String? in

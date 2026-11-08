@@ -160,6 +160,18 @@
 		B51FC8773F6705A2CF37670D /* SwingPalMarkTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FD5C7AD4C4ADCECBAEB91B /* SwingPalMarkTile.swift */; };
 		B551BD6391149F445F157DC7 /* LaunchSplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C291AF096B5429389FEFF4 /* LaunchSplashView.swift */; };
 		B52907DBD0663800F4D26D08 /* ScorecardStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53348A9BC31E09954468D1D /* ScorecardStub.swift */; };
+		B5B28D556C54329E138D8F8F /* FreshLiveRoundShotLoggerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E98B16252305DE71DE9B7A /* FreshLiveRoundShotLoggerSheet.swift */; };
+		B58A2500D5A93BF79F430ED3 /* FreshLiveRoundShotOutcomeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57403F277F2CAB2BE716684 /* FreshLiveRoundShotOutcomeNode.swift */; };
+		B5338CA1E5676C572FA8E8C4 /* FreshLiveRoundShotOutcomeIntensity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F65845CE7209686240FEE8 /* FreshLiveRoundShotOutcomeIntensity.swift */; };
+		B516A5977CAF04ADA3A22925 /* FreshLiveRoundShotOutcomeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5585BE2724BDDA9FC442A22 /* FreshLiveRoundShotOutcomeLayout.swift */; };
+		B5ED50190AD25774B6639776 /* FreshLiveRoundAnnularSegmentShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58DB9D1186D34A2A4BBC319 /* FreshLiveRoundAnnularSegmentShape.swift */; };
+		B50C3550EAE3DB85E507623C /* FreshLiveRoundHoleInspectorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B9869AA873E622F00C467A /* FreshLiveRoundHoleInspectorSheet.swift */; };
+		B5A3B3B0C68D7AED3135BE4B /* FreshLiveRoundCurrentHoleEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55558ED298B94A642E06414 /* FreshLiveRoundCurrentHoleEditorSheet.swift */; };
+		B5A1565DA56D4AF60F04740A /* FreshLiveRoundShotHistorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55B5426B6208308E62DF87A /* FreshLiveRoundShotHistorySheet.swift */; };
+		B5B514C8618AB88AF35952FB /* FreshLiveRoundConditionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AA44424C2A002152F8664A /* FreshLiveRoundConditionsSheet.swift */; };
+		B528A8395698BB7F5C9AF66D /* FreshLiveRoundEndRoundSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5224AB6357089747830E139 /* FreshLiveRoundEndRoundSheet.swift */; };
+		B5E7509536F591EE72299DDA /* FreshLiveRoundHoleConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AA8F5D6C82C1AC91A20524 /* FreshLiveRoundHoleConfirmationSheet.swift */; };
+		B580B0D8B913B6A1A27565D8 /* LiveMapDrawingCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FB3BC0FF291CB48FD8C3EF /* LiveMapDrawingCache.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -348,6 +360,18 @@
 		B5FD5C7AD4C4ADCECBAEB91B /* SwingPalMarkTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalMarkTile.swift; sourceTree = "<group>"; };
 		B5C291AF096B5429389FEFF4 /* LaunchSplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchSplashView.swift; sourceTree = "<group>"; };
 		B53348A9BC31E09954468D1D /* ScorecardStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScorecardStub.swift; sourceTree = "<group>"; };
+		B5E98B16252305DE71DE9B7A /* FreshLiveRoundShotLoggerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundShotLoggerSheet.swift; sourceTree = "<group>"; };
+		B57403F277F2CAB2BE716684 /* FreshLiveRoundShotOutcomeNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundShotOutcomeNode.swift; sourceTree = "<group>"; };
+		B5F65845CE7209686240FEE8 /* FreshLiveRoundShotOutcomeIntensity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundShotOutcomeIntensity.swift; sourceTree = "<group>"; };
+		B5585BE2724BDDA9FC442A22 /* FreshLiveRoundShotOutcomeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundShotOutcomeLayout.swift; sourceTree = "<group>"; };
+		B58DB9D1186D34A2A4BBC319 /* FreshLiveRoundAnnularSegmentShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundAnnularSegmentShape.swift; sourceTree = "<group>"; };
+		B5B9869AA873E622F00C467A /* FreshLiveRoundHoleInspectorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundHoleInspectorSheet.swift; sourceTree = "<group>"; };
+		B55558ED298B94A642E06414 /* FreshLiveRoundCurrentHoleEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundCurrentHoleEditorSheet.swift; sourceTree = "<group>"; };
+		B55B5426B6208308E62DF87A /* FreshLiveRoundShotHistorySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundShotHistorySheet.swift; sourceTree = "<group>"; };
+		B5AA44424C2A002152F8664A /* FreshLiveRoundConditionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundConditionsSheet.swift; sourceTree = "<group>"; };
+		B5224AB6357089747830E139 /* FreshLiveRoundEndRoundSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundEndRoundSheet.swift; sourceTree = "<group>"; };
+		B5AA8F5D6C82C1AC91A20524 /* FreshLiveRoundHoleConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundHoleConfirmationSheet.swift; sourceTree = "<group>"; };
+		B5FB3BC0FF291CB48FD8C3EF /* LiveMapDrawingCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMapDrawingCache.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -880,10 +904,38 @@
 		B5794719FDD255F4EEB392FD /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B5E78325FF26F554B5B06D7C /* Sheets */,
+				B5357443F3D559410C45DF2F /* ShotLogger */,
 				C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */,
 				A0000000000000000000014B /* FreshLiveRoundScreen.swift */,
+				B5FB3BC0FF291CB48FD8C3EF /* LiveMapDrawingCache.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		B5E78325FF26F554B5B06D7C /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				B5AA44424C2A002152F8664A /* FreshLiveRoundConditionsSheet.swift */,
+				B55558ED298B94A642E06414 /* FreshLiveRoundCurrentHoleEditorSheet.swift */,
+				B5224AB6357089747830E139 /* FreshLiveRoundEndRoundSheet.swift */,
+				B5AA8F5D6C82C1AC91A20524 /* FreshLiveRoundHoleConfirmationSheet.swift */,
+				B5B9869AA873E622F00C467A /* FreshLiveRoundHoleInspectorSheet.swift */,
+				B55B5426B6208308E62DF87A /* FreshLiveRoundShotHistorySheet.swift */,
+			);
+			path = Sheets;
+			sourceTree = "<group>";
+		};
+		B5357443F3D559410C45DF2F /* ShotLogger */ = {
+			isa = PBXGroup;
+			children = (
+				B58DB9D1186D34A2A4BBC319 /* FreshLiveRoundAnnularSegmentShape.swift */,
+				B5E98B16252305DE71DE9B7A /* FreshLiveRoundShotLoggerSheet.swift */,
+				B5F65845CE7209686240FEE8 /* FreshLiveRoundShotOutcomeIntensity.swift */,
+				B5585BE2724BDDA9FC442A22 /* FreshLiveRoundShotOutcomeLayout.swift */,
+				B57403F277F2CAB2BE716684 /* FreshLiveRoundShotOutcomeNode.swift */,
+			);
+			path = ShotLogger;
 			sourceTree = "<group>";
 		};
 		B5255EFFE875913229F9FBDF /* Review */ = {
@@ -1396,6 +1448,18 @@
 				A000000000000000000000E3 /* RoundSetupState.swift in Sources */,
 				A000000000000000000000E6 /* AddGuestPlayerSheet.swift in Sources */,
 				A0000000000000000000014A /* FreshLiveRoundScreen.swift in Sources */,
+				B5B28D556C54329E138D8F8F /* FreshLiveRoundShotLoggerSheet.swift in Sources */,
+				B58A2500D5A93BF79F430ED3 /* FreshLiveRoundShotOutcomeNode.swift in Sources */,
+				B5338CA1E5676C572FA8E8C4 /* FreshLiveRoundShotOutcomeIntensity.swift in Sources */,
+				B516A5977CAF04ADA3A22925 /* FreshLiveRoundShotOutcomeLayout.swift in Sources */,
+				B5ED50190AD25774B6639776 /* FreshLiveRoundAnnularSegmentShape.swift in Sources */,
+				B50C3550EAE3DB85E507623C /* FreshLiveRoundHoleInspectorSheet.swift in Sources */,
+				B5A3B3B0C68D7AED3135BE4B /* FreshLiveRoundCurrentHoleEditorSheet.swift in Sources */,
+				B5A1565DA56D4AF60F04740A /* FreshLiveRoundShotHistorySheet.swift in Sources */,
+				B5B514C8618AB88AF35952FB /* FreshLiveRoundConditionsSheet.swift in Sources */,
+				B528A8395698BB7F5C9AF66D /* FreshLiveRoundEndRoundSheet.swift in Sources */,
+				B5E7509536F591EE72299DDA /* FreshLiveRoundHoleConfirmationSheet.swift in Sources */,
+				B580B0D8B913B6A1A27565D8 /* LiveMapDrawingCache.swift in Sources */,
 				A0000000000000000000014C /* RoundCompanionSyncing.swift in Sources */,
 				A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */,
 				A000000000000000000000E8 /* ShotEvent.swift in Sources */,
