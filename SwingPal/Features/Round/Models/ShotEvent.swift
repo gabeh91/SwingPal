@@ -130,6 +130,20 @@ struct ShotEvent: Identifiable, Equatable, Codable {
         self.note = note?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         self.createdAt = createdAt
     }
+
+    /// Club name on the events written by quick penalties and re-tee, which
+    /// record a penalty stroke without a swing.
+    static let syntheticPenaltyClubName = "Penalty"
+
+    /// A penalty-only event. It occupies one stroke number and its single
+    /// stroke is its penalty, so it must not also count as a swing or a putt.
+    var isSyntheticPenalty: Bool {
+        clubName == Self.syntheticPenaltyClubName && penaltyCount > 0
+    }
+
+    var isPuttStroke: Bool {
+        !isSyntheticPenalty && (puttDetail != nil || shotType == .putt || surface == .green)
+    }
 }
 
 private extension String {
