@@ -8,11 +8,11 @@ final class SwingPalTests: XCTestCase {
             .deletingLastPathComponent()
 
         let screenPaths = [
-            "SwingPal/Features/Home/HomeView.swift",
-            "SwingPal/Features/Social/SocialView.swift",
-            "SwingPal/Features/Stats/StatsView.swift",
-            "SwingPal/Features/Profile/ProfileView.swift",
-            "SwingPal/Features/Round/FreshLiveRoundScreen.swift"
+            "SwingPal/Features/Home/Views/HomeView.swift",
+            "SwingPal/Features/Social/Views/SocialView.swift",
+            "SwingPal/Features/Stats/Views/StatsView.swift",
+            "SwingPal/Features/Profile/Views/ProfileView.swift",
+            "SwingPal/Features/Round/Live/Views/FreshLiveRoundScreen.swift"
         ]
 
         let offenders = try screenPaths.compactMap { relativePath -> String? in

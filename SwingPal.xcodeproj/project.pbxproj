@@ -18,125 +18,125 @@
 		A00000000000000000000034 /* SwingPalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* SwingPalTests.swift */; };
 		A00000000000000000000035 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* XCTest.framework */; };
 		A00000000000000000000036 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* AppStateTests.swift */; };
-		A00000000000000000000037 /* App/AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* App/AppTab.swift */; };
-		A00000000000000000000038 /* App/AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002A /* App/AuthState.swift */; };
-		A00000000000000000000039 /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002B /* App/AppState.swift */; };
-		A0000000000000000000003A /* App/AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002C /* App/AppShellView.swift */; };
+		A00000000000000000000037 /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* AppTab.swift */; };
+		A00000000000000000000038 /* AuthState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002A /* AuthState.swift */; };
+		A00000000000000000000039 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002B /* AppState.swift */; };
+		A0000000000000000000003A /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002C /* AppShellView.swift */; };
 		A0000000000000000000003B /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002D /* HomeViewModelTests.swift */; };
-		A0000000000000000000003C /* Features/Home/HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002E /* Features/Home/HomeView.swift */; };
-		A0000000000000000000003D /* Features/Home/HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002F /* Features/Home/HomeViewModel.swift */; };
-		A000000000000000000000B0 /* Features/Social/SocialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A0 /* Features/Social/SocialView.swift */; };
-		A000000000000000000000B1 /* Features/Social/SocialPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A1 /* Features/Social/SocialPost.swift */; };
-		A000000000000000000000B3 /* Features/Social/SocialPostCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A3 /* Features/Social/SocialPostCard.swift */; };
+		A0000000000000000000003C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002E /* HomeView.swift */; };
+		A0000000000000000000003D /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002F /* HomeViewModel.swift */; };
+		A000000000000000000000B0 /* SocialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A0 /* SocialView.swift */; };
+		A000000000000000000000B1 /* SocialPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A1 /* SocialPost.swift */; };
+		A000000000000000000000B3 /* SocialPostCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A3 /* SocialPostCard.swift */; };
 		A000000000000000000000B4 /* RoundSetupStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A4 /* RoundSetupStateTests.swift */; };
-		A000000000000000000000E2 /* Features/Round/Models/RoundPlayerDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C2 /* Features/Round/Models/RoundPlayerDraft.swift */; };
-		A000000000000000000000E3 /* Features/Round/RoundSetupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C3 /* Features/Round/RoundSetupState.swift */; };
-		A000000000000000000000E6 /* Features/Round/AddGuestPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C6 /* Features/Round/AddGuestPlayerSheet.swift */; };
-		A000000000000000000000E8 /* Features/Round/Models/ShotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C8 /* Features/Round/Models/ShotEvent.swift */; };
-		A000000000000000000000E9 /* Features/Round/Models/HoleSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C9 /* Features/Round/Models/HoleSession.swift */; };
-		A000000000000000000000EA /* Features/Round/Models/PlayerScoreState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CA /* Features/Round/Models/PlayerScoreState.swift */; };
-		A000000000000000000000EB /* Features/Round/LiveRoundState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CB /* Features/Round/LiveRoundState.swift */; };
-		A000000000000000000000EF /* Features/Round/RoundSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CF /* Features/Round/RoundSetupView.swift */; };
-		A00000000000000000000620 /* Features/Round/AddPlayerSearchSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000621 /* Features/Round/AddPlayerSearchSheet.swift */; };
-		A000000000000000000000F0 /* Features/Round/RoundReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D0 /* Features/Round/RoundReviewView.swift */; };
-		A000000000000000000000F1 /* Features/Round/RoundRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D1 /* Features/Round/RoundRootView.swift */; };
-		A000000000000000000000F2 /* Features/Profile/Models/Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D2 /* Features/Profile/Models/Club.swift */; };
-		A000000000000000000000F3 /* Features/Profile/Models/Bag.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D3 /* Features/Profile/Models/Bag.swift */; };
-		A000000000000000000003A0 /* Features/Profile/Models/HandicapIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000390 /* Features/Profile/Models/HandicapIndex.swift */; };
-		A000000000000000000000F4 /* Features/Profile/BagClubRecommendation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D4 /* Features/Profile/BagClubRecommendation.swift */; };
-		A000000000000000000000F6 /* Features/Profile/ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D6 /* Features/Profile/ProfileView.swift */; };
-		A000000000000000000000F8 /* Features/Premium/EntitlementState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D8 /* Features/Premium/EntitlementState.swift */; };
-		A000000000000000000000F9 /* Features/Premium/PremiumFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D9 /* Features/Premium/PremiumFeature.swift */; };
-		A000000000000000000000FA /* Features/Premium/GatedActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DA /* Features/Premium/GatedActionResolver.swift */; };
+		A000000000000000000000E2 /* RoundPlayerDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C2 /* RoundPlayerDraft.swift */; };
+		A000000000000000000000E3 /* RoundSetupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C3 /* RoundSetupState.swift */; };
+		A000000000000000000000E6 /* AddGuestPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C6 /* AddGuestPlayerSheet.swift */; };
+		A000000000000000000000E8 /* ShotEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C8 /* ShotEvent.swift */; };
+		A000000000000000000000E9 /* HoleSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000C9 /* HoleSession.swift */; };
+		A000000000000000000000EA /* PlayerScoreState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CA /* PlayerScoreState.swift */; };
+		A000000000000000000000EB /* LiveRoundState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CB /* LiveRoundState.swift */; };
+		A000000000000000000000EF /* RoundSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000CF /* RoundSetupView.swift */; };
+		A00000000000000000000620 /* AddPlayerSearchSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000621 /* AddPlayerSearchSheet.swift */; };
+		A000000000000000000000F0 /* RoundReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D0 /* RoundReviewView.swift */; };
+		A000000000000000000000F1 /* RoundRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D1 /* RoundRootView.swift */; };
+		A000000000000000000000F2 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D2 /* Club.swift */; };
+		A000000000000000000000F3 /* Bag.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D3 /* Bag.swift */; };
+		A000000000000000000003A0 /* HandicapIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000390 /* HandicapIndex.swift */; };
+		A000000000000000000000F4 /* BagClubRecommendation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D4 /* BagClubRecommendation.swift */; };
+		A000000000000000000000F6 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D6 /* ProfileView.swift */; };
+		A000000000000000000000F8 /* EntitlementState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D8 /* EntitlementState.swift */; };
+		A000000000000000000000F9 /* PremiumFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000D9 /* PremiumFeature.swift */; };
+		A000000000000000000000FA /* GatedActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DA /* GatedActionResolver.swift */; };
 		A000000000000000000000FB /* LiveRoundStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DB /* LiveRoundStateTests.swift */; };
 		A000000000000000000000FC /* BagClubRecommendationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DC /* BagClubRecommendationTests.swift */; };
 		A000000000000000000000FD /* GatedActionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DD /* GatedActionResolverTests.swift */; };
 		A000000000000000000000FE /* ShellIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000DE /* ShellIntegrationTests.swift */; };
 		C1700E1C40828DBB86CC8AC1 /* HoleMapGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2700E1C40828DBB86CC8AC1 /* HoleMapGeometryTests.swift */; };
-		A00000000000000000000110 /* DesignSystem/DesignTokens/ShellTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000111 /* DesignSystem/DesignTokens/ShellTokens.swift */; };
-		C1521E65B91DADC3ECE6D3C6 /* Features/Round/Providers/OverpassClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2521E65B91DADC3ECE6D3C6 /* Features/Round/Providers/OverpassClient.swift */; };
-		C1D7E2C5E567E6EE9859EA46 /* Features/Round/AimPlanOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D7E2C5E567E6EE9859EA46 /* Features/Round/AimPlanOverlay.swift */; };
-		C15B096E94A06EB5D11A0B2E /* Features/Round/HoleMapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25B096E94A06EB5D11A0B2E /* Features/Round/HoleMapGeometry.swift */; };
-		C1ECC87BDB38966BA1D630BC /* DesignSystem/YardageBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2ECC87BDB38966BA1D630BC /* DesignSystem/YardageBook.swift */; };
-		A00000000000000000000112 /* Features/Premium/PremiumGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000113 /* Features/Premium/PremiumGateView.swift */; };
+		A00000000000000000000110 /* ShellTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000111 /* ShellTokens.swift */; };
+		C1521E65B91DADC3ECE6D3C6 /* OverpassClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2521E65B91DADC3ECE6D3C6 /* OverpassClient.swift */; };
+		C1D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */; };
+		C15B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift */; };
+		C1ECC87BDB38966BA1D630BC /* YardageBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2ECC87BDB38966BA1D630BC /* YardageBook.swift */; };
+		A00000000000000000000112 /* PremiumGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000113 /* PremiumGateView.swift */; };
 		A00000000000000000000120 /* SocialViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000121 /* SocialViewModelTests.swift */; };
 		A00000000000000000000122 /* ProfileViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000123 /* ProfileViewModelTests.swift */; };
-		A00000000000000000000124 /* Features/Social/SocialViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000125 /* Features/Social/SocialViewModel.swift */; };
-		A00000000000000000000126 /* Features/Profile/ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000127 /* Features/Profile/ProfileViewModel.swift */; };
-		A00000000000000000000134 /* Services/Weather/RoundWeatherSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000130 /* Services/Weather/RoundWeatherSnapshot.swift */; };
-		A00000000000000000000135 /* Services/Weather/RoundWeatherLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000131 /* Services/Weather/RoundWeatherLoading.swift */; };
-		A00000000000000000000136 /* Services/Weather/PreviewRoundWeatherLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000132 /* Services/Weather/PreviewRoundWeatherLoader.swift */; };
-		A00000000000000000000137 /* Services/Weather/AppleWeatherKitLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000133 /* Services/Weather/AppleWeatherKitLoader.swift */; };
-		A00000000000000000000138 /* Features/Round/Models/SwingPalCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000139 /* Features/Round/Models/SwingPalCourse.swift */; };
-		A0000000000000000000013A /* Features/Round/Repositories/CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000013B /* Features/Round/Repositories/CourseRepository.swift */; };
+		A00000000000000000000124 /* SocialViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000125 /* SocialViewModel.swift */; };
+		A00000000000000000000126 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000127 /* ProfileViewModel.swift */; };
+		A00000000000000000000134 /* RoundWeatherSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000130 /* RoundWeatherSnapshot.swift */; };
+		A00000000000000000000135 /* RoundWeatherLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000131 /* RoundWeatherLoading.swift */; };
+		A00000000000000000000136 /* PreviewRoundWeatherLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000132 /* PreviewRoundWeatherLoader.swift */; };
+		A00000000000000000000137 /* AppleWeatherKitLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000133 /* AppleWeatherKitLoader.swift */; };
+		A00000000000000000000138 /* SwingPalCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000139 /* SwingPalCourse.swift */; };
+		A0000000000000000000013A /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000013B /* CourseRepository.swift */; };
 		A0000000000000000000013C /* CourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000013D /* CourseRepositoryTests.swift */; };
-		A0000000000000000000013E /* Features/Round/Models/CourseCorrectionDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000013F /* Features/Round/Models/CourseCorrectionDraft.swift */; };
-		A00000000000000000000140 /* Features/Round/Providers/CourseDataProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000141 /* Features/Round/Providers/CourseDataProviders.swift */; };
-		A00000000000000000000142 /* Features/Round/CourseCorrectionCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000143 /* Features/Round/CourseCorrectionCenter.swift */; };
+		A0000000000000000000013E /* CourseCorrectionDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000013F /* CourseCorrectionDraft.swift */; };
+		A00000000000000000000140 /* CourseDataProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000141 /* CourseDataProviders.swift */; };
+		A00000000000000000000142 /* CourseCorrectionCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000143 /* CourseCorrectionCenter.swift */; };
 		A00000000000000000000146 /* CourseProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000147 /* CourseProviderTests.swift */; };
 		A00000000000000000000148 /* CourseCorrectionCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000149 /* CourseCorrectionCenterTests.swift */; };
-		A0000000000000000000014A /* Features/Round/FreshLiveRoundScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014B /* Features/Round/FreshLiveRoundScreen.swift */; };
-		A0000000000000000000014C /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* Features/Round/Sync/RoundCompanionSyncing.swift */; };
-		A00000000000000000000150 /* Features/Profile/Analysis/RoundSummaryAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000151 /* Features/Profile/Analysis/RoundSummaryAnalysis.swift */; };
-		A00000000000000000000152 /* Features/Profile/Analysis/RoundSummaryAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000153 /* Features/Profile/Analysis/RoundSummaryAnalysisService.swift */; };
-		A00000000000000000000154 /* Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000155 /* Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift */; };
+		A0000000000000000000014A /* FreshLiveRoundScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014B /* FreshLiveRoundScreen.swift */; };
+		A0000000000000000000014C /* RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* RoundCompanionSyncing.swift */; };
+		A00000000000000000000150 /* RoundSummaryAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000151 /* RoundSummaryAnalysis.swift */; };
+		A00000000000000000000152 /* RoundSummaryAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000153 /* RoundSummaryAnalysisService.swift */; };
+		A00000000000000000000154 /* FoundationModelsRoundSummaryAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000155 /* FoundationModelsRoundSummaryAnalyzer.swift */; };
 		A00000000000000000000156 /* RoundSummaryAnalysisStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000157 /* RoundSummaryAnalysisStoreTests.swift */; };
 		A00000000000000000000158 /* RoundSummaryAnalysisServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000159 /* RoundSummaryAnalysisServiceTests.swift */; };
 		A0000000000000000000015A /* FoundationModelsRoundSummaryAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000015B /* FoundationModelsRoundSummaryAnalyzerTests.swift */; };
 		A00000000000000000000160 /* StatsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000161 /* StatsViewModelTests.swift */; };
-		A00000000000000000000162 /* Features/Stats/StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000163 /* Features/Stats/StatsView.swift */; };
-		A00000000000000000000164 /* Features/Stats/StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000165 /* Features/Stats/StatsViewModel.swift */; };
-		A00000000000000000000166 /* Resources/club_catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000167 /* Resources/club_catalog.json */; };
-		A00000000000000000000168 /* Resources/Courses/royal-melbourne-west.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000169 /* Resources/Courses/royal-melbourne-west.json */; };
-		A0000000000000000000016A /* Features/Round/Repositories/BundledCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016B /* Features/Round/Repositories/BundledCourseRepository.swift */; };
-		A0000000000000000000016C /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016D /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift */; };
+		A00000000000000000000162 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000163 /* StatsView.swift */; };
+		A00000000000000000000164 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000165 /* StatsViewModel.swift */; };
+		A00000000000000000000166 /* club_catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000167 /* club_catalog.json */; };
+		A00000000000000000000168 /* royal-melbourne-west.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000169 /* royal-melbourne-west.json */; };
+		A0000000000000000000016A /* BundledCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016B /* BundledCourseRepository.swift */; };
+		A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016D /* WatchConnectivityRoundCompanionSync.swift */; };
 		A00000000000000000000173 /* SwingPalWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000170 /* SwingPalWatchApp.swift */; };
 		A00000000000000000000174 /* WatchRoundCompanionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000171 /* WatchRoundCompanionStore.swift */; };
 		A00000000000000000000175 /* WatchRoundCompanionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */; };
-		A0000000000000000000017F /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* Features/Round/Sync/RoundCompanionSyncing.swift */; };
+		A0000000000000000000017F /* RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* RoundCompanionSyncing.swift */; };
 		A00000000000000000000180 /* WatchRoundHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000181 /* WatchRoundHomeView.swift */; };
 		A00000000000000000000182 /* WatchClubPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000183 /* WatchClubPickerView.swift */; };
 		A00000000000000000000184 /* WatchQuickShotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000185 /* WatchQuickShotView.swift */; };
 		A00000000000000000000186 /* WatchHoleFinishView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000187 /* WatchHoleFinishView.swift */; };
-		A00000000000000000000188 /* Resources/Courses/medway.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000189 /* Resources/Courses/medway.json */; };
+		A00000000000000000000188 /* medway.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000189 /* medway.json */; };
 		A0000000000000000000018A /* SwingPalWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A00000000000000000000176 /* SwingPalWatch.app */; };
-		A00000000000000000000200 /* Features/Round/Providers/OSMCourseDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000201 /* Features/Round/Providers/OSMCourseDiscovery.swift */; };
-		A00000000000000000000202 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000203 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift */; };
+		A00000000000000000000200 /* OSMCourseDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000201 /* OSMCourseDiscovery.swift */; };
+		A00000000000000000000202 /* CourseDiscoveryGeocoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000203 /* CourseDiscoveryGeocoding.swift */; };
 		A00000000000000000000204 /* OSMCourseDiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000205 /* OSMCourseDiscoveryTests.swift */; };
-		A00000000000000000000210 /* Features/Round/Providers/OSMCourseGeometryFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000211 /* Features/Round/Providers/OSMCourseGeometryFetcher.swift */; };
-		A00000000000000000000212 /* Features/Round/Providers/RuntimeOSMCourseConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000213 /* Features/Round/Providers/RuntimeOSMCourseConverter.swift */; };
-		A00000000000000000000214 /* Features/Round/Providers/CourseValidationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000215 /* Features/Round/Providers/CourseValidationResult.swift */; };
-		A00000000000000000000216 /* Features/Round/Providers/DeterministicCourseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000217 /* Features/Round/Providers/DeterministicCourseValidator.swift */; };
-		A00000000000000000000218 /* Features/Round/Providers/CourseImportCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000219 /* Features/Round/Providers/CourseImportCoordinator.swift */; };
-		A0000000000000000000021A /* Features/Round/CourseImportLoadingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000021B /* Features/Round/CourseImportLoadingOverlay.swift */; };
+		A00000000000000000000210 /* OSMCourseGeometryFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000211 /* OSMCourseGeometryFetcher.swift */; };
+		A00000000000000000000212 /* RuntimeOSMCourseConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000213 /* RuntimeOSMCourseConverter.swift */; };
+		A00000000000000000000214 /* CourseValidationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000215 /* CourseValidationResult.swift */; };
+		A00000000000000000000216 /* DeterministicCourseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000217 /* DeterministicCourseValidator.swift */; };
+		A00000000000000000000218 /* CourseImportCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000219 /* CourseImportCoordinator.swift */; };
+		A0000000000000000000021A /* CourseImportLoadingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000021B /* CourseImportLoadingOverlay.swift */; };
 		A0000000000000000000021C /* RuntimeOSMCourseConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000021D /* RuntimeOSMCourseConverterTests.swift */; };
 		A0000000000000000000021E /* DeterministicCourseValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000021F /* DeterministicCourseValidatorTests.swift */; };
 		A00000000000000000000220 /* CourseImportCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000221 /* CourseImportCoordinatorTests.swift */; };
-		A00000000000000000000230 /* Features/Round/Providers/FoundationModelsCourseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000231 /* Features/Round/Providers/FoundationModelsCourseValidator.swift */; };
+		A00000000000000000000230 /* FoundationModelsCourseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000231 /* FoundationModelsCourseValidator.swift */; };
 		A00000000000000000000232 /* FoundationModelsCourseValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000233 /* FoundationModelsCourseValidatorTests.swift */; };
-		A00000000000000000000240 /* Features/Round/Repositories/ImportedCourseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000241 /* Features/Round/Repositories/ImportedCourseStore.swift */; };
-		A00000000000000000000242 /* Features/Round/Repositories/CompositeCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000243 /* Features/Round/Repositories/CompositeCourseRepository.swift */; };
+		A00000000000000000000240 /* ImportedCourseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000241 /* ImportedCourseStore.swift */; };
+		A00000000000000000000242 /* CompositeCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000243 /* CompositeCourseRepository.swift */; };
 		A00000000000000000000244 /* ImportedCourseStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000245 /* ImportedCourseStoreTests.swift */; };
 		A00000000000000000000246 /* CompositeCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000247 /* CompositeCourseRepositoryTests.swift */; };
-		A00000000000000000000521 /* Services/Auth/AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000511 /* Services/Auth/AuthService.swift */; };
-		A00000000000000000000522 /* Services/Auth/MockAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000512 /* Services/Auth/MockAuthService.swift */; };
-		A00000000000000000000523 /* Services/Auth/SupabaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000513 /* Services/Auth/SupabaseAuthService.swift */; };
-		A00000000000000000000524 /* Services/Auth/AppleSignInCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000514 /* Services/Auth/AppleSignInCoordinator.swift */; };
-		A00000000000000000000525 /* Services/Supabase/SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000515 /* Services/Supabase/SupabaseConfig.swift */; };
-		A00000000000000000000530 /* Services/Supabase/SupabaseShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000532 /* Services/Supabase/SupabaseShared.swift */; };
-		A00000000000000000000531 /* Services/Storage/CommunityCourseStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000533 /* Services/Storage/CommunityCourseStorageService.swift */; };
-		A00000000000000000000534 /* Services/Sync/UserDataSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000536 /* Services/Sync/UserDataSyncService.swift */; };
-		A00000000000000000000610 /* Services/Analysis/RoundSummaryAnalysisCloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000611 /* Services/Analysis/RoundSummaryAnalysisCloudStore.swift */; };
-		A00000000000000000000541 /* Services/Profile/UserProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000542 /* Services/Profile/UserProfileService.swift */; };
-		A00000000000000000000560 /* Features/Social/Models/PublicProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000561 /* Features/Social/Models/PublicProfile.swift */; };
-		A00000000000000000000562 /* Services/Social/SocialGraphService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000563 /* Services/Social/SocialGraphService.swift */; };
-		A00000000000000000000564 /* Services/Social/FollowDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000565 /* Services/Social/FollowDeepLink.swift */; };
-		A00000000000000000000566 /* Services/Nearby/NearbyDiscoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000567 /* Services/Nearby/NearbyDiscoveryCoordinator.swift */; };
-		A00000000000000000000568 /* Services/Nearby/NFCFollowScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000569 /* Services/Nearby/NFCFollowScanner.swift */; };
-		A00000000000000000000570 /* Features/Social/SocialDiscoveryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000571 /* Features/Social/SocialDiscoveryViews.swift */; };
-		A00000000000000000000572 /* Services/Social/SocialFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000573 /* Services/Social/SocialFeedService.swift */; };
-		A00000000000000000000526 /* Features/Auth/AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000516 /* Features/Auth/AuthViewModel.swift */; };
-		A00000000000000000000527 /* Features/Auth/AuthFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000517 /* Features/Auth/AuthFlowView.swift */; };
+		A00000000000000000000521 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000511 /* AuthService.swift */; };
+		A00000000000000000000522 /* MockAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000512 /* MockAuthService.swift */; };
+		A00000000000000000000523 /* SupabaseAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000513 /* SupabaseAuthService.swift */; };
+		A00000000000000000000524 /* AppleSignInCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000514 /* AppleSignInCoordinator.swift */; };
+		A00000000000000000000525 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000515 /* SupabaseConfig.swift */; };
+		A00000000000000000000530 /* SupabaseShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000532 /* SupabaseShared.swift */; };
+		A00000000000000000000531 /* CommunityCourseStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000533 /* CommunityCourseStorageService.swift */; };
+		A00000000000000000000534 /* UserDataSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000536 /* UserDataSyncService.swift */; };
+		A00000000000000000000610 /* RoundSummaryAnalysisCloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000611 /* RoundSummaryAnalysisCloudStore.swift */; };
+		A00000000000000000000541 /* UserProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000542 /* UserProfileService.swift */; };
+		A00000000000000000000560 /* PublicProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000561 /* PublicProfile.swift */; };
+		A00000000000000000000562 /* SocialGraphService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000563 /* SocialGraphService.swift */; };
+		A00000000000000000000564 /* FollowDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000565 /* FollowDeepLink.swift */; };
+		A00000000000000000000566 /* NearbyDiscoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000567 /* NearbyDiscoveryCoordinator.swift */; };
+		A00000000000000000000568 /* NFCFollowScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000569 /* NFCFollowScanner.swift */; };
+		A00000000000000000000570 /* SocialDiscoveryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000571 /* SocialDiscoveryViews.swift */; };
+		A00000000000000000000572 /* SocialFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000573 /* SocialFeedService.swift */; };
+		A00000000000000000000526 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000516 /* AuthViewModel.swift */; };
+		A00000000000000000000527 /* AuthFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000517 /* AuthFlowView.swift */; };
 		A00000000000000000000602 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000601 /* Supabase */; };
 		A00000000000000000000700 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000701 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -173,10 +173,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C92800000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = App/Info.plist; sourceTree = "<group>"; };
-		C92800000000000000000006 /* ClubCatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Storage/ClubCatalogStore.swift; sourceTree = "<group>"; };
-		C92800000000000000000004 /* AddClubSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/AddClubSheet.swift; sourceTree = "<group>"; };
-		C92800000000000000000002 /* AddClubSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/AddClubSelection.swift; sourceTree = "<group>"; };
+		C92800000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C92800000000000000000006 /* ClubCatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubCatalogStore.swift; sourceTree = "<group>"; };
+		C92800000000000000000004 /* AddClubSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClubSheet.swift; sourceTree = "<group>"; };
+		C92800000000000000000002 /* AddClubSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClubSelection.swift; sourceTree = "<group>"; };
 		A00000000000000000000020 /* SwingPalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000250 /* SwingPalLaunchLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalLaunchLogo.swift; sourceTree = "<group>"; };
 		A00000000000000000000022 /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
@@ -187,78 +187,78 @@
 		A00000000000000000000026 /* SwingPalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwingPalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000027 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
 		A00000000000000000000028 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000029 /* App/AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppTab.swift; sourceTree = "<group>"; };
-		A0000000000000000000002A /* App/AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AuthState.swift; sourceTree = "<group>"; };
-		A0000000000000000000002B /* App/AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppState.swift; sourceTree = "<group>"; };
-		A0000000000000000000002C /* App/AppShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppShellView.swift; sourceTree = "<group>"; };
+		A00000000000000000000029 /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
+		A0000000000000000000002A /* AuthState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthState.swift; sourceTree = "<group>"; };
+		A0000000000000000000002B /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		A0000000000000000000002C /* AppShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellView.swift; sourceTree = "<group>"; };
 		A0000000000000000000002D /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
-		A0000000000000000000002E /* Features/Home/HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeView.swift; sourceTree = "<group>"; };
-		A0000000000000000000002F /* Features/Home/HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeViewModel.swift; sourceTree = "<group>"; };
-		A000000000000000000000A0 /* Features/Social/SocialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/SocialView.swift; sourceTree = "<group>"; };
-		A000000000000000000000A1 /* Features/Social/SocialPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/SocialPost.swift; sourceTree = "<group>"; };
-		A000000000000000000000A3 /* Features/Social/SocialPostCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/SocialPostCard.swift; sourceTree = "<group>"; };
+		A0000000000000000000002E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A0000000000000000000002F /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		A000000000000000000000A0 /* SocialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialView.swift; sourceTree = "<group>"; };
+		A000000000000000000000A1 /* SocialPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPost.swift; sourceTree = "<group>"; };
+		A000000000000000000000A3 /* SocialPostCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialPostCard.swift; sourceTree = "<group>"; };
 		A000000000000000000000A4 /* RoundSetupStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSetupStateTests.swift; sourceTree = "<group>"; };
-		A000000000000000000000C2 /* Features/Round/Models/RoundPlayerDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/RoundPlayerDraft.swift; sourceTree = "<group>"; };
-		A000000000000000000000C3 /* Features/Round/RoundSetupState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/RoundSetupState.swift; sourceTree = "<group>"; };
-		A000000000000000000000C6 /* Features/Round/AddGuestPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/AddGuestPlayerSheet.swift; sourceTree = "<group>"; };
-		A000000000000000000000C8 /* Features/Round/Models/ShotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/ShotEvent.swift; sourceTree = "<group>"; };
-		A000000000000000000000C9 /* Features/Round/Models/HoleSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/HoleSession.swift; sourceTree = "<group>"; };
-		A000000000000000000000CA /* Features/Round/Models/PlayerScoreState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/PlayerScoreState.swift; sourceTree = "<group>"; };
-		A000000000000000000000CB /* Features/Round/LiveRoundState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/LiveRoundState.swift; sourceTree = "<group>"; };
-		A000000000000000000000CF /* Features/Round/RoundSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/RoundSetupView.swift; sourceTree = "<group>"; };
-		A00000000000000000000621 /* Features/Round/AddPlayerSearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/AddPlayerSearchSheet.swift; sourceTree = "<group>"; };
-		A000000000000000000000D0 /* Features/Round/RoundReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/RoundReviewView.swift; sourceTree = "<group>"; };
-		A000000000000000000000D1 /* Features/Round/RoundRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/RoundRootView.swift; sourceTree = "<group>"; };
-		A000000000000000000000D2 /* Features/Profile/Models/Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Models/Club.swift; sourceTree = "<group>"; };
-		A000000000000000000000D3 /* Features/Profile/Models/Bag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Models/Bag.swift; sourceTree = "<group>"; };
-		A00000000000000000000390 /* Features/Profile/Models/HandicapIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Models/HandicapIndex.swift; sourceTree = "<group>"; };
-		A000000000000000000000D4 /* Features/Profile/BagClubRecommendation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/BagClubRecommendation.swift; sourceTree = "<group>"; };
-		A000000000000000000000D6 /* Features/Profile/ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/ProfileView.swift; sourceTree = "<group>"; };
-		A000000000000000000000D8 /* Features/Premium/EntitlementState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Premium/EntitlementState.swift; sourceTree = "<group>"; };
-		A000000000000000000000D9 /* Features/Premium/PremiumFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Premium/PremiumFeature.swift; sourceTree = "<group>"; };
-		A000000000000000000000DA /* Features/Premium/GatedActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Premium/GatedActionResolver.swift; sourceTree = "<group>"; };
+		A000000000000000000000C2 /* RoundPlayerDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundPlayerDraft.swift; sourceTree = "<group>"; };
+		A000000000000000000000C3 /* RoundSetupState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSetupState.swift; sourceTree = "<group>"; };
+		A000000000000000000000C6 /* AddGuestPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGuestPlayerSheet.swift; sourceTree = "<group>"; };
+		A000000000000000000000C8 /* ShotEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotEvent.swift; sourceTree = "<group>"; };
+		A000000000000000000000C9 /* HoleSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleSession.swift; sourceTree = "<group>"; };
+		A000000000000000000000CA /* PlayerScoreState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerScoreState.swift; sourceTree = "<group>"; };
+		A000000000000000000000CB /* LiveRoundState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRoundState.swift; sourceTree = "<group>"; };
+		A000000000000000000000CF /* RoundSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSetupView.swift; sourceTree = "<group>"; };
+		A00000000000000000000621 /* AddPlayerSearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPlayerSearchSheet.swift; sourceTree = "<group>"; };
+		A000000000000000000000D0 /* RoundReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundReviewView.swift; sourceTree = "<group>"; };
+		A000000000000000000000D1 /* RoundRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundRootView.swift; sourceTree = "<group>"; };
+		A000000000000000000000D2 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
+		A000000000000000000000D3 /* Bag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bag.swift; sourceTree = "<group>"; };
+		A00000000000000000000390 /* HandicapIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandicapIndex.swift; sourceTree = "<group>"; };
+		A000000000000000000000D4 /* BagClubRecommendation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BagClubRecommendation.swift; sourceTree = "<group>"; };
+		A000000000000000000000D6 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		A000000000000000000000D8 /* EntitlementState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementState.swift; sourceTree = "<group>"; };
+		A000000000000000000000D9 /* PremiumFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumFeature.swift; sourceTree = "<group>"; };
+		A000000000000000000000DA /* GatedActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatedActionResolver.swift; sourceTree = "<group>"; };
 		A000000000000000000000DB /* LiveRoundStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRoundStateTests.swift; sourceTree = "<group>"; };
 		A000000000000000000000DC /* BagClubRecommendationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BagClubRecommendationTests.swift; sourceTree = "<group>"; };
 		A000000000000000000000DD /* GatedActionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatedActionResolverTests.swift; sourceTree = "<group>"; };
 		A000000000000000000000DE /* ShellIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellIntegrationTests.swift; sourceTree = "<group>"; };
 		C2700E1C40828DBB86CC8AC1 /* HoleMapGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleMapGeometryTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000111 /* DesignSystem/DesignTokens/ShellTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem/DesignTokens/ShellTokens.swift; sourceTree = "<group>"; };
-		C2521E65B91DADC3ECE6D3C6 /* Features/Round/Providers/OverpassClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/OverpassClient.swift; sourceTree = "<group>"; };
-		C2D7E2C5E567E6EE9859EA46 /* Features/Round/AimPlanOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/AimPlanOverlay.swift; sourceTree = "<group>"; };
-		C25B096E94A06EB5D11A0B2E /* Features/Round/HoleMapGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/HoleMapGeometry.swift; sourceTree = "<group>"; };
-		C2ECC87BDB38966BA1D630BC /* DesignSystem/YardageBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem/YardageBook.swift; sourceTree = "<group>"; };
-		A00000000000000000000113 /* Features/Premium/PremiumGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Premium/PremiumGateView.swift; sourceTree = "<group>"; };
+		A00000000000000000000111 /* ShellTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellTokens.swift; sourceTree = "<group>"; };
+		C2521E65B91DADC3ECE6D3C6 /* OverpassClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverpassClient.swift; sourceTree = "<group>"; };
+		C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimPlanOverlay.swift; sourceTree = "<group>"; };
+		C25B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleMapGeometry.swift; sourceTree = "<group>"; };
+		C2ECC87BDB38966BA1D630BC /* YardageBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YardageBook.swift; sourceTree = "<group>"; };
+		A00000000000000000000113 /* PremiumGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumGateView.swift; sourceTree = "<group>"; };
 		A00000000000000000000121 /* SocialViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialViewModelTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000123 /* ProfileViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModelTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000125 /* Features/Social/SocialViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/SocialViewModel.swift; sourceTree = "<group>"; };
-		A00000000000000000000127 /* Features/Profile/ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/ProfileViewModel.swift; sourceTree = "<group>"; };
-		A00000000000000000000130 /* Services/Weather/RoundWeatherSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Weather/RoundWeatherSnapshot.swift; sourceTree = "<group>"; };
-		A00000000000000000000131 /* Services/Weather/RoundWeatherLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Weather/RoundWeatherLoading.swift; sourceTree = "<group>"; };
-		A00000000000000000000132 /* Services/Weather/PreviewRoundWeatherLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Weather/PreviewRoundWeatherLoader.swift; sourceTree = "<group>"; };
-		A00000000000000000000133 /* Services/Weather/AppleWeatherKitLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Weather/AppleWeatherKitLoader.swift; sourceTree = "<group>"; };
-		A00000000000000000000139 /* Features/Round/Models/SwingPalCourse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/SwingPalCourse.swift; sourceTree = "<group>"; };
-		A0000000000000000000013B /* Features/Round/Repositories/CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Repositories/CourseRepository.swift; sourceTree = "<group>"; };
+		A00000000000000000000125 /* SocialViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000127 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000130 /* RoundWeatherSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundWeatherSnapshot.swift; sourceTree = "<group>"; };
+		A00000000000000000000131 /* RoundWeatherLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundWeatherLoading.swift; sourceTree = "<group>"; };
+		A00000000000000000000132 /* PreviewRoundWeatherLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRoundWeatherLoader.swift; sourceTree = "<group>"; };
+		A00000000000000000000133 /* AppleWeatherKitLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleWeatherKitLoader.swift; sourceTree = "<group>"; };
+		A00000000000000000000139 /* SwingPalCourse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalCourse.swift; sourceTree = "<group>"; };
+		A0000000000000000000013B /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		A0000000000000000000013D /* CourseRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepositoryTests.swift; sourceTree = "<group>"; };
-		A0000000000000000000013F /* Features/Round/Models/CourseCorrectionDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Models/CourseCorrectionDraft.swift; sourceTree = "<group>"; };
-		A00000000000000000000141 /* Features/Round/Providers/CourseDataProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/CourseDataProviders.swift; sourceTree = "<group>"; };
-		A00000000000000000000143 /* Features/Round/CourseCorrectionCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/CourseCorrectionCenter.swift; sourceTree = "<group>"; };
+		A0000000000000000000013F /* CourseCorrectionDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCorrectionDraft.swift; sourceTree = "<group>"; };
+		A00000000000000000000141 /* CourseDataProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDataProviders.swift; sourceTree = "<group>"; };
+		A00000000000000000000143 /* CourseCorrectionCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCorrectionCenter.swift; sourceTree = "<group>"; };
 		A00000000000000000000147 /* CourseProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProviderTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000149 /* CourseCorrectionCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCorrectionCenterTests.swift; sourceTree = "<group>"; };
-		A0000000000000000000014B /* Features/Round/FreshLiveRoundScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/FreshLiveRoundScreen.swift; sourceTree = "<group>"; };
-		A0000000000000000000014D /* Features/Round/Sync/RoundCompanionSyncing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Sync/RoundCompanionSyncing.swift; sourceTree = "<group>"; };
-		A00000000000000000000151 /* Features/Profile/Analysis/RoundSummaryAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Analysis/RoundSummaryAnalysis.swift; sourceTree = "<group>"; };
-		A00000000000000000000153 /* Features/Profile/Analysis/RoundSummaryAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Analysis/RoundSummaryAnalysisService.swift; sourceTree = "<group>"; };
-		A00000000000000000000155 /* Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift; sourceTree = "<group>"; };
+		A0000000000000000000014B /* FreshLiveRoundScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshLiveRoundScreen.swift; sourceTree = "<group>"; };
+		A0000000000000000000014D /* RoundCompanionSyncing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundCompanionSyncing.swift; sourceTree = "<group>"; };
+		A00000000000000000000151 /* RoundSummaryAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSummaryAnalysis.swift; sourceTree = "<group>"; };
+		A00000000000000000000153 /* RoundSummaryAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSummaryAnalysisService.swift; sourceTree = "<group>"; };
+		A00000000000000000000155 /* FoundationModelsRoundSummaryAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelsRoundSummaryAnalyzer.swift; sourceTree = "<group>"; };
 		A00000000000000000000157 /* RoundSummaryAnalysisStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSummaryAnalysisStoreTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000159 /* RoundSummaryAnalysisServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSummaryAnalysisServiceTests.swift; sourceTree = "<group>"; };
 		A0000000000000000000015B /* FoundationModelsRoundSummaryAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelsRoundSummaryAnalyzerTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000161 /* StatsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModelTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000163 /* Features/Stats/StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Stats/StatsView.swift; sourceTree = "<group>"; };
-		A00000000000000000000165 /* Features/Stats/StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Stats/StatsViewModel.swift; sourceTree = "<group>"; };
-		A00000000000000000000167 /* Resources/club_catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Resources/club_catalog.json; sourceTree = "<group>"; };
-		A00000000000000000000169 /* Resources/Courses/royal-melbourne-west.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Resources/Courses/royal-melbourne-west.json"; sourceTree = "<group>"; };
-		A0000000000000000000016B /* Features/Round/Repositories/BundledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Repositories/BundledCourseRepository.swift; sourceTree = "<group>"; };
-		A0000000000000000000016D /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift; sourceTree = "<group>"; };
+		A00000000000000000000163 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		A00000000000000000000165 /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000167 /* club_catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = club_catalog.json; sourceTree = "<group>"; };
+		A00000000000000000000169 /* royal-melbourne-west.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "royal-melbourne-west.json"; sourceTree = "<group>"; };
+		A0000000000000000000016B /* BundledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledCourseRepository.swift; sourceTree = "<group>"; };
+		A0000000000000000000016D /* WatchConnectivityRoundCompanionSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityRoundCompanionSync.swift; sourceTree = "<group>"; };
 		A00000000000000000000170 /* SwingPalWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalWatchApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000171 /* WatchRoundCompanionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionViewModel.swift; sourceTree = "<group>"; };
@@ -267,44 +267,44 @@
 		A00000000000000000000183 /* WatchClubPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchClubPickerView.swift; sourceTree = "<group>"; };
 		A00000000000000000000185 /* WatchQuickShotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchQuickShotView.swift; sourceTree = "<group>"; };
 		A00000000000000000000187 /* WatchHoleFinishView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleFinishView.swift; sourceTree = "<group>"; };
-		A00000000000000000000189 /* Resources/Courses/medway.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Resources/Courses/medway.json; sourceTree = "<group>"; };
-		A00000000000000000000201 /* Features/Round/Providers/OSMCourseDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/OSMCourseDiscovery.swift; sourceTree = "<group>"; };
-		A00000000000000000000203 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/CourseDiscoveryGeocoding.swift; sourceTree = "<group>"; };
+		A00000000000000000000189 /* medway.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = medway.json; sourceTree = "<group>"; };
+		A00000000000000000000201 /* OSMCourseDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMCourseDiscovery.swift; sourceTree = "<group>"; };
+		A00000000000000000000203 /* CourseDiscoveryGeocoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDiscoveryGeocoding.swift; sourceTree = "<group>"; };
 		A00000000000000000000205 /* OSMCourseDiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMCourseDiscoveryTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000211 /* Features/Round/Providers/OSMCourseGeometryFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/OSMCourseGeometryFetcher.swift; sourceTree = "<group>"; };
-		A00000000000000000000213 /* Features/Round/Providers/RuntimeOSMCourseConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/RuntimeOSMCourseConverter.swift; sourceTree = "<group>"; };
-		A00000000000000000000215 /* Features/Round/Providers/CourseValidationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/CourseValidationResult.swift; sourceTree = "<group>"; };
-		A00000000000000000000217 /* Features/Round/Providers/DeterministicCourseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/DeterministicCourseValidator.swift; sourceTree = "<group>"; };
-		A00000000000000000000219 /* Features/Round/Providers/CourseImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/CourseImportCoordinator.swift; sourceTree = "<group>"; };
-		A0000000000000000000021B /* Features/Round/CourseImportLoadingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/CourseImportLoadingOverlay.swift; sourceTree = "<group>"; };
+		A00000000000000000000211 /* OSMCourseGeometryFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMCourseGeometryFetcher.swift; sourceTree = "<group>"; };
+		A00000000000000000000213 /* RuntimeOSMCourseConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeOSMCourseConverter.swift; sourceTree = "<group>"; };
+		A00000000000000000000215 /* CourseValidationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseValidationResult.swift; sourceTree = "<group>"; };
+		A00000000000000000000217 /* DeterministicCourseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicCourseValidator.swift; sourceTree = "<group>"; };
+		A00000000000000000000219 /* CourseImportCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseImportCoordinator.swift; sourceTree = "<group>"; };
+		A0000000000000000000021B /* CourseImportLoadingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseImportLoadingOverlay.swift; sourceTree = "<group>"; };
 		A0000000000000000000021D /* RuntimeOSMCourseConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeOSMCourseConverterTests.swift; sourceTree = "<group>"; };
 		A0000000000000000000021F /* DeterministicCourseValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicCourseValidatorTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000221 /* CourseImportCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseImportCoordinatorTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000231 /* Features/Round/Providers/FoundationModelsCourseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/FoundationModelsCourseValidator.swift; sourceTree = "<group>"; };
+		A00000000000000000000231 /* FoundationModelsCourseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelsCourseValidator.swift; sourceTree = "<group>"; };
 		A00000000000000000000233 /* FoundationModelsCourseValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelsCourseValidatorTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000241 /* Features/Round/Repositories/ImportedCourseStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Repositories/ImportedCourseStore.swift; sourceTree = "<group>"; };
-		A00000000000000000000243 /* Features/Round/Repositories/CompositeCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Repositories/CompositeCourseRepository.swift; sourceTree = "<group>"; };
+		A00000000000000000000241 /* ImportedCourseStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedCourseStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000243 /* CompositeCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeCourseRepository.swift; sourceTree = "<group>"; };
 		A00000000000000000000245 /* ImportedCourseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedCourseStoreTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000247 /* CompositeCourseRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeCourseRepositoryTests.swift; sourceTree = "<group>"; };
-		A00000000000000000000511 /* Services/Auth/AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Auth/AuthService.swift; sourceTree = "<group>"; };
-		A00000000000000000000512 /* Services/Auth/MockAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Auth/MockAuthService.swift; sourceTree = "<group>"; };
-		A00000000000000000000513 /* Services/Auth/SupabaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Auth/SupabaseAuthService.swift; sourceTree = "<group>"; };
-		A00000000000000000000514 /* Services/Auth/AppleSignInCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Auth/AppleSignInCoordinator.swift; sourceTree = "<group>"; };
-		A00000000000000000000515 /* Services/Supabase/SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Supabase/SupabaseConfig.swift; sourceTree = "<group>"; };
-		A00000000000000000000532 /* Services/Supabase/SupabaseShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Supabase/SupabaseShared.swift; sourceTree = "<group>"; };
-		A00000000000000000000533 /* Services/Storage/CommunityCourseStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Storage/CommunityCourseStorageService.swift; sourceTree = "<group>"; };
-		A00000000000000000000536 /* Services/Sync/UserDataSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Sync/UserDataSyncService.swift; sourceTree = "<group>"; };
-		A00000000000000000000611 /* Services/Analysis/RoundSummaryAnalysisCloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Analysis/RoundSummaryAnalysisCloudStore.swift; sourceTree = "<group>"; };
-		A00000000000000000000542 /* Services/Profile/UserProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Profile/UserProfileService.swift; sourceTree = "<group>"; };
-		A00000000000000000000561 /* Features/Social/Models/PublicProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/Models/PublicProfile.swift; sourceTree = "<group>"; };
-		A00000000000000000000563 /* Services/Social/SocialGraphService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Social/SocialGraphService.swift; sourceTree = "<group>"; };
-		A00000000000000000000565 /* Services/Social/FollowDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Social/FollowDeepLink.swift; sourceTree = "<group>"; };
-		A00000000000000000000567 /* Services/Nearby/NearbyDiscoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Nearby/NearbyDiscoveryCoordinator.swift; sourceTree = "<group>"; };
-		A00000000000000000000569 /* Services/Nearby/NFCFollowScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Nearby/NFCFollowScanner.swift; sourceTree = "<group>"; };
-		A00000000000000000000571 /* Features/Social/SocialDiscoveryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Social/SocialDiscoveryViews.swift; sourceTree = "<group>"; };
-		A00000000000000000000573 /* Services/Social/SocialFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Social/SocialFeedService.swift; sourceTree = "<group>"; };
-		A00000000000000000000516 /* Features/Auth/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Auth/AuthViewModel.swift; sourceTree = "<group>"; };
-		A00000000000000000000517 /* Features/Auth/AuthFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Auth/AuthFlowView.swift; sourceTree = "<group>"; };
+		A00000000000000000000511 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		A00000000000000000000512 /* MockAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthService.swift; sourceTree = "<group>"; };
+		A00000000000000000000513 /* SupabaseAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthService.swift; sourceTree = "<group>"; };
+		A00000000000000000000514 /* AppleSignInCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInCoordinator.swift; sourceTree = "<group>"; };
+		A00000000000000000000515 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
+		A00000000000000000000532 /* SupabaseShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseShared.swift; sourceTree = "<group>"; };
+		A00000000000000000000533 /* CommunityCourseStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityCourseStorageService.swift; sourceTree = "<group>"; };
+		A00000000000000000000536 /* UserDataSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDataSyncService.swift; sourceTree = "<group>"; };
+		A00000000000000000000611 /* RoundSummaryAnalysisCloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundSummaryAnalysisCloudStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000542 /* UserProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileService.swift; sourceTree = "<group>"; };
+		A00000000000000000000561 /* PublicProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicProfile.swift; sourceTree = "<group>"; };
+		A00000000000000000000563 /* SocialGraphService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialGraphService.swift; sourceTree = "<group>"; };
+		A00000000000000000000565 /* FollowDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowDeepLink.swift; sourceTree = "<group>"; };
+		A00000000000000000000567 /* NearbyDiscoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearbyDiscoveryCoordinator.swift; sourceTree = "<group>"; };
+		A00000000000000000000569 /* NFCFollowScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCFollowScanner.swift; sourceTree = "<group>"; };
+		A00000000000000000000571 /* SocialDiscoveryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialDiscoveryViews.swift; sourceTree = "<group>"; };
+		A00000000000000000000573 /* SocialFeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialFeedService.swift; sourceTree = "<group>"; };
+		A00000000000000000000516 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000517 /* AuthFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthFlowView.swift; sourceTree = "<group>"; };
 		A00000000000000000000701 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -349,136 +349,728 @@
 		A00000000000000000000041 /* SwingPal */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000020 /* SwingPalApp.swift */,
-				A00000000000000000000250 /* SwingPalLaunchLogo.swift */,
-				A00000000000000000000022 /* AppIdentity.swift */,
-				A00000000000000000000029 /* App/AppTab.swift */,
-				A0000000000000000000002A /* App/AuthState.swift */,
-				A0000000000000000000002B /* App/AppState.swift */,
-				A0000000000000000000002C /* App/AppShellView.swift */,
-				A0000000000000000000002E /* Features/Home/HomeView.swift */,
-				A0000000000000000000002F /* Features/Home/HomeViewModel.swift */,
-				A00000000000000000000163 /* Features/Stats/StatsView.swift */,
-				A00000000000000000000165 /* Features/Stats/StatsViewModel.swift */,
-				A000000000000000000000A0 /* Features/Social/SocialView.swift */,
-				A000000000000000000000A1 /* Features/Social/SocialPost.swift */,
-				A000000000000000000000A3 /* Features/Social/SocialPostCard.swift */,
-				A00000000000000000000125 /* Features/Social/SocialViewModel.swift */,
-				A00000000000000000000139 /* Features/Round/Models/SwingPalCourse.swift */,
-				A0000000000000000000013F /* Features/Round/Models/CourseCorrectionDraft.swift */,
-				A00000000000000000000141 /* Features/Round/Providers/CourseDataProviders.swift */,
-				A00000000000000000000201 /* Features/Round/Providers/OSMCourseDiscovery.swift */,
-				A00000000000000000000203 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift */,
-				A00000000000000000000211 /* Features/Round/Providers/OSMCourseGeometryFetcher.swift */,
-				A00000000000000000000213 /* Features/Round/Providers/RuntimeOSMCourseConverter.swift */,
-				A00000000000000000000215 /* Features/Round/Providers/CourseValidationResult.swift */,
-				A00000000000000000000217 /* Features/Round/Providers/DeterministicCourseValidator.swift */,
-				A00000000000000000000219 /* Features/Round/Providers/CourseImportCoordinator.swift */,
-				A00000000000000000000231 /* Features/Round/Providers/FoundationModelsCourseValidator.swift */,
-				A0000000000000000000021B /* Features/Round/CourseImportLoadingOverlay.swift */,
-				A0000000000000000000013B /* Features/Round/Repositories/CourseRepository.swift */,
-				A0000000000000000000016B /* Features/Round/Repositories/BundledCourseRepository.swift */,
-				A00000000000000000000241 /* Features/Round/Repositories/ImportedCourseStore.swift */,
-				A00000000000000000000243 /* Features/Round/Repositories/CompositeCourseRepository.swift */,
-				A00000000000000000000143 /* Features/Round/CourseCorrectionCenter.swift */,
-				A000000000000000000000C2 /* Features/Round/Models/RoundPlayerDraft.swift */,
-				A000000000000000000000C3 /* Features/Round/RoundSetupState.swift */,
-				A000000000000000000000C6 /* Features/Round/AddGuestPlayerSheet.swift */,
-				A0000000000000000000014B /* Features/Round/FreshLiveRoundScreen.swift */,
-				A0000000000000000000014D /* Features/Round/Sync/RoundCompanionSyncing.swift */,
-				A0000000000000000000016D /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift */,
-				A000000000000000000000C8 /* Features/Round/Models/ShotEvent.swift */,
-				A000000000000000000000C9 /* Features/Round/Models/HoleSession.swift */,
-				A000000000000000000000CA /* Features/Round/Models/PlayerScoreState.swift */,
-				A000000000000000000000CB /* Features/Round/LiveRoundState.swift */,
-				A000000000000000000000CF /* Features/Round/RoundSetupView.swift */,
-				A00000000000000000000621 /* Features/Round/AddPlayerSearchSheet.swift */,
-				A000000000000000000000D0 /* Features/Round/RoundReviewView.swift */,
-				A000000000000000000000D1 /* Features/Round/RoundRootView.swift */,
-				A000000000000000000000D2 /* Features/Profile/Models/Club.swift */,
-				A000000000000000000000D3 /* Features/Profile/Models/Bag.swift */,
-				A00000000000000000000390 /* Features/Profile/Models/HandicapIndex.swift */,
-				A000000000000000000000D4 /* Features/Profile/BagClubRecommendation.swift */,
-				A00000000000000000000151 /* Features/Profile/Analysis/RoundSummaryAnalysis.swift */,
-				A00000000000000000000153 /* Features/Profile/Analysis/RoundSummaryAnalysisService.swift */,
-				A00000000000000000000155 /* Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift */,
-				A000000000000000000000D6 /* Features/Profile/ProfileView.swift */,
-				C92800000000000000000002 /* AddClubSelection.swift */,
-				C92800000000000000000004 /* AddClubSheet.swift */,
-				C92800000000000000000006 /* ClubCatalogStore.swift */,
-				C92800000000000000000008 /* Info.plist */,
-				A00000000000000000000127 /* Features/Profile/ProfileViewModel.swift */,
-				A00000000000000000000516 /* Features/Auth/AuthViewModel.swift */,
-				A00000000000000000000517 /* Features/Auth/AuthFlowView.swift */,
-				A000000000000000000000D8 /* Features/Premium/EntitlementState.swift */,
-				A000000000000000000000D9 /* Features/Premium/PremiumFeature.swift */,
-				A000000000000000000000DA /* Features/Premium/GatedActionResolver.swift */,
-				A00000000000000000000113 /* Features/Premium/PremiumGateView.swift */,
-				A00000000000000000000130 /* Services/Weather/RoundWeatherSnapshot.swift */,
-				A00000000000000000000131 /* Services/Weather/RoundWeatherLoading.swift */,
-				A00000000000000000000132 /* Services/Weather/PreviewRoundWeatherLoader.swift */,
-				A00000000000000000000133 /* Services/Weather/AppleWeatherKitLoader.swift */,
-				A00000000000000000000511 /* Services/Auth/AuthService.swift */,
-				A00000000000000000000512 /* Services/Auth/MockAuthService.swift */,
-				A00000000000000000000513 /* Services/Auth/SupabaseAuthService.swift */,
-				A00000000000000000000514 /* Services/Auth/AppleSignInCoordinator.swift */,
-				A00000000000000000000515 /* Services/Supabase/SupabaseConfig.swift */,
-				A00000000000000000000532 /* Services/Supabase/SupabaseShared.swift */,
-				A00000000000000000000533 /* Services/Storage/CommunityCourseStorageService.swift */,
-				A00000000000000000000536 /* Services/Sync/UserDataSyncService.swift */,
-				A00000000000000000000611 /* Services/Analysis/RoundSummaryAnalysisCloudStore.swift */,
-				A00000000000000000000542 /* Services/Profile/UserProfileService.swift */,
-				A00000000000000000000561 /* Features/Social/Models/PublicProfile.swift */,
-				A00000000000000000000571 /* Features/Social/SocialDiscoveryViews.swift */,
-				A00000000000000000000563 /* Services/Social/SocialGraphService.swift */,
-				A00000000000000000000573 /* Services/Social/SocialFeedService.swift */,
-				A00000000000000000000565 /* Services/Social/FollowDeepLink.swift */,
-				A00000000000000000000567 /* Services/Nearby/NearbyDiscoveryCoordinator.swift */,
-				A00000000000000000000569 /* Services/Nearby/NFCFollowScanner.swift */,
-				A00000000000000000000111 /* DesignSystem/DesignTokens/ShellTokens.swift */,
-				C2521E65B91DADC3ECE6D3C6 /* Features/Round/Providers/OverpassClient.swift */,
-				C2D7E2C5E567E6EE9859EA46 /* Features/Round/AimPlanOverlay.swift */,
-				C25B096E94A06EB5D11A0B2E /* Features/Round/HoleMapGeometry.swift */,
-				C2ECC87BDB38966BA1D630BC /* DesignSystem/YardageBook.swift */,
+				B5463A86D669BC5CE80AA869 /* App */,
+				B5324841E70B41FC011C59AE /* Core */,
+				B596C635EAEF85C798B3F27A /* DesignSystem */,
+				B5AC3C0E761C9BA74A88EC6E /* Features */,
+				B56202B28D7BF2A59342E9B9 /* Resources */,
 				A00000000000000000000023 /* Assets.xcassets */,
 				A00000000000000000000411 /* LaunchScreen.storyboard */,
-				A00000000000000000000167 /* Resources/club_catalog.json */,
-				A00000000000000000000169 /* Resources/Courses/royal-melbourne-west.json */,
-				A00000000000000000000189 /* Resources/Courses/medway.json */,
+				A00000000000000000000250 /* SwingPalLaunchLogo.swift */,
 			);
 			path = SwingPal;
+			sourceTree = "<group>";
+		};
+		B5463A86D669BC5CE80AA869 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B56793EAE003EA93E07B3D67 /* Shell */,
+				A00000000000000000000022 /* AppIdentity.swift */,
+				A0000000000000000000002B /* AppState.swift */,
+				A00000000000000000000029 /* AppTab.swift */,
+				A0000000000000000000002A /* AuthState.swift */,
+				C92800000000000000000008 /* Info.plist */,
+				A00000000000000000000020 /* SwingPalApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B56793EAE003EA93E07B3D67 /* Shell */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002C /* AppShellView.swift */,
+			);
+			path = Shell;
+			sourceTree = "<group>";
+		};
+		B5324841E70B41FC011C59AE /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B55F27289F29CE475D0F982B /* Supabase */,
+				B5D450A2D17303F2DFF76109 /* Sync */,
+				B5D5FA80A91F304FC23B3B2B /* Weather */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B55F27289F29CE475D0F982B /* Supabase */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000515 /* SupabaseConfig.swift */,
+				A00000000000000000000532 /* SupabaseShared.swift */,
+			);
+			path = Supabase;
+			sourceTree = "<group>";
+		};
+		B5D450A2D17303F2DFF76109 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000536 /* UserDataSyncService.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		B5D5FA80A91F304FC23B3B2B /* Weather */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000133 /* AppleWeatherKitLoader.swift */,
+				A00000000000000000000132 /* PreviewRoundWeatherLoader.swift */,
+				A00000000000000000000131 /* RoundWeatherLoading.swift */,
+				A00000000000000000000130 /* RoundWeatherSnapshot.swift */,
+			);
+			path = Weather;
+			sourceTree = "<group>";
+		};
+		B596C635EAEF85C798B3F27A /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				B57BA9EC6AB2CE70714B60CE /* Tokens */,
+				C2ECC87BDB38966BA1D630BC /* YardageBook.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		B57BA9EC6AB2CE70714B60CE /* Tokens */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000111 /* ShellTokens.swift */,
+			);
+			path = Tokens;
+			sourceTree = "<group>";
+		};
+		B5AC3C0E761C9BA74A88EC6E /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				B5ACDC9EE37748FE1D94ABAF /* Auth */,
+				B5D35E7E7809202C55782FF3 /* Home */,
+				B5923DE85CF6495102EBA088 /* Premium */,
+				B5BE8AD4043D5AE5373F6455 /* Profile */,
+				B5E44D76D309E79967B0740E /* Round */,
+				B5DAF39F3DAF28E675ED41F5 /* Social */,
+				B562C79DB76604936E512C13 /* Stats */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		B5ACDC9EE37748FE1D94ABAF /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				B55CBACFFA1C84D6D6BEA902 /* Services */,
+				B57617DAAAC881A61B7385A8 /* ViewModels */,
+				B5A9E34345A1BFC3C6CB9B0F /* Views */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		B55CBACFFA1C84D6D6BEA902 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000514 /* AppleSignInCoordinator.swift */,
+				A00000000000000000000511 /* AuthService.swift */,
+				A00000000000000000000512 /* MockAuthService.swift */,
+				A00000000000000000000513 /* SupabaseAuthService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B57617DAAAC881A61B7385A8 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000516 /* AuthViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B5A9E34345A1BFC3C6CB9B0F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000517 /* AuthFlowView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B5D35E7E7809202C55782FF3 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				B5F76CD94C05CF732B8640E2 /* ViewModels */,
+				B5A39BB37D6394C84246BC6A /* Views */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		B5F76CD94C05CF732B8640E2 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002F /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B5A39BB37D6394C84246BC6A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002E /* HomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B5923DE85CF6495102EBA088 /* Premium */ = {
+			isa = PBXGroup;
+			children = (
+				B5AB43206B0FC28AF3F660AB /* Models */,
+				B5F6987B130232431FC856BB /* Views */,
+			);
+			path = Premium;
+			sourceTree = "<group>";
+		};
+		B5AB43206B0FC28AF3F660AB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000D8 /* EntitlementState.swift */,
+				A000000000000000000000DA /* GatedActionResolver.swift */,
+				A000000000000000000000D9 /* PremiumFeature.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B5F6987B130232431FC856BB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000113 /* PremiumGateView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B5BE8AD4043D5AE5373F6455 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B5E2C3DF6137A89AFD122969 /* Analysis */,
+				B574493A33D91AFB99D78038 /* Bag */,
+				B50F478BFD6F0FE1F29E1288 /* Models */,
+				B50CBDD9683FF3F8A68C9021 /* Services */,
+				B54125AFDE8284B5F2797886 /* ViewModels */,
+				B5C760847ACA22F2A3FEFDE3 /* Views */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		B5E2C3DF6137A89AFD122969 /* Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				B5C1E7C408A43C954C31EB0E /* Models */,
+				B53FCE8B39E392248CA7B722 /* Services */,
+			);
+			path = Analysis;
+			sourceTree = "<group>";
+		};
+		B5C1E7C408A43C954C31EB0E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000151 /* RoundSummaryAnalysis.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B53FCE8B39E392248CA7B722 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000155 /* FoundationModelsRoundSummaryAnalyzer.swift */,
+				A00000000000000000000611 /* RoundSummaryAnalysisCloudStore.swift */,
+				A00000000000000000000153 /* RoundSummaryAnalysisService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B574493A33D91AFB99D78038 /* Bag */ = {
+			isa = PBXGroup;
+			children = (
+				B55D2E0C7F2F3825A6BAB9D7 /* Models */,
+				B55699BA8BD4E9B83331FDB6 /* Services */,
+				B59DD23404903C88DB1B7309 /* Views */,
+			);
+			path = Bag;
+			sourceTree = "<group>";
+		};
+		B55D2E0C7F2F3825A6BAB9D7 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C92800000000000000000002 /* AddClubSelection.swift */,
+				A000000000000000000000D3 /* Bag.swift */,
+				A000000000000000000000D4 /* BagClubRecommendation.swift */,
+				A000000000000000000000D2 /* Club.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B55699BA8BD4E9B83331FDB6 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				C92800000000000000000006 /* ClubCatalogStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B59DD23404903C88DB1B7309 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C92800000000000000000004 /* AddClubSheet.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B50F478BFD6F0FE1F29E1288 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000390 /* HandicapIndex.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B50CBDD9683FF3F8A68C9021 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000542 /* UserProfileService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B54125AFDE8284B5F2797886 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000127 /* ProfileViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B5C760847ACA22F2A3FEFDE3 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000D6 /* ProfileView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B5E44D76D309E79967B0740E /* Round */ = {
+			isa = PBXGroup;
+			children = (
+				B511C9DF400805EB5BA82581 /* CourseData */,
+				B581F8186EC6AC566048EC7C /* Live */,
+				B5255EFFE875913229F9FBDF /* Review */,
+				B58764B613DE3428F09D1A3B /* Setup */,
+				B58D1B922F9443AE447AE13B /* Sync */,
+				A000000000000000000000D1 /* RoundRootView.swift */,
+			);
+			path = Round;
+			sourceTree = "<group>";
+		};
+		B511C9DF400805EB5BA82581 /* CourseData */ = {
+			isa = PBXGroup;
+			children = (
+				B5744FB1069279DB32273CCC /* Models */,
+				B506DFB16ECD87E70AD2A96C /* Providers */,
+				B5063AC219752B0B4BF408A4 /* Repositories */,
+				B5FD0E14F45B46361E6F4108 /* Services */,
+				B5F7DF790621CBE57F2ED50E /* Views */,
+			);
+			path = CourseData;
+			sourceTree = "<group>";
+		};
+		B5744FB1069279DB32273CCC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000013F /* CourseCorrectionDraft.swift */,
+				A00000000000000000000139 /* SwingPalCourse.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B506DFB16ECD87E70AD2A96C /* Providers */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000141 /* CourseDataProviders.swift */,
+				A00000000000000000000203 /* CourseDiscoveryGeocoding.swift */,
+				A00000000000000000000219 /* CourseImportCoordinator.swift */,
+				A00000000000000000000215 /* CourseValidationResult.swift */,
+				A00000000000000000000217 /* DeterministicCourseValidator.swift */,
+				A00000000000000000000231 /* FoundationModelsCourseValidator.swift */,
+				A00000000000000000000201 /* OSMCourseDiscovery.swift */,
+				A00000000000000000000211 /* OSMCourseGeometryFetcher.swift */,
+				C2521E65B91DADC3ECE6D3C6 /* OverpassClient.swift */,
+				A00000000000000000000213 /* RuntimeOSMCourseConverter.swift */,
+			);
+			path = Providers;
+			sourceTree = "<group>";
+		};
+		B5063AC219752B0B4BF408A4 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000016B /* BundledCourseRepository.swift */,
+				A00000000000000000000243 /* CompositeCourseRepository.swift */,
+				A0000000000000000000013B /* CourseRepository.swift */,
+				A00000000000000000000241 /* ImportedCourseStore.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		B5FD0E14F45B46361E6F4108 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000533 /* CommunityCourseStorageService.swift */,
+				A00000000000000000000143 /* CourseCorrectionCenter.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B5F7DF790621CBE57F2ED50E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000021B /* CourseImportLoadingOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B581F8186EC6AC566048EC7C /* Live */ = {
+			isa = PBXGroup;
+			children = (
+				B5F26E79B0272041AFF6D63C /* Geometry */,
+				B56ED88480C9585D1AE8B189 /* Models */,
+				B52947D1D955D082F9235ECD /* State */,
+				B5794719FDD255F4EEB392FD /* Views */,
+			);
+			path = Live;
+			sourceTree = "<group>";
+		};
+		B5F26E79B0272041AFF6D63C /* Geometry */ = {
+			isa = PBXGroup;
+			children = (
+				C25B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift */,
+			);
+			path = Geometry;
+			sourceTree = "<group>";
+		};
+		B56ED88480C9585D1AE8B189 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000C9 /* HoleSession.swift */,
+				A000000000000000000000CA /* PlayerScoreState.swift */,
+				A000000000000000000000C8 /* ShotEvent.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B52947D1D955D082F9235ECD /* State */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000CB /* LiveRoundState.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		B5794719FDD255F4EEB392FD /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C2D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift */,
+				A0000000000000000000014B /* FreshLiveRoundScreen.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B5255EFFE875913229F9FBDF /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				B590AB6425F3C6FB992CC730 /* Views */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
+		B590AB6425F3C6FB992CC730 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000D0 /* RoundReviewView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B58764B613DE3428F09D1A3B /* Setup */ = {
+			isa = PBXGroup;
+			children = (
+				B523FFB3D1B6D01B10DEB595 /* Models */,
+				B59676CA8A51D05DD1311E0E /* State */,
+				B54FB8439F905F370B46D701 /* Views */,
+			);
+			path = Setup;
+			sourceTree = "<group>";
+		};
+		B523FFB3D1B6D01B10DEB595 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000C2 /* RoundPlayerDraft.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B59676CA8A51D05DD1311E0E /* State */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000C3 /* RoundSetupState.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		B54FB8439F905F370B46D701 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000C6 /* AddGuestPlayerSheet.swift */,
+				A00000000000000000000621 /* AddPlayerSearchSheet.swift */,
+				A000000000000000000000CF /* RoundSetupView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B58D1B922F9443AE447AE13B /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000014D /* RoundCompanionSyncing.swift */,
+				A0000000000000000000016D /* WatchConnectivityRoundCompanionSync.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		B5DAF39F3DAF28E675ED41F5 /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				B51D291F069D88E1AE454BE6 /* Models */,
+				B5D2BD777E87BB4208DD5D06 /* Services */,
+				B53D89950B7606FC374D2072 /* ViewModels */,
+				B5F2F3F79BAE588E42068D4D /* Views */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
+		B51D291F069D88E1AE454BE6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000561 /* PublicProfile.swift */,
+				A000000000000000000000A1 /* SocialPost.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B5D2BD777E87BB4208DD5D06 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B50C8BB08B59DD8F63FBD0A0 /* Nearby */,
+				A00000000000000000000565 /* FollowDeepLink.swift */,
+				A00000000000000000000573 /* SocialFeedService.swift */,
+				A00000000000000000000563 /* SocialGraphService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B50C8BB08B59DD8F63FBD0A0 /* Nearby */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000567 /* NearbyDiscoveryCoordinator.swift */,
+				A00000000000000000000569 /* NFCFollowScanner.swift */,
+			);
+			path = Nearby;
+			sourceTree = "<group>";
+		};
+		B53D89950B7606FC374D2072 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000125 /* SocialViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B5F2F3F79BAE588E42068D4D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000571 /* SocialDiscoveryViews.swift */,
+				A000000000000000000000A3 /* SocialPostCard.swift */,
+				A000000000000000000000A0 /* SocialView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B562C79DB76604936E512C13 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				B518A15F6D8E8B851A88F3F4 /* ViewModels */,
+				B524BA4BC2145CE5CF1A5D6C /* Views */,
+			);
+			path = Stats;
+			sourceTree = "<group>";
+		};
+		B518A15F6D8E8B851A88F3F4 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000165 /* StatsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		B524BA4BC2145CE5CF1A5D6C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000163 /* StatsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B56202B28D7BF2A59342E9B9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B5D2BAB03BE9377AC90B9CF4 /* Courses */,
+				A00000000000000000000167 /* club_catalog.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B5D2BAB03BE9377AC90B9CF4 /* Courses */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000189 /* medway.json */,
+				A00000000000000000000169 /* royal-melbourne-west.json */,
+			);
+			path = Courses;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000042 /* SwingPalTests */ = {
 			isa = PBXGroup;
 			children = (
+				B5809B82E0458D8F90890DE2 /* App */,
+				B54B5FE1969C95FE1515D80D /* Features */,
 				A00000000000000000000024 /* SwingPalTests.swift */,
-				A00000000000000000000028 /* AppStateTests.swift */,
-				A0000000000000000000002D /* HomeViewModelTests.swift */,
-				A000000000000000000000A4 /* RoundSetupStateTests.swift */,
-				A000000000000000000000DB /* LiveRoundStateTests.swift */,
-				A000000000000000000000DC /* BagClubRecommendationTests.swift */,
-				A000000000000000000000DD /* GatedActionResolverTests.swift */,
-				A000000000000000000000DE /* ShellIntegrationTests.swift */,
-				C2700E1C40828DBB86CC8AC1 /* HoleMapGeometryTests.swift */,
-				A00000000000000000000121 /* SocialViewModelTests.swift */,
-				A00000000000000000000123 /* ProfileViewModelTests.swift */,
-				A0000000000000000000013D /* CourseRepositoryTests.swift */,
-				A00000000000000000000147 /* CourseProviderTests.swift */,
-				A00000000000000000000149 /* CourseCorrectionCenterTests.swift */,
-				A00000000000000000000157 /* RoundSummaryAnalysisStoreTests.swift */,
-				A00000000000000000000159 /* RoundSummaryAnalysisServiceTests.swift */,
-				A0000000000000000000015B /* FoundationModelsRoundSummaryAnalyzerTests.swift */,
-				A00000000000000000000161 /* StatsViewModelTests.swift */,
-				A00000000000000000000205 /* OSMCourseDiscoveryTests.swift */,
-				A0000000000000000000021D /* RuntimeOSMCourseConverterTests.swift */,
-				A0000000000000000000021F /* DeterministicCourseValidatorTests.swift */,
-				A00000000000000000000221 /* CourseImportCoordinatorTests.swift */,
-				A00000000000000000000233 /* FoundationModelsCourseValidatorTests.swift */,
-				A00000000000000000000245 /* ImportedCourseStoreTests.swift */,
-				A00000000000000000000247 /* CompositeCourseRepositoryTests.swift */,
 			);
 			path = SwingPalTests;
+			sourceTree = "<group>";
+		};
+		B5809B82E0458D8F90890DE2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000028 /* AppStateTests.swift */,
+				A000000000000000000000DE /* ShellIntegrationTests.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B54B5FE1969C95FE1515D80D /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				B56F9530E666B885668DD272 /* Home */,
+				B53EB8BC88E29ED77D5A88A6 /* Premium */,
+				B598A6301C1888632E4B2BFD /* Profile */,
+				B57E9D19987DDD925BC5620A /* Round */,
+				B5ED5DE42EDE497476700DF7 /* Social */,
+				B5E83A49BC8F6072F525C943 /* Stats */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		B56F9530E666B885668DD272 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002D /* HomeViewModelTests.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		B53EB8BC88E29ED77D5A88A6 /* Premium */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000DD /* GatedActionResolverTests.swift */,
+			);
+			path = Premium;
+			sourceTree = "<group>";
+		};
+		B598A6301C1888632E4B2BFD /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B5D19BA397963147D415452B /* Analysis */,
+				B5086235D32055E7653526AC /* Bag */,
+				A00000000000000000000123 /* ProfileViewModelTests.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		B5D19BA397963147D415452B /* Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000015B /* FoundationModelsRoundSummaryAnalyzerTests.swift */,
+				A00000000000000000000159 /* RoundSummaryAnalysisServiceTests.swift */,
+				A00000000000000000000157 /* RoundSummaryAnalysisStoreTests.swift */,
+			);
+			path = Analysis;
+			sourceTree = "<group>";
+		};
+		B5086235D32055E7653526AC /* Bag */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000DC /* BagClubRecommendationTests.swift */,
+			);
+			path = Bag;
+			sourceTree = "<group>";
+		};
+		B57E9D19987DDD925BC5620A /* Round */ = {
+			isa = PBXGroup;
+			children = (
+				B5C1B2064F2182C2D277FF65 /* CourseData */,
+				B56D123095A0384FDBFF2424 /* Live */,
+				B540C34DAE9372D1FC34DE85 /* Setup */,
+			);
+			path = Round;
+			sourceTree = "<group>";
+		};
+		B5C1B2064F2182C2D277FF65 /* CourseData */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000247 /* CompositeCourseRepositoryTests.swift */,
+				A00000000000000000000149 /* CourseCorrectionCenterTests.swift */,
+				A00000000000000000000221 /* CourseImportCoordinatorTests.swift */,
+				A00000000000000000000147 /* CourseProviderTests.swift */,
+				A0000000000000000000013D /* CourseRepositoryTests.swift */,
+				A0000000000000000000021F /* DeterministicCourseValidatorTests.swift */,
+				A00000000000000000000233 /* FoundationModelsCourseValidatorTests.swift */,
+				A00000000000000000000245 /* ImportedCourseStoreTests.swift */,
+				A00000000000000000000205 /* OSMCourseDiscoveryTests.swift */,
+				A0000000000000000000021D /* RuntimeOSMCourseConverterTests.swift */,
+			);
+			path = CourseData;
+			sourceTree = "<group>";
+		};
+		B56D123095A0384FDBFF2424 /* Live */ = {
+			isa = PBXGroup;
+			children = (
+				C2700E1C40828DBB86CC8AC1 /* HoleMapGeometryTests.swift */,
+				A000000000000000000000DB /* LiveRoundStateTests.swift */,
+			);
+			path = Live;
+			sourceTree = "<group>";
+		};
+		B540C34DAE9372D1FC34DE85 /* Setup */ = {
+			isa = PBXGroup;
+			children = (
+				A000000000000000000000A4 /* RoundSetupStateTests.swift */,
+			);
+			path = Setup;
+			sourceTree = "<group>";
+		};
+		B5ED5DE42EDE497476700DF7 /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000121 /* SocialViewModelTests.swift */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
+		B5E83A49BC8F6072F525C943 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000161 /* StatsViewModelTests.swift */,
+			);
+			path = Stats;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000043 /* Products */ = {
@@ -655,93 +1247,93 @@
 				A00000000000000000000030 /* SwingPalApp.swift in Sources */,
 				A00000000000000000000251 /* SwingPalLaunchLogo.swift in Sources */,
 				A00000000000000000000032 /* AppIdentity.swift in Sources */,
-				A00000000000000000000037 /* App/AppTab.swift in Sources */,
-				A00000000000000000000038 /* App/AuthState.swift in Sources */,
-				A00000000000000000000039 /* App/AppState.swift in Sources */,
-				A0000000000000000000003A /* App/AppShellView.swift in Sources */,
-				A0000000000000000000003C /* Features/Home/HomeView.swift in Sources */,
-				A0000000000000000000003D /* Features/Home/HomeViewModel.swift in Sources */,
-				A00000000000000000000162 /* Features/Stats/StatsView.swift in Sources */,
-				A00000000000000000000164 /* Features/Stats/StatsViewModel.swift in Sources */,
-				A000000000000000000000B0 /* Features/Social/SocialView.swift in Sources */,
-				A000000000000000000000B1 /* Features/Social/SocialPost.swift in Sources */,
-				A000000000000000000000B3 /* Features/Social/SocialPostCard.swift in Sources */,
-				A00000000000000000000124 /* Features/Social/SocialViewModel.swift in Sources */,
-				A00000000000000000000138 /* Features/Round/Models/SwingPalCourse.swift in Sources */,
-				A0000000000000000000013E /* Features/Round/Models/CourseCorrectionDraft.swift in Sources */,
-				A00000000000000000000140 /* Features/Round/Providers/CourseDataProviders.swift in Sources */,
-				A00000000000000000000200 /* Features/Round/Providers/OSMCourseDiscovery.swift in Sources */,
-				A00000000000000000000202 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift in Sources */,
-				A00000000000000000000210 /* Features/Round/Providers/OSMCourseGeometryFetcher.swift in Sources */,
-				A00000000000000000000212 /* Features/Round/Providers/RuntimeOSMCourseConverter.swift in Sources */,
-				A00000000000000000000214 /* Features/Round/Providers/CourseValidationResult.swift in Sources */,
-				A00000000000000000000216 /* Features/Round/Providers/DeterministicCourseValidator.swift in Sources */,
-				A00000000000000000000218 /* Features/Round/Providers/CourseImportCoordinator.swift in Sources */,
-				A00000000000000000000230 /* Features/Round/Providers/FoundationModelsCourseValidator.swift in Sources */,
-				A0000000000000000000021A /* Features/Round/CourseImportLoadingOverlay.swift in Sources */,
-				A0000000000000000000013A /* Features/Round/Repositories/CourseRepository.swift in Sources */,
-				A0000000000000000000016A /* Features/Round/Repositories/BundledCourseRepository.swift in Sources */,
-				A00000000000000000000240 /* Features/Round/Repositories/ImportedCourseStore.swift in Sources */,
-				A00000000000000000000242 /* Features/Round/Repositories/CompositeCourseRepository.swift in Sources */,
-				A00000000000000000000142 /* Features/Round/CourseCorrectionCenter.swift in Sources */,
-				A000000000000000000000E2 /* Features/Round/Models/RoundPlayerDraft.swift in Sources */,
-				A000000000000000000000E3 /* Features/Round/RoundSetupState.swift in Sources */,
-				A000000000000000000000E6 /* Features/Round/AddGuestPlayerSheet.swift in Sources */,
-				A0000000000000000000014A /* Features/Round/FreshLiveRoundScreen.swift in Sources */,
-				A0000000000000000000014C /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */,
-				A0000000000000000000016C /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift in Sources */,
-				A000000000000000000000E8 /* Features/Round/Models/ShotEvent.swift in Sources */,
-				A000000000000000000000E9 /* Features/Round/Models/HoleSession.swift in Sources */,
-				A000000000000000000000EA /* Features/Round/Models/PlayerScoreState.swift in Sources */,
-				A000000000000000000000EB /* Features/Round/LiveRoundState.swift in Sources */,
-				A000000000000000000000EF /* Features/Round/RoundSetupView.swift in Sources */,
-				A00000000000000000000620 /* Features/Round/AddPlayerSearchSheet.swift in Sources */,
-				A000000000000000000000F0 /* Features/Round/RoundReviewView.swift in Sources */,
-				A000000000000000000000F1 /* Features/Round/RoundRootView.swift in Sources */,
-				A000000000000000000000F2 /* Features/Profile/Models/Club.swift in Sources */,
-				A000000000000000000000F3 /* Features/Profile/Models/Bag.swift in Sources */,
-				A000000000000000000003A0 /* Features/Profile/Models/HandicapIndex.swift in Sources */,
-				A000000000000000000000F4 /* Features/Profile/BagClubRecommendation.swift in Sources */,
-				A00000000000000000000150 /* Features/Profile/Analysis/RoundSummaryAnalysis.swift in Sources */,
-				A00000000000000000000152 /* Features/Profile/Analysis/RoundSummaryAnalysisService.swift in Sources */,
-				A00000000000000000000154 /* Features/Profile/Analysis/FoundationModelsRoundSummaryAnalyzer.swift in Sources */,
-				A000000000000000000000F6 /* Features/Profile/ProfileView.swift in Sources */,
+				A00000000000000000000037 /* AppTab.swift in Sources */,
+				A00000000000000000000038 /* AuthState.swift in Sources */,
+				A00000000000000000000039 /* AppState.swift in Sources */,
+				A0000000000000000000003A /* AppShellView.swift in Sources */,
+				A0000000000000000000003C /* HomeView.swift in Sources */,
+				A0000000000000000000003D /* HomeViewModel.swift in Sources */,
+				A00000000000000000000162 /* StatsView.swift in Sources */,
+				A00000000000000000000164 /* StatsViewModel.swift in Sources */,
+				A000000000000000000000B0 /* SocialView.swift in Sources */,
+				A000000000000000000000B1 /* SocialPost.swift in Sources */,
+				A000000000000000000000B3 /* SocialPostCard.swift in Sources */,
+				A00000000000000000000124 /* SocialViewModel.swift in Sources */,
+				A00000000000000000000138 /* SwingPalCourse.swift in Sources */,
+				A0000000000000000000013E /* CourseCorrectionDraft.swift in Sources */,
+				A00000000000000000000140 /* CourseDataProviders.swift in Sources */,
+				A00000000000000000000200 /* OSMCourseDiscovery.swift in Sources */,
+				A00000000000000000000202 /* CourseDiscoveryGeocoding.swift in Sources */,
+				A00000000000000000000210 /* OSMCourseGeometryFetcher.swift in Sources */,
+				A00000000000000000000212 /* RuntimeOSMCourseConverter.swift in Sources */,
+				A00000000000000000000214 /* CourseValidationResult.swift in Sources */,
+				A00000000000000000000216 /* DeterministicCourseValidator.swift in Sources */,
+				A00000000000000000000218 /* CourseImportCoordinator.swift in Sources */,
+				A00000000000000000000230 /* FoundationModelsCourseValidator.swift in Sources */,
+				A0000000000000000000021A /* CourseImportLoadingOverlay.swift in Sources */,
+				A0000000000000000000013A /* CourseRepository.swift in Sources */,
+				A0000000000000000000016A /* BundledCourseRepository.swift in Sources */,
+				A00000000000000000000240 /* ImportedCourseStore.swift in Sources */,
+				A00000000000000000000242 /* CompositeCourseRepository.swift in Sources */,
+				A00000000000000000000142 /* CourseCorrectionCenter.swift in Sources */,
+				A000000000000000000000E2 /* RoundPlayerDraft.swift in Sources */,
+				A000000000000000000000E3 /* RoundSetupState.swift in Sources */,
+				A000000000000000000000E6 /* AddGuestPlayerSheet.swift in Sources */,
+				A0000000000000000000014A /* FreshLiveRoundScreen.swift in Sources */,
+				A0000000000000000000014C /* RoundCompanionSyncing.swift in Sources */,
+				A0000000000000000000016C /* WatchConnectivityRoundCompanionSync.swift in Sources */,
+				A000000000000000000000E8 /* ShotEvent.swift in Sources */,
+				A000000000000000000000E9 /* HoleSession.swift in Sources */,
+				A000000000000000000000EA /* PlayerScoreState.swift in Sources */,
+				A000000000000000000000EB /* LiveRoundState.swift in Sources */,
+				A000000000000000000000EF /* RoundSetupView.swift in Sources */,
+				A00000000000000000000620 /* AddPlayerSearchSheet.swift in Sources */,
+				A000000000000000000000F0 /* RoundReviewView.swift in Sources */,
+				A000000000000000000000F1 /* RoundRootView.swift in Sources */,
+				A000000000000000000000F2 /* Club.swift in Sources */,
+				A000000000000000000000F3 /* Bag.swift in Sources */,
+				A000000000000000000003A0 /* HandicapIndex.swift in Sources */,
+				A000000000000000000000F4 /* BagClubRecommendation.swift in Sources */,
+				A00000000000000000000150 /* RoundSummaryAnalysis.swift in Sources */,
+				A00000000000000000000152 /* RoundSummaryAnalysisService.swift in Sources */,
+				A00000000000000000000154 /* FoundationModelsRoundSummaryAnalyzer.swift in Sources */,
+				A000000000000000000000F6 /* ProfileView.swift in Sources */,
 				C92800000000000000000001 /* AddClubSelection.swift in Sources */,
 				C92800000000000000000003 /* AddClubSheet.swift in Sources */,
 				C92800000000000000000005 /* ClubCatalogStore.swift in Sources */,
-				A00000000000000000000126 /* Features/Profile/ProfileViewModel.swift in Sources */,
-				A00000000000000000000521 /* Services/Auth/AuthService.swift in Sources */,
-				A00000000000000000000522 /* Services/Auth/MockAuthService.swift in Sources */,
-				A00000000000000000000523 /* Services/Auth/SupabaseAuthService.swift in Sources */,
-				A00000000000000000000524 /* Services/Auth/AppleSignInCoordinator.swift in Sources */,
-				A00000000000000000000525 /* Services/Supabase/SupabaseConfig.swift in Sources */,
-				A00000000000000000000530 /* Services/Supabase/SupabaseShared.swift in Sources */,
-				A00000000000000000000531 /* Services/Storage/CommunityCourseStorageService.swift in Sources */,
-				A00000000000000000000534 /* Services/Sync/UserDataSyncService.swift in Sources */,
-				A00000000000000000000610 /* Services/Analysis/RoundSummaryAnalysisCloudStore.swift in Sources */,
-				A00000000000000000000541 /* Services/Profile/UserProfileService.swift in Sources */,
-				A00000000000000000000560 /* Features/Social/Models/PublicProfile.swift in Sources */,
-				A00000000000000000000570 /* Features/Social/SocialDiscoveryViews.swift in Sources */,
-				A00000000000000000000562 /* Services/Social/SocialGraphService.swift in Sources */,
-				A00000000000000000000572 /* Services/Social/SocialFeedService.swift in Sources */,
-				A00000000000000000000564 /* Services/Social/FollowDeepLink.swift in Sources */,
-				A00000000000000000000566 /* Services/Nearby/NearbyDiscoveryCoordinator.swift in Sources */,
-				A00000000000000000000568 /* Services/Nearby/NFCFollowScanner.swift in Sources */,
-				A00000000000000000000526 /* Features/Auth/AuthViewModel.swift in Sources */,
-				A00000000000000000000527 /* Features/Auth/AuthFlowView.swift in Sources */,
-				A000000000000000000000F8 /* Features/Premium/EntitlementState.swift in Sources */,
-				A000000000000000000000F9 /* Features/Premium/PremiumFeature.swift in Sources */,
-				A000000000000000000000FA /* Features/Premium/GatedActionResolver.swift in Sources */,
-				A00000000000000000000134 /* Services/Weather/RoundWeatherSnapshot.swift in Sources */,
-				A00000000000000000000135 /* Services/Weather/RoundWeatherLoading.swift in Sources */,
-				A00000000000000000000136 /* Services/Weather/PreviewRoundWeatherLoader.swift in Sources */,
-				A00000000000000000000137 /* Services/Weather/AppleWeatherKitLoader.swift in Sources */,
-				A00000000000000000000110 /* DesignSystem/DesignTokens/ShellTokens.swift in Sources */,
-				C1521E65B91DADC3ECE6D3C6 /* Features/Round/Providers/OverpassClient.swift in Sources */,
-				C1D7E2C5E567E6EE9859EA46 /* Features/Round/AimPlanOverlay.swift in Sources */,
-				C15B096E94A06EB5D11A0B2E /* Features/Round/HoleMapGeometry.swift in Sources */,
-				C1ECC87BDB38966BA1D630BC /* DesignSystem/YardageBook.swift in Sources */,
-				A00000000000000000000112 /* Features/Premium/PremiumGateView.swift in Sources */,
+				A00000000000000000000126 /* ProfileViewModel.swift in Sources */,
+				A00000000000000000000521 /* AuthService.swift in Sources */,
+				A00000000000000000000522 /* MockAuthService.swift in Sources */,
+				A00000000000000000000523 /* SupabaseAuthService.swift in Sources */,
+				A00000000000000000000524 /* AppleSignInCoordinator.swift in Sources */,
+				A00000000000000000000525 /* SupabaseConfig.swift in Sources */,
+				A00000000000000000000530 /* SupabaseShared.swift in Sources */,
+				A00000000000000000000531 /* CommunityCourseStorageService.swift in Sources */,
+				A00000000000000000000534 /* UserDataSyncService.swift in Sources */,
+				A00000000000000000000610 /* RoundSummaryAnalysisCloudStore.swift in Sources */,
+				A00000000000000000000541 /* UserProfileService.swift in Sources */,
+				A00000000000000000000560 /* PublicProfile.swift in Sources */,
+				A00000000000000000000570 /* SocialDiscoveryViews.swift in Sources */,
+				A00000000000000000000562 /* SocialGraphService.swift in Sources */,
+				A00000000000000000000572 /* SocialFeedService.swift in Sources */,
+				A00000000000000000000564 /* FollowDeepLink.swift in Sources */,
+				A00000000000000000000566 /* NearbyDiscoveryCoordinator.swift in Sources */,
+				A00000000000000000000568 /* NFCFollowScanner.swift in Sources */,
+				A00000000000000000000526 /* AuthViewModel.swift in Sources */,
+				A00000000000000000000527 /* AuthFlowView.swift in Sources */,
+				A000000000000000000000F8 /* EntitlementState.swift in Sources */,
+				A000000000000000000000F9 /* PremiumFeature.swift in Sources */,
+				A000000000000000000000FA /* GatedActionResolver.swift in Sources */,
+				A00000000000000000000134 /* RoundWeatherSnapshot.swift in Sources */,
+				A00000000000000000000135 /* RoundWeatherLoading.swift in Sources */,
+				A00000000000000000000136 /* PreviewRoundWeatherLoader.swift in Sources */,
+				A00000000000000000000137 /* AppleWeatherKitLoader.swift in Sources */,
+				A00000000000000000000110 /* ShellTokens.swift in Sources */,
+				C1521E65B91DADC3ECE6D3C6 /* OverpassClient.swift in Sources */,
+				C1D7E2C5E567E6EE9859EA46 /* AimPlanOverlay.swift in Sources */,
+				C15B096E94A06EB5D11A0B2E /* HoleMapGeometry.swift in Sources */,
+				C1ECC87BDB38966BA1D630BC /* YardageBook.swift in Sources */,
+				A00000000000000000000112 /* PremiumGateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
