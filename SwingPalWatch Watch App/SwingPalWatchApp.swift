@@ -9,38 +9,27 @@ struct SwingPalWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                let model = WatchRoundCompanionViewModel(
-                    snapshot: companionStore.latestSnapshot,
-                    connectionState: companionStore.connectionState,
-                    queuedActionCount: companionStore.queuedActionCount,
-                    canQueueOfflineActions: companionStore.canQueueOfflineActions,
-                    actionFeedback: companionStore.lastActionFeedback
-                )
-
-                WatchRoundHomeView(store: companionStore, model: model)
-                    .onChange(of: companionStore.feedbackEvent?.id) { _, _ in
-                        guard let event = companionStore.feedbackEvent else { return }
-                        WatchRoundHaptics.play(event.style)
-                    }
-            }
+            WatchRoundRootView(store: companionStore)
+                .onChange(of: companionStore.feedback?.id) { _, _ in
+                    guard let feedback = companionStore.feedback else { return }
+                    WatchRoundHaptics.play(feedback.tone)
+                }
         }
     }
 }
 
+/// Haptics follow the iPhone's answer, not the tap: success only once a
+/// change is saved, a failure buzz when it was refused.
 private enum WatchRoundHaptics {
-    static func play(_ style: WatchRoundHapticStyle) {
+    static func play(_ tone: WatchActionFeedback.Tone) {
         #if canImport(WatchKit)
         let hapticType: WKHapticType
-        switch style {
-        case .success:
-            hapticType = .success
-        case .warning:
-            hapticType = .failure
-        case .finish:
-            hapticType = .notification
+        switch tone {
+        case .saved: hapticType = .success
+        case .finished: hapticType = .notification
+        case .queued: hapticType = .click
+        case .refused: hapticType = .failure
         }
-
         WKInterfaceDevice.current().play(hapticType)
         #endif
     }

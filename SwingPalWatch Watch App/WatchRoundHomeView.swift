@@ -1,463 +1,460 @@
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
 
-private enum WatchRoundHomePanel: Int {
-    case map
+enum WatchRoundRoute: Hashable {
+    case club
+    case shot
+    case putt
+    case penalty
+    case score
+}
+
+/// The Watch app's root: a no-round cover, or the live hole as two vertical
+/// pages (read the hole, then act on it), turned with the Digital Crown.
+struct WatchRoundRootView: View {
+    @ObservedObject var store: WatchRoundCompanionStore
+    @State private var path: [WatchRoundRoute] = []
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            TimelineView(.periodic(from: .now, by: 30)) { timeline in
+                let model = store.presentation(at: timeline.date)
+                Group {
+                    switch model.phase {
+                    case .live:
+                        WatchLiveRoundPages(model: model, store: store, path: $path)
+                    case .roundComplete:
+                        WatchRoundCompleteView(model: model)
+                    case .noRound:
+                        WatchNoRoundView(link: model.link)
+                    case .incompatible:
+                        WatchIncompatibleView()
+                    }
+                }
+                .navigationDestination(for: WatchRoundRoute.self) { route in
+                    destination(for: route, model: model)
+                }
+            }
+        }
+        .overlay(alignment: .top) {
+            if let feedback = store.feedback {
+                WatchFeedbackToast(feedback: feedback)
+                    .task(id: feedback.id) {
+                        try? await Task.sleep(for: .seconds(2.2))
+                        store.clearFeedback(feedback.id)
+                    }
+            }
+        }
+        .onChange(of: store.snapshot == nil) { _, hasNoRound in
+            if hasNoRound { path.removeAll() }
+        }
+    }
+
+    @ViewBuilder
+    private func destination(for route: WatchRoundRoute, model: WatchRoundPresentation) -> some View {
+        switch route {
+        case .club:
+            WatchClubPickerView(model: model, selectedName: model.snapshot?.selectedClubName) { name in
+                store.send(.selectClub(name: name))
+                path.removeAll()
+            }
+        case .shot:
+            WatchShotLoggerView(
+                model: model,
+                onLog: { entry in
+                    store.send(.logShot(entry))
+                    path.removeAll()
+                },
+                onSwitchToPutt: { path = [.putt] }
+            )
+        case .putt:
+            WatchPuttLoggerView(
+                model: model,
+                onLog: { entry in
+                    store.send(.logPutt(entry))
+                    // A holed putt finishes the hole: go straight to the card.
+                    path = entry.holed ? [.score] : []
+                },
+                onSwitchToShot: { path = [.shot] }
+            )
+        case .penalty:
+            WatchPenaltyPickerView { penalty in
+                store.send(.quickPenalty(penalty))
+                path.removeAll()
+            }
+        case .score:
+            WatchHoleScoreView(model: model) { score, putts in
+                store.send(.finishHole(score: score, putts: putts))
+                path.removeAll()
+            }
+        }
+    }
+}
+
+// MARK: - Live pages
+
+private enum WatchLivePage: Hashable {
+    case hole
     case actions
 }
 
-struct WatchRoundHomeView: View {
+struct WatchLiveRoundPages: View {
+    let model: WatchRoundPresentation
     @ObservedObject var store: WatchRoundCompanionStore
-    let model: WatchRoundCompanionViewModel
-    @State private var selectedPanel: WatchRoundHomePanel = .map
+    @Binding var path: [WatchRoundRoute]
+    @State private var page: WatchLivePage = .hole
 
     var body: some View {
-        TabView(selection: $selectedPanel) {
-            mapPanel
-                .tag(WatchRoundHomePanel.map)
-
-            actionsPanel
-                .tag(WatchRoundHomePanel.actions)
+        TabView(selection: $page) {
+            WatchHolePage(model: model, store: store, path: $path)
+                .tag(WatchLivePage.hole)
+                .containerBackground(WatchBook.paper.gradient, for: .tabView)
+            WatchShotActionsPage(model: model, store: store, path: $path)
+                .tag(WatchLivePage.actions)
+                .containerBackground(WatchBook.paper.gradient, for: .tabView)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .navigationBar)
+        .tabViewStyle(.verticalPage)
+        .foregroundStyle(WatchBook.ink)
+        .tint(WatchBook.stamp)
     }
+}
 
-    private var mapPanel: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color.black,
-                    Color(red: 0.03, green: 0.08, blue: 0.05),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+/// Page one: the hole, the green readings beside it, and the club in hand
+/// over the stamp that logs a shot.
+struct WatchHolePage: View {
+    let model: WatchRoundPresentation
+    @ObservedObject var store: WatchRoundCompanionStore
+    @Binding var path: [WatchRoundRoute]
 
-            GeometryReader { geometry in
-                let previewWidth = min(138.0, geometry.size.width * 0.54)
-                let previewHeight = geometry.size.height - 10
-                let previewTop = -2.0
-
-                ZStack(alignment: .topLeading) {
-                    previewStrip(
-                        width: previewWidth,
-                        height: previewHeight,
-                        topInset: previewTop
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .offset(x: 10, y: -2)
-
-                    VStack(spacing: 6) {
-                        HStack(alignment: .top, spacing: 8) {
-                            yardageRail
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Color.clear
-                                .frame(width: max(previewWidth - 92, 24), height: 1)
-                        }
-
-                        if model.showsTrustBanner {
-                            compactTrustBanner
-                                .padding(.trailing, previewWidth * 0.08)
-                        }
-
-                        Spacer(minLength: 0)
-
-                        clubShotBar
-                            .padding(.trailing, previewWidth * 0.04)
-
-                        pageIndicators
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.top, 4)
-                    .padding(.bottom, 6)
-                }
-            }
-        }
-    }
-
-    private var yardageRail: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Hole \(model.holeLabel.replacingOccurrences(of: "Hole ", with: ""))")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.92))
-                .lineLimit(1)
-                .padding(.bottom, 4)
-
-            VStack(alignment: .leading, spacing: 2) {
-                mapMetricLabel("FRONT", value: model.mapFooterMetrics[0].value, emphasized: false)
-                mapMetricLabel("PIN", value: model.mapFooterMetrics[1].value, emphasized: true)
-                mapMetricLabel("BACK", value: model.mapFooterMetrics[2].value, emphasized: false)
-            }
-
-            Spacer(minLength: 0)
-        }
-    }
-
-    private var clubShotBar: some View {
-        HStack(spacing: 8) {
-            Label(model.clubLabel, systemImage: "figure.golf")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white)
-
-            Spacer(minLength: 8)
-
-            Text(model.shotLabel)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.74))
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.06), in: Capsule())
-    }
-
-    private func previewStrip(width: CGFloat, height: CGFloat, topInset: CGFloat) -> some View {
-        ZStack(alignment: .topTrailing) {
-            Group {
-                if let previewImage = previewUIImage {
-                    Image(uiImage: previewImage)
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    geometryMap
-                }
-            }
-            .frame(width: width, height: height)
-            .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
-            .overlay {
-                previewFadeOverlay(cornerRadius: 34)
-            }
-            .mask {
-                previewCoverMask(cornerRadius: 34)
-            }
-            .shadow(color: .black.opacity(0.34), radius: 18, y: 6)
-
-            Text(model.clubLabel)
-                .font(.system(size: 11, weight: .bold).width(.condensed))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(red: 1.0, green: 0.455, blue: 0.322), in: Capsule())
-                .padding(.top, topInset + 6)
-                .padding(.trailing, 6)
-        }
-    }
-
-    private func previewFadeOverlay(cornerRadius: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.black.opacity(0.48),
-                        .clear,
-                        .clear,
-                        Color.black.opacity(0.58),
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .overlay {
-                HStack(spacing: 0) {
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.58), Color.black.opacity(0.20), .clear],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    LinearGradient(
-                        colors: [.clear, Color.black.opacity(0.18), Color.black.opacity(0.30)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                }
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            }
-    }
-
-    private func previewCoverMask(cornerRadius: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(color: .white.opacity(0.18), location: 0.08),
-                        .init(color: .white.opacity(0.72), location: 0.16),
-                        .init(color: .white, location: 0.22),
-                        .init(color: .white, location: 1.0),
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-    }
-
-    private var geometryMap: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-            let presentation = model.mapPresentation
-            let ball = CGPoint(x: width * presentation.ballX, y: height * presentation.ballY)
-            let target = CGPoint(x: width * presentation.targetX, y: height * presentation.targetMarkerY)
-
-            ZStack {
-                fairwayShape(in: geometry.size)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.10, green: 0.19, blue: 0.11),
-                                Color(red: 0.17, green: 0.30, blue: 0.18),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-
-                Path { path in
-                    path.move(to: ball)
-                    path.addLine(to: target)
-                }
-                .stroke(
-                    Color.white.opacity(0.7),
-                    style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [4, 4])
-                )
-
-                targetMarker(value: presentation.targetLabel)
-                    .position(x: target.x, y: target.y)
-
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 12, height: 12)
-                    .shadow(color: .white.opacity(0.24), radius: 6)
-                    .position(x: ball.x, y: ball.y)
-            }
-        }
-    }
-
-    private var previewUIImage: UIImage? {
-        #if canImport(UIKit)
-        guard let data = store.latestPreviewImageData else { return nil }
-        return UIImage(data: data)
-        #else
-        return nil
-        #endif
-    }
-
-    private func mapMetricLabel(_ title: String, value: String, emphasized: Bool) -> some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .font(.system(size: 10, weight: .bold).width(.condensed))
-                .foregroundStyle(.white.opacity(0.74))
-            Text(value)
-                .font(.system(size: emphasized ? 34 : 21, weight: .bold).width(.condensed))
-                .monospacedDigit()
-                .foregroundStyle(emphasized ? Color(red: 1.0, green: 0.455, blue: 0.322) : .white)
-        }
-    }
-
-    private var compactTrustBanner: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "wave.3.right")
-                .font(.caption.weight(.semibold))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(model.trustBannerTitle)
-                    .font(.caption2.weight(.semibold))
-                Text(model.trustBannerDetail)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.72))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-            }
-            Spacer(minLength: 0)
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    private var pageIndicators: some View {
-        HStack(spacing: 5) {
-            pageDot(for: .map)
-            pageDot(for: .actions)
-        }
-        .padding(.top, 2)
-    }
-
-    private func pageDot(for panel: WatchRoundHomePanel) -> some View {
-        Circle()
-            .fill(selectedPanel == panel ? Color.white.opacity(0.92) : Color.white.opacity(0.28))
-            .frame(width: selectedPanel == panel ? 6 : 5, height: selectedPanel == panel ? 6 : 5)
-    }
-
-    private var actionsPanel: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Actions")
-                            .font(.headline.weight(.semibold))
-                        Text(model.holeLabel)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 8)
-                    Text(model.connectionLabel)
-                        .font(.caption2.weight(.semibold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.thinMaterial, in: Capsule())
-                }
-
-                if model.showsTrustBanner {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(model.trustBannerTitle)
-                            .font(.caption.weight(.semibold))
-                        Text(model.trustBannerDetail)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            header
+            HStack(alignment: .top, spacing: 4) {
+                greenReadings
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-
-                NavigationLink {
-                    WatchQuickShotView(store: store, model: model)
-                } label: {
-                    HStack {
-                        Label("Log Shot", systemImage: "figure.golf")
-                            .font(.headline.weight(.semibold))
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption.weight(.bold))
-                    }
-                    .foregroundStyle(Color(red: 0.075, green: 0.141, blue: 0.11))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(Color(red: 0.81, green: 0.89, blue: 0.77), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-
-                HStack(spacing: 8) {
-                    NavigationLink {
-                        WatchClubPickerView(store: store, model: model)
-                    } label: {
-                        actionTile(title: "Club", subtitle: model.clubLabel, systemImage: "square.grid.2x2")
-                    }
-                    .buttonStyle(.plain)
-
-                    NavigationLink {
-                        WatchHoleFinishView(store: store, model: model)
-                    } label: {
-                        actionTile(title: "Finish", subtitle: model.canFinishHole ? "Ready" : "Review", systemImage: "flag.pattern.checkered")
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-                    inlineActionButton("+Putt", systemImage: "plus.circle") {
-                        store.sendAddPutt()
-                    }
-                    inlineActionButton("Penalty", systemImage: "exclamationmark.triangle") {
-                        store.sendAddPenalty()
-                    }
-                    inlineActionButton("Drop", systemImage: "arrow.down.to.line") {
-                        store.sendMarkDrop()
-                    }
-                    inlineActionButton("Undo", systemImage: "arrow.uturn.backward") {
-                        store.sendUndoLastAction()
-                    }
+                if let sketch = model.snapshot?.sketch {
+                    WatchHoleSketchView(sketch: sketch)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .frame(maxHeight: .infinity)
+            if let status = model.statusLine {
+                Text(status)
+                    .font(.caption2)
+                    .foregroundStyle(model.isStale ? WatchBook.warning : WatchBook.pencil)
+                    .lineLimit(2)
+                    .padding(.bottom, 2)
+            }
+            WatchBookHairline()
+            dock
         }
-        .background(Color.black.ignoresSafeArea())
+        .padding(.horizontal, 4)
     }
 
-    private func targetMarker(value: String) -> some View {
-        VStack(spacing: 3) {
-            Image(systemName: "flag.fill")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(.white)
-            Text(value)
-                .font(.system(size: 10, weight: .bold).width(.condensed))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(Color.black.opacity(0.6), in: Capsule())
+    /// The folio: hole number, par and the round so far.
+    private var header: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 6) {
+            Text(model.folioText)
+                .font(WatchBook.Typeface.folio)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(model.parText).font(WatchBook.Typeface.heading)
+                Text("\(model.roundToParText) · \(model.strokeText)")
+                    .font(.caption2)
+                    .foregroundStyle(WatchBook.pencil)
+                    .lineLimit(1)
+            }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Hole \(model.snapshot?.holeNumber ?? 0), \(model.parText). Round \(model.roundToParText). \(model.strokeText)")
     }
 
-    private func actionTile(title: String, subtitle: String, systemImage: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: systemImage)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(title)
-                .font(.caption.weight(.semibold))
-            Text(subtitle)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+    /// Centre, front and back, written beside the drawing as the book does.
+    private var greenReadings: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 1) {
+                Text(model.centreText)
+                    .font(WatchBook.Typeface.figure)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                    .foregroundStyle(model.isStale ? WatchBook.pencil : WatchBook.ink)
+                if model.hasYardage {
+                    Text(model.unitSuffix)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(WatchBook.pencil)
+                }
+            }
+            WatchBookNote(model.yardageNote)
+            if model.hasYardage {
+                HStack(spacing: 8) {
+                    Text("F \(model.frontText)")
+                    Text("B \(model.backText)")
+                }
+                .font(WatchBook.Typeface.smallFigure)
+                .padding(.top, 2)
+                if let playsLike = model.playsLikeText {
+                    Text(playsLike)
+                        .font(.system(.footnote, weight: .bold).width(.condensed))
+                        .foregroundStyle(WatchBook.flag)
+                }
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.top, 4)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(model.yardageAccessibilityLabel)
     }
 
-    private func inlineActionButton(
-        _ title: String,
-        systemImage: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: systemImage)
-                    .font(.caption.weight(.semibold))
-                Text(title)
-                    .font(.caption2.weight(.semibold))
+    /// The equipment line: the club code and its carry, then the stamp.
+    private var dock: some View {
+        HStack(spacing: 6) {
+            Button { path.append(.club) } label: {
+                HStack(alignment: .center, spacing: 5) {
+                    Text(model.clubCode)
+                        .font(WatchBook.Typeface.clubCode)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    VStack(alignment: .leading, spacing: 0) {
+                        if let carry = model.carryText {
+                            Text(carry).font(.caption2.weight(.semibold)).monospacedDigit()
+                        }
+                        if let source = model.carrySourceText {
+                            Text(source).font(.caption2).foregroundStyle(WatchBook.pencil)
+                        }
+                    }
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .buttonStyle(.plain)
+            .disabled(model.isInspectingOnPhone)
+            .accessibilityLabel("Choose club. \(model.snapshot?.selectedClubName ?? ""), \(model.carryText ?? ""), \(model.carrySourceText ?? "")")
+
+            if model.isInspectingOnPhone {
+                Button {
+                    store.send(.returnToLiveHole)
+                } label: {
+                    Label("Hole \(model.snapshot?.holeNumber ?? 0)", systemImage: "arrow.uturn.backward")
+                        .font(.footnote.weight(.bold))
+                        .labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(WatchStampButtonStyle())
+                .frame(width: 82)
+                .accessibilityLabel("Back to the live hole")
+            } else {
+                Button {
+                    path.append(model.snapshot?.shotContext == .putt ? .putt : .shot)
+                } label: {
+                    VStack(spacing: 1) {
+                        Image(systemName: "figure.golf").font(.system(size: 16, weight: .semibold))
+                        Text("Log").font(.caption2.weight(.bold))
+                    }
+                }
+                .buttonStyle(WatchStampButtonStyle())
+                .frame(width: 62)
+                .disabled(!model.canRecordShots)
+                .accessibilityLabel(model.logShotTitle)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(.top, 4)
+        .padding(.bottom, 6)
+    }
+}
+
+/// Page two: everything else the phone's round actions offer for this shot
+/// and hole, with the card for this hole at the top.
+struct WatchShotActionsPage: View {
+    let model: WatchRoundPresentation
+    @ObservedObject var store: WatchRoundCompanionStore
+    @Binding var path: [WatchRoundRoute]
+    @State private var isConfirmingUndo = false
+    @State private var isConfirmingRetee = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                card
+                if let reason = model.recordBlockedReason {
+                    Label(reason, systemImage: "iphone")
+                        .font(.caption2)
+                        .foregroundStyle(WatchBook.pencil)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    WatchBookNote("This shot")
+                    VStack(spacing: 0) {
+                        if model.snapshot?.ballMark != .hidden {
+                            row(model.ballMarkTitle, detail: "Measure from here", symbol: model.snapshot?.ballMark == .marked ? "checkmark" : "scope") {
+                                store.send(.markBall)
+                            }
+                            WatchBookHairline().padding(.leading, 34)
+                        }
+                        row(model.undoTitle, detail: model.undoDetail, symbol: "arrow.uturn.backward", enabled: model.snapshot?.canUndoLastShot == true) {
+                            isConfirmingUndo = true
+                        }
+                        WatchBookHairline().padding(.leading, 34)
+                        row("Penalty", detail: "Lost, OB, unplayable, water", symbol: "exclamationmark.triangle") {
+                            path.append(.penalty)
+                        }
+                        WatchBookHairline().padding(.leading, 34)
+                        row("Re-tee", detail: "+1 · play again from the tee", symbol: "arrow.counterclockwise") {
+                            isConfirmingRetee = true
+                        }
+                    }
+                    .watchLeaf()
+                    .disabled(!model.canRecordShots)
+                    .opacity(model.canRecordShots ? 1 : 0.5)
+                }
+                if let status = model.statusLine {
+                    Text(status)
+                        .font(.caption2)
+                        .foregroundStyle(model.isStale ? WatchBook.warning : WatchBook.pencil)
+                }
+            }
+            .padding(.horizontal, 2)
+        }
+        .confirmationDialog("Undo last shot?", isPresented: $isConfirmingUndo, titleVisibility: .visible) {
+            Button("Undo", role: .destructive) { store.send(.undoLastShot) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text([model.undoTitle.replacingOccurrences(of: "Undo ", with: ""), model.undoDetail].compactMap { $0 }.joined(separator: " · "))
+        }
+        .confirmationDialog("Re-tee from the tee?", isPresented: $isConfirmingRetee, titleVisibility: .visible) {
+            Button("Re-tee · +1 penalty", role: .destructive) { store.send(.retee) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Adds a penalty stroke. Log the replayed shot as normal.")
+        }
     }
 
-    private func fairwayShape(in size: CGSize) -> Path {
-        let width = size.width
-        let height = size.height
-
-        return Path { path in
-            path.move(to: CGPoint(x: width * 0.37, y: height * 0.92))
-            path.addQuadCurve(
-                to: CGPoint(x: width * 0.30, y: height * 0.44),
-                control: CGPoint(x: width * 0.22, y: height * 0.72)
-            )
-            path.addQuadCurve(
-                to: CGPoint(x: width * 0.42, y: height * 0.16),
-                control: CGPoint(x: width * 0.26, y: height * 0.24)
-            )
-            path.addLine(to: CGPoint(x: width * 0.66, y: height * 0.16))
-            path.addQuadCurve(
-                to: CGPoint(x: width * 0.78, y: height * 0.46),
-                control: CGPoint(x: width * 0.84, y: height * 0.28)
-            )
-            path.addQuadCurve(
-                to: CGPoint(x: width * 0.63, y: height * 0.92),
-                control: CGPoint(x: width * 0.88, y: height * 0.76)
-            )
-            path.closeSubpath()
+    /// The hole so far, and the stamp that writes it on the card.
+    private var card: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(model.folioText).font(WatchBook.Typeface.heading).monospacedDigit()
+                Text(model.holeTallyText)
+                    .font(.footnote)
+                    .foregroundStyle(WatchBook.pencil)
+                    .lineLimit(2)
+            }
+            Button { path.append(.score) } label: {
+                HStack {
+                    Text("Hole score")
+                    Spacer(minLength: 2)
+                    Image(systemName: "arrow.right")
+                }
+            }
+            .buttonStyle(WatchStampButtonStyle())
+            .disabled(!model.canRecordShots)
         }
+    }
+
+    private func row(_ title: String, detail: String? = nil, symbol: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: symbol)
+                    .font(.footnote.weight(.medium))
+                    .frame(width: 20)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(title).font(.footnote.weight(.semibold))
+                    if let detail {
+                        Text(detail).font(.caption2).foregroundStyle(WatchBook.pencil).lineLimit(2)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 8)
+            .frame(minHeight: 44)
+        }
+        .buttonStyle(WatchRowButtonStyle())
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+    }
+}
+
+// MARK: - Covers
+
+struct WatchNoRoundView: View {
+    let link: WatchCompanionLink
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("––").font(WatchBook.Typeface.folio).foregroundStyle(WatchBook.pencil)
+            Text("No round in progress").font(WatchBook.Typeface.heading)
+            Text("Start a round on your iPhone. The hole, the green and your club appear here.")
+                .font(.footnote)
+                .foregroundStyle(WatchBook.pencil)
+                .fixedSize(horizontal: false, vertical: true)
+            if link == .unavailable {
+                WatchBookNote("iPhone not connected", color: WatchBook.warning)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(WatchBook.ink)
+        .containerBackground(WatchBook.paper.gradient, for: .navigation)
+    }
+}
+
+struct WatchIncompatibleView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: "arrow.triangle.2.circlepath").font(.title3)
+            Text("Update SwingPal").font(WatchBook.Typeface.heading)
+            Text("The Watch and iPhone apps are different versions. Update both from the App Store.")
+                .font(.footnote)
+                .foregroundStyle(WatchBook.pencil)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(WatchBook.ink)
+        .containerBackground(WatchBook.paper.gradient, for: .navigation)
+    }
+}
+
+struct WatchRoundCompleteView: View {
+    let model: WatchRoundPresentation
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WatchBookNote("Card complete")
+            Text(model.roundToParText).font(WatchBook.Typeface.figure)
+            Text(model.courseText).font(WatchBook.Typeface.heading).lineLimit(2)
+            Text("Review and save the round on your iPhone.")
+                .font(.footnote)
+                .foregroundStyle(WatchBook.pencil)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(WatchBook.ink)
+        .containerBackground(WatchBook.paper.gradient, for: .navigation)
+    }
+}
+
+struct WatchFeedbackToast: View {
+    let feedback: WatchActionFeedback
+
+    private var symbol: String {
+        switch feedback.tone {
+        case .saved: return "checkmark"
+        case .finished: return "flag.fill"
+        case .queued: return "clock"
+        case .refused: return "exclamationmark"
+        }
+    }
+
+    var body: some View {
+        Label(feedback.message, systemImage: symbol)
+            .font(.caption.weight(.semibold))
+            .lineLimit(2)
+            .foregroundStyle(feedback.tone == .refused ? WatchBook.warning : WatchBook.ink)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(WatchBook.leaf, in: Capsule())
+            .overlay(Capsule().strokeBorder(WatchBook.rule, lineWidth: 0.5))
+            .padding(.top, 2)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .accessibilityAddTraits(.isStaticText)
     }
 }

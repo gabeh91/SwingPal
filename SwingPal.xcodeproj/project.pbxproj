@@ -92,12 +92,12 @@
 		A0000000000000000000016C /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000016D /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift */; };
 		A00000000000000000000173 /* SwingPalWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000170 /* SwingPalWatchApp.swift */; };
 		A00000000000000000000174 /* WatchRoundCompanionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000171 /* WatchRoundCompanionStore.swift */; };
-		A00000000000000000000175 /* WatchRoundCompanionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */; };
+		A00000000000000000000175 /* WatchRoundPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000172 /* WatchRoundPresentation.swift */; };
 		A0000000000000000000017F /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000014D /* Features/Round/Sync/RoundCompanionSyncing.swift */; };
 		A00000000000000000000180 /* WatchRoundHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000181 /* WatchRoundHomeView.swift */; };
 		A00000000000000000000182 /* WatchClubPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000183 /* WatchClubPickerView.swift */; };
-		A00000000000000000000184 /* WatchQuickShotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000185 /* WatchQuickShotView.swift */; };
-		A00000000000000000000186 /* WatchHoleFinishView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000187 /* WatchHoleFinishView.swift */; };
+		A00000000000000000000184 /* WatchShotLoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000185 /* WatchShotLoggerView.swift */; };
+		A00000000000000000000186 /* WatchHoleScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000187 /* WatchHoleScoreView.swift */; };
 		A00000000000000000000188 /* Resources/Courses/medway.json in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000189 /* Resources/Courses/medway.json */; };
 		A0000000000000000000018A /* SwingPalWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A00000000000000000000176 /* SwingPalWatch.app */; };
 		A00000000000000000000200 /* Features/Round/Providers/OSMCourseDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000201 /* Features/Round/Providers/OSMCourseDiscovery.swift */; };
@@ -139,6 +139,10 @@
 		A00000000000000000000527 /* Features/Auth/AuthFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000517 /* Features/Auth/AuthFlowView.swift */; };
 		A00000000000000000000602 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000601 /* Supabase */; };
 		A00000000000000000000700 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000701 /* Assets.xcassets */; };
+		B1A0000000000000000000A2 /* WatchBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0000000000000000000A1 /* WatchBook.swift */; };
+		B1A0000000000000000000A4 /* WatchHoleSketchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0000000000000000000A3 /* WatchHoleSketchView.swift */; };
+		B1A0000000000000000000A5 /* WatchRoundPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000172 /* WatchRoundPresentation.swift */; };
+		B1A0000000000000000000A7 /* WatchCompanionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0000000000000000000A6 /* WatchCompanionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -261,12 +265,12 @@
 		A0000000000000000000016D /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift; sourceTree = "<group>"; };
 		A00000000000000000000170 /* SwingPalWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPalWatchApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000171 /* WatchRoundCompanionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionStore.swift; sourceTree = "<group>"; };
-		A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundCompanionViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000172 /* WatchRoundPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundPresentation.swift; sourceTree = "<group>"; };
 		A00000000000000000000176 /* SwingPalWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwingPalWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000181 /* WatchRoundHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRoundHomeView.swift; sourceTree = "<group>"; };
 		A00000000000000000000183 /* WatchClubPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchClubPickerView.swift; sourceTree = "<group>"; };
-		A00000000000000000000185 /* WatchQuickShotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchQuickShotView.swift; sourceTree = "<group>"; };
-		A00000000000000000000187 /* WatchHoleFinishView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleFinishView.swift; sourceTree = "<group>"; };
+		A00000000000000000000185 /* WatchShotLoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchShotLoggerView.swift; sourceTree = "<group>"; };
+		A00000000000000000000187 /* WatchHoleScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleScoreView.swift; sourceTree = "<group>"; };
 		A00000000000000000000189 /* Resources/Courses/medway.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Resources/Courses/medway.json; sourceTree = "<group>"; };
 		A00000000000000000000201 /* Features/Round/Providers/OSMCourseDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/OSMCourseDiscovery.swift; sourceTree = "<group>"; };
 		A00000000000000000000203 /* Features/Round/Providers/CourseDiscoveryGeocoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Round/Providers/CourseDiscoveryGeocoding.swift; sourceTree = "<group>"; };
@@ -306,6 +310,9 @@
 		A00000000000000000000516 /* Features/Auth/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Auth/AuthViewModel.swift; sourceTree = "<group>"; };
 		A00000000000000000000517 /* Features/Auth/AuthFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Auth/AuthFlowView.swift; sourceTree = "<group>"; };
 		A00000000000000000000701 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B1A0000000000000000000A1 /* WatchBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBook.swift; sourceTree = "<group>"; };
+		B1A0000000000000000000A3 /* WatchHoleSketchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHoleSketchView.swift; sourceTree = "<group>"; };
+		B1A0000000000000000000A6 /* WatchCompanionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCompanionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -457,6 +464,7 @@
 				A0000000000000000000002D /* HomeViewModelTests.swift */,
 				A000000000000000000000A4 /* RoundSetupStateTests.swift */,
 				A000000000000000000000DB /* LiveRoundStateTests.swift */,
+				B1A0000000000000000000A6 /* WatchCompanionTests.swift */,
 				A000000000000000000000DC /* BagClubRecommendationTests.swift */,
 				A000000000000000000000DD /* GatedActionResolverTests.swift */,
 				A000000000000000000000DE /* ShellIntegrationTests.swift */,
@@ -504,11 +512,13 @@
 			children = (
 				A00000000000000000000170 /* SwingPalWatchApp.swift */,
 				A00000000000000000000171 /* WatchRoundCompanionStore.swift */,
-				A00000000000000000000172 /* WatchRoundCompanionViewModel.swift */,
+				A00000000000000000000172 /* WatchRoundPresentation.swift */,
 				A00000000000000000000181 /* WatchRoundHomeView.swift */,
 				A00000000000000000000183 /* WatchClubPickerView.swift */,
-				A00000000000000000000185 /* WatchQuickShotView.swift */,
-				A00000000000000000000187 /* WatchHoleFinishView.swift */,
+				A00000000000000000000185 /* WatchShotLoggerView.swift */,
+				A00000000000000000000187 /* WatchHoleScoreView.swift */,
+				B1A0000000000000000000A1 /* WatchBook.swift */,
+				B1A0000000000000000000A3 /* WatchHoleSketchView.swift */,
 				A00000000000000000000701 /* Assets.xcassets */,
 			);
 			path = "SwingPalWatch Watch App";
@@ -690,6 +700,7 @@
 				A0000000000000000000014A /* Features/Round/FreshLiveRoundScreen.swift in Sources */,
 				A0000000000000000000014C /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */,
 				A0000000000000000000016C /* Features/Round/Sync/WatchConnectivityRoundCompanionSync.swift in Sources */,
+				B1A0000000000000000000A5 /* WatchRoundPresentation.swift in Sources */,
 				A000000000000000000000E8 /* Features/Round/Models/ShotEvent.swift in Sources */,
 				A000000000000000000000E9 /* Features/Round/Models/HoleSession.swift in Sources */,
 				A000000000000000000000EA /* Features/Round/Models/PlayerScoreState.swift in Sources */,
@@ -754,6 +765,7 @@
 				A0000000000000000000003B /* HomeViewModelTests.swift in Sources */,
 				A000000000000000000000B4 /* RoundSetupStateTests.swift in Sources */,
 				A000000000000000000000FB /* LiveRoundStateTests.swift in Sources */,
+				B1A0000000000000000000A7 /* WatchCompanionTests.swift in Sources */,
 				A000000000000000000000FC /* BagClubRecommendationTests.swift in Sources */,
 				A000000000000000000000FD /* GatedActionResolverTests.swift in Sources */,
 				A000000000000000000000FE /* ShellIntegrationTests.swift in Sources */,
@@ -783,11 +795,13 @@
 			files = (
 				A00000000000000000000173 /* SwingPalWatchApp.swift in Sources */,
 				A00000000000000000000174 /* WatchRoundCompanionStore.swift in Sources */,
-				A00000000000000000000175 /* WatchRoundCompanionViewModel.swift in Sources */,
+				A00000000000000000000175 /* WatchRoundPresentation.swift in Sources */,
 				A00000000000000000000180 /* WatchRoundHomeView.swift in Sources */,
 				A00000000000000000000182 /* WatchClubPickerView.swift in Sources */,
-				A00000000000000000000184 /* WatchQuickShotView.swift in Sources */,
-				A00000000000000000000186 /* WatchHoleFinishView.swift in Sources */,
+				A00000000000000000000184 /* WatchShotLoggerView.swift in Sources */,
+				A00000000000000000000186 /* WatchHoleScoreView.swift in Sources */,
+				B1A0000000000000000000A2 /* WatchBook.swift in Sources */,
+				B1A0000000000000000000A4 /* WatchHoleSketchView.swift in Sources */,
 				A0000000000000000000017F /* Features/Round/Sync/RoundCompanionSyncing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

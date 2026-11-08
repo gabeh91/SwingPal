@@ -1,68 +1,66 @@
 import SwiftUI
 
+/// The bag as the phone's club sequence reads it: longest to shortest, the
+/// code large, its carry and where that carry comes from beside it.
 struct WatchClubPickerView: View {
-    @ObservedObject var store: WatchRoundCompanionStore
-    let model: WatchRoundCompanionViewModel
-    @Environment(\.dismiss) private var dismiss
+    let model: WatchRoundPresentation
+    let selectedName: String?
+    let onPick: (String) -> Void
 
     var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Current Club")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
-                    Text(model.selectedClubText)
-                        .font(.headline.weight(.semibold))
-                    Text("\(model.primaryYardage) to pin")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 2)
-            }
-
-            if model.showsTrustBanner {
-                Section {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(model.trustBannerTitle)
-                            .font(.caption.weight(.semibold))
-                        Text(model.trustBannerDetail)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 2)
-                }
-            }
-
-            Section("Bag") {
-                ForEach(model.clubOptions, id: \.self) { clubName in
-                    Button {
-                        store.sendChangeClub(named: clubName)
-                        dismiss()
-                    } label: {
-                        HStack(spacing: 8) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(clubName)
-                                    .fontWeight(.semibold)
-                                if clubName == model.selectedClubText {
-                                    Text("Selected")
-                                        .font(.caption2.weight(.medium))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            Spacer()
-                            if clubName == model.selectedClubText {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color(red: 0.81, green: 0.89, blue: 0.77))
-                            }
-                        }
+        ScrollViewReader { reader in
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(model.clubsByCarry.enumerated()), id: \.element.name) { index, club in
+                        if index > 0 { WatchBookHairline() }
+                        row(for: club).id(club.name)
                     }
                 }
+                .watchLeaf()
+                WatchBookNote("Choosing a club logs nothing")
+                    .padding(.top, 6)
+            }
+            .onAppear {
+                if let selectedName { reader.scrollTo(selectedName, anchor: .center) }
             }
         }
         .navigationTitle("Club")
+        .watchPaper()
+    }
+
+    private func row(for club: RoundCompanionClub) -> some View {
+        let isSelected = club.name.caseInsensitiveCompare(selectedName ?? "") == .orderedSame
+        let isSuggested = club.name.caseInsensitiveCompare(model.snapshot?.recommendedClubName ?? "") == .orderedSame
+        return Button { onPick(club.name) } label: {
+            HStack(spacing: 8) {
+                VStack(spacing: 2) {
+                    Text(WatchBookLabels.club(club.name))
+                        .font(.system(size: isSelected ? 26 : 22, weight: isSelected ? .bold : .medium).width(.condensed))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    Rectangle()
+                        .fill(isSelected ? WatchBook.flag : Color.clear)
+                        .frame(width: 18, height: 2)
+                }
+                .frame(width: 44)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(model.carryLabel(for: club))
+                        .font(WatchBook.Typeface.smallFigure)
+                    Text(isSuggested ? "Suggested" : club.isEstimated ? "Estimated" : "From your bag")
+                        .font(.caption2)
+                        .foregroundStyle(isSuggested ? WatchBook.flag : WatchBook.pencil)
+                }
+                Spacer(minLength: 0)
+                if isSelected {
+                    Image(systemName: "checkmark").font(.caption.weight(.bold))
+                }
+            }
+            .foregroundStyle(isSelected ? WatchBook.ink : WatchBook.ink.opacity(0.85))
+            .padding(.horizontal, 8)
+            .frame(minHeight: 50)
+        }
+        .buttonStyle(WatchRowButtonStyle())
+        .accessibilityLabel("\(club.name), \(model.carryLabel(for: club)), \(club.isEstimated ? "estimated carry" : "bag carry")\(isSuggested ? ", suggested" : "")")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
